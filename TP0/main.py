@@ -2,6 +2,7 @@ import json
 import sys
 
 import numpy as np
+import pandas as pd
 
 from enum import Enum
 from matplotlib import pyplot as plt
@@ -24,7 +25,7 @@ class Pokeballs(Enum):
 class CatchesByPokeball:
     pokemon: Pokemon
     ball: Pokeballs
-    catches: list[bool]
+    catches: list[int]
 
 
 @dataclass(frozen=True, eq=True)
@@ -40,9 +41,9 @@ def create_ideal_pokemon(factory: PokemonFactory, pokemon: str) -> Pokemon:
 def catch_with_all_pokeballs(pokemon: Pokemon, times: int) -> list[CatchesByPokeball]:
     catches: list[CatchesByPokeball] = list()
     for ball in Pokeballs:
-        catches_with_ball: list[bool] = []
+        catches_with_ball: list[int] = []
         for _ in range(times):
-            catches_with_ball.append(attempt_catch(pokemon, ball.value)[0])
+            catches_with_ball.append(1 if attempt_catch(pokemon, ball.value)[0] else 0)
 
         catches.append(CatchesByPokeball(pokemon, ball, catches_with_ball))
 
@@ -59,16 +60,25 @@ def get_pokemons():
     return list(pokemons)
 
 
-def aggregate_by_pokeball(catches: list[CatchesByPokeball]) -> list[PokeballMean]:
-    means: list[PokeballMean] = []
-    for ball in Pokeballs:
-        pokeball_catches = filter(lambda x: x.ball == ball, catches)
-        flatten_pokeball_catches = [
-            catch for c in pokeball_catches for catch in c.catches
-        ]
-        means.append(PokeballMean(ball, np.mean(flatten_pokeball_catches)))
+def pandas_aggregate(catches: list[CatchesByPokeball]):
+    data = [
+        {
+            "pokemon": catch.pokemon.name,
+            "ball": catch.ball.value,
+            "catches": sum(catch.catches),
+            "throws": len(catch.catches),
+        }
+        for catch in catches
+    ]
+    df = pd.DataFrame(data).sort_values(by=["ball", "pokemon"]).reset_index(drop=True)
 
-    return means
+    grouped = df.groupby("ball").agg(
+        catches=("catches", "sum"), throws=("throws", "sum")
+    )
+    grouped["mean"] = grouped["catches"] / grouped["throws"]
+    grouped = grouped.sort_values(by=["ball"])
+
+    return df, grouped
 
 
 if __name__ == "__main__":
@@ -80,18 +90,7 @@ if __name__ == "__main__":
         poke = create_ideal_pokemon(factory, pokemon)
         catches.extend(catch_with_all_pokeballs(poke, 100))
 
-    means = aggregate_by_pokeball(catches)
-    print(means)
+    df_1a, df_mean_1a = pandas_aggregate(catches)
 
-    # with open(f"{sys.argv[1]}", "r") as f:
-    #     config = json.load(f)
-    #     ball = config["pokeball"]
-    #     pokemon = factory.create(config["pokemon"], 100, StatusEffect.NONE, 1)
-
-#         # for i in range(100, 1, -1):
-#         #     pokemon = factory.create(config["pokemon"], 100, StatusEffect.NONE, i / 100)
-#         #     print(pokemon.current_hp)
-
-#         print("No noise: ", attempt_catch(pokemon, ball))
-#         for _ in range(10):
-#             print("Noisy: ", attempt_catch(pokemon, ball, 0.15))
+    print(df_1a)
+    print(df_mean_1a)
