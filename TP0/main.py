@@ -97,7 +97,7 @@ def pandas_aggregate_1b(catches: list[CatchesByPokeball]):
     pokeball_by_pokemon = df[df["ball"] == "pokeball"].set_index("pokemon")
     df["relative_to_pokeball"] = df.apply(
         lambda row: (
-            row["mean"] / pokeball_by_pokemon.loc[row['pokemon']]["mean"]
+            row["mean"] / pokeball_by_pokemon.loc[row["pokemon"]]["mean"]
             if row["ball"] != "pokeball"
             else 1.0
         ),
@@ -107,6 +107,53 @@ def pandas_aggregate_1b(catches: list[CatchesByPokeball]):
     return df
 
 
+def plot_1a(df: pd.DataFrame):
+    fig, ax = plt.subplots()
+
+    bar_colors = ["tab:red", "#0075BE", "#FFCC00", "tab:orange"]
+
+    ax.bar(df.index.values, df["mean"], color=bar_colors)
+
+    ax.set_ylabel("Probabilidad de captura promedio")
+    ax.set_xlabel("Pokeball")
+    ax.set_title("Probabilidad de captura promedio por Pokeball")
+
+    plt.show()
+
+
+def plot_1b(df: pd.DataFrame):
+    fig, ax = plt.subplots(layout="constrained")
+
+    bar_colors = ["tab:red", "#0075BE", "#FFCC00", "tab:orange"]
+
+    pokemons = df["pokemon"].unique().tolist()
+    balls = df["ball"].unique().tolist()
+
+    x = np.arange(len(pokemons))
+    bar_width = 0.20
+    multiplier = 0
+
+    color_map = {ball: bar_colors[i % len(bar_colors)] for i, ball in enumerate(balls)}
+
+    values = {}
+    for ball in df["ball"].unique():
+        values[ball] = tuple(df[df["ball"] == ball]["relative_to_pokeball"])
+
+    for ball, means in values.items():
+        offset = bar_width * multiplier
+        ax.bar(x + offset, means, bar_width, label=ball, color=color_map[ball])
+        multiplier += 1
+
+    ax.set_ylabel("Efectividad de captura relativa")
+    ax.set_xlabel("Pokeballs agrupadas por Pokemon")
+    ax.set_title("Efectividad de captura de cada Pokemon relativa a Pokeball")
+
+    ax.set_xticks(x + bar_width, pokemons)
+    ax.legend(loc="upper right", ncols=2)
+
+    plt.show()
+
+
 if __name__ == "__main__":
     pokemons = get_pokemons()
     factory = PokemonFactory(POKEMONS_CONFIG)
@@ -114,7 +161,7 @@ if __name__ == "__main__":
     catches: list[CatchesByPokeball] = []
     for pokemon in pokemons:
         poke = create_ideal_pokemon(factory, pokemon)
-        catches.extend(catch_with_all_pokeballs(poke, 10000))
+        catches.extend(catch_with_all_pokeballs(poke, 10_000))
 
     df_1a, df_mean_1a = pandas_aggregate_1a(catches)
 
@@ -123,3 +170,6 @@ if __name__ == "__main__":
 
     df_1b = pandas_aggregate_1b(catches)
     print(df_1b)
+
+    plot_1a(df_mean_1a)
+    plot_1b(df_1b)
