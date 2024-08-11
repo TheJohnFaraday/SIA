@@ -153,11 +153,7 @@ def plot_1b(df: pd.DataFrame):
 
     plt.show()
 
-
-if __name__ == "__main__":
-    pokemons = get_pokemons()
-    factory = PokemonFactory(POKEMONS_CONFIG)
-
+def ej1():
     catches: list[CatchesByPokeball] = []
     for pokemon in pokemons:
         poke = create_ideal_pokemon(factory, pokemon)
@@ -173,3 +169,15 @@ if __name__ == "__main__":
 
     plot_1a(df_mean_1a)
     plot_1b(df_1b)
+
+def ej2():
+    print("Ejercicio 2") 
+
+
+if __name__ == "__main__":
+    pokemons = get_pokemons()
+    factory = PokemonFactory(POKEMONS_CONFIG)
+
+    #ej1()
+    ej2()
+    
