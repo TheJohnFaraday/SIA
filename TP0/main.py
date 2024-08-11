@@ -60,12 +60,12 @@ def get_pokemons():
     return list(pokemons)
 
 
-def pandas_aggregate(catches: list[CatchesByPokeball]):
+def pandas_aggregate_1a(catches: list[CatchesByPokeball]):
     data = [
         {
             "pokemon": catch.pokemon.name,
             "ball": catch.ball.value,
-            "catches": sum(catch.catches),
+            "catches": np.sum(catch.catches),
             "throws": len(catch.catches),
         }
         for catch in catches
@@ -81,6 +81,32 @@ def pandas_aggregate(catches: list[CatchesByPokeball]):
     return df, grouped
 
 
+def pandas_aggregate_1b(catches: list[CatchesByPokeball]):
+    data = [
+        {
+            "pokemon": catch.pokemon.name,
+            "ball": catch.ball.value,
+            "catches": np.sum(catch.catches),
+            "throws": len(catch.catches),
+        }
+        for catch in catches
+    ]
+    df = pd.DataFrame(data).sort_values(by=["pokemon", "ball"]).reset_index(drop=True)
+    df["mean"] = np.divide(df["catches"], df["throws"])
+
+    pokeball_by_pokemon = df[df["ball"] == "pokeball"].set_index("pokemon")
+    df["relative_to_pokeball"] = df.apply(
+        lambda row: (
+            row["mean"] / pokeball_by_pokemon.loc[row['pokemon']]["mean"]
+            if row["ball"] != "pokeball"
+            else 1.0
+        ),
+        axis="columns",
+    )
+
+    return df
+
+
 if __name__ == "__main__":
     pokemons = get_pokemons()
     factory = PokemonFactory(POKEMONS_CONFIG)
@@ -88,9 +114,12 @@ if __name__ == "__main__":
     catches: list[CatchesByPokeball] = []
     for pokemon in pokemons:
         poke = create_ideal_pokemon(factory, pokemon)
-        catches.extend(catch_with_all_pokeballs(poke, 100))
+        catches.extend(catch_with_all_pokeballs(poke, 10000))
 
-    df_1a, df_mean_1a = pandas_aggregate(catches)
+    df_1a, df_mean_1a = pandas_aggregate_1a(catches)
 
     print(df_1a)
     print(df_mean_1a)
+
+    df_1b = pandas_aggregate_1b(catches)
+    print(df_1b)
