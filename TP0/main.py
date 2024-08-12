@@ -37,8 +37,7 @@ class CatchesByPokeball:
 
 
 @dataclass
-class CatchesByPokeballWithHP:
-    base: CatchesByPokeball
+class CatchesByPokeballWithHP(CatchesByPokeball):
     hp: float
 
 
@@ -69,14 +68,10 @@ def catch_with_all_pokeballs(pokemon: Pokemon, times: int) -> list[CatchesByPoke
 
 
 def catch_with_pokeball_with_hp(pokemon: Pokemon, times: int, hp: float) -> list[CatchesByPokeballWithHP]:
-    catches: list[CatchesByPokeballWithHP] = []
-    base_catches = catch_with_pokeball(pokemon, Pokeballs.POKEBALL, times)
+    catch = catch_with_pokeball(pokemon, Pokeballs.POKEBALL, times)
+    extended_catch = CatchesByPokeballWithHP(catch.pokemon, catch.ball, catch.catches, hp)
 
-    for base_catch in base_catches:
-        extended_catch = CatchesByPokeballWithHP(base_catch, hp)
-        catches.append(extended_catch)
-
-    return catches
+    return extended_catch
 
 
 def get_pokemons():
@@ -196,9 +191,10 @@ def ej2b():
     for pokemon in ["caterpie", "onix"]:
         for hp in HP_LEVELS:
             poke = factory.create(pokemon, 100, StatusEffect.NONE, hp.value)
-            catches.extend(catch_with_pokeball_with_hp(poke, 10_000, hp.value))
+            catches.append(catch_with_pokeball_with_hp(poke, 10_000, hp.value))
 
     print(catches)
+    return catches
 
 
 
@@ -223,12 +219,50 @@ def ej1():
 
 
 def ej2():
-    print("Ejercicio 2")
+    print("************ Ejercicio 2 ************")
+    catches = ej2b()
 
+    #df_2b, df_mean_2b = pandas_aggregate_2b(catches)
+
+    #print(df_2b)
+    #print(df_mean_2b)
+
+    #df_2b = pandas_aggregate_2b(catches)
+    #print(df_2b)
+
+    #plot_1a(df_mean_2b)
+    #plot_1b(df_2b)
+
+def pandas_aggregate_2b(catches: list[CatchesByPokeballWithHP]):
+    data = [
+        {
+            "pokemon": catch.pokemon.name,
+            "hp": catch.hp,
+            "catches": np.sum(catch.catches),
+            "throws": len(catch.catches),
+        }
+        for catch in catches
+    ]
+    df = pd.DataFrame(data).sort_values(by=["pokemon", "hp"]).reset_index(drop=True)
+    df["mean"] = np.divide(df["catches"], df["throws"])
+
+    pokeball_by_pokemon = df[df["hp"] == "hp"].set_index("pokemon")
+    """
+    df["relative_to_pokeball"] = df.apply(
+        lambda row: (
+            row["mean"] / pokeball_by_pokemon.loc[row["pokemon"]]["mean"]
+            if row["ball"] != "pokeball"
+            else 1.0
+        ),
+        axis="columns",
+    )
+    """
+
+    return df
 
 if __name__ == "__main__":
     pokemons = get_pokemons()
     factory = PokemonFactory(POKEMONS_CONFIG)
 
-    ej1()
-    #ej2b()
+    #ej1()
+    ej2()
