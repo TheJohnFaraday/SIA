@@ -21,11 +21,25 @@ class Pokeballs(Enum):
     FAST_BALL = "fastball"
 
 
+class HP_LEVELS(Enum):
+    HP_100 = 1
+    HP_80 = 0.8
+    HP_60 = 0.6
+    HP_40 = 0.4
+    HP_20 = 0.2
+
+
 @dataclass
 class CatchesByPokeball:
     pokemon: Pokemon
     ball: Pokeballs
     catches: list[int]
+
+
+@dataclass
+class CatchesByPokeballWithHP:
+    base: CatchesByPokeball
+    hp: float
 
 
 @dataclass(frozen=True, eq=True)
@@ -38,16 +52,31 @@ def create_ideal_pokemon(factory: PokemonFactory, pokemon: str) -> Pokemon:
     return factory.create(pokemon, 100, StatusEffect.NONE, 1)
 
 
+def catch_with_pokeball(pokemon: Pokemon, ball: Pokeballs, times: int) -> CatchesByPokeball:
+    catches_with_ball: list[int] = []
+    for _ in range(times):
+        catches_with_ball.append(1 if attempt_catch(pokemon, ball.value)[0] else 0)
+
+    return CatchesByPokeball(pokemon, ball, catches_with_ball)
+
+
 def catch_with_all_pokeballs(pokemon: Pokemon, times: int) -> list[CatchesByPokeball]:
-    catches: list[CatchesByPokeball] = list()
+    catches: list[CatchesByPokeball] = []
     for ball in Pokeballs:
-        catches_with_ball: list[int] = []
-        for _ in range(times):
-            catches_with_ball.append(1 if attempt_catch(pokemon, ball.value)[0] else 0)
+        catches.append(catch_with_pokeball(pokemon, ball, times))
 
-        catches.append(CatchesByPokeball(pokemon, ball, catches_with_ball))
+    return catches
 
-    return list(catches)
+
+def catch_with_pokeball_with_hp(pokemon: Pokemon, times: int, hp: float) -> list[CatchesByPokeballWithHP]:
+    catches: list[CatchesByPokeballWithHP] = []
+    base_catches = catch_with_pokeball(pokemon, Pokeballs.POKEBALL, times)
+
+    for base_catch in base_catches:
+        extended_catch = CatchesByPokeballWithHP(base_catch, hp)
+        catches.append(extended_catch)
+
+    return catches
 
 
 def get_pokemons():
@@ -153,11 +182,33 @@ def plot_1b(df: pd.DataFrame):
 
     plt.show()
 
+
+def plot_2b(df: pd.DataFrame):
+    fig, ax = plt.subplots(layout="constrained")
+
+    bar_colors = ["tab:red", "#0075BE", "#FFCC00", "tab:orange"]
+
+    pokemons = df["pokemon"]
+
+
+def ej2b():
+    catches: list[CatchesByPokeballWithHP] = []
+    for pokemon in ["caterpie", "onix"]:
+        for hp in HP_LEVELS:
+            poke = factory.create(pokemon, 100, StatusEffect.NONE, hp.value)
+            catches.extend(catch_with_pokeball_with_hp(poke, 10_000, hp.value))
+
+    print(catches)
+
+
+
 def ej1():
     catches: list[CatchesByPokeball] = []
     for pokemon in pokemons:
         poke = create_ideal_pokemon(factory, pokemon)
         catches.extend(catch_with_all_pokeballs(poke, 10_000))
+
+    print(catches)
 
     df_1a, df_mean_1a = pandas_aggregate_1a(catches)
 
@@ -170,14 +221,14 @@ def ej1():
     plot_1a(df_mean_1a)
     plot_1b(df_1b)
 
+
 def ej2():
-    print("Ejercicio 2") 
+    print("Ejercicio 2")
 
 
 if __name__ == "__main__":
     pokemons = get_pokemons()
     factory = PokemonFactory(POKEMONS_CONFIG)
 
-    #ej1()
-    ej2()
-    
+    ej1()
+    #ej2b()
