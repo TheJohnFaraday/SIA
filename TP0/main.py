@@ -190,6 +190,31 @@ def plot_1b(df: pd.DataFrame):
     plt.show()
 
 
+def plot_2a(df: pd.DataFrame):
+    fig, ax = plt.subplots(figsize=(5, 4))
+
+    colors = plt.get_cmap('tab20', len(pokemons))
+    color_map = {name: colors(i) for i, name in enumerate(pokemons)}
+
+    for pokemon in df['pokemon'].unique():
+        df_pokemon = df[df['pokemon'] == pokemon]
+        ax.scatter(df_pokemon['status_effect'], df_pokemon['mean'] * 100,
+                   color=color_map.get(pokemon, 'gray'),
+                   label=pokemon.capitalize(),
+                   alpha=0.7,
+                   s=100)
+
+    ax.set_ylabel("Probabilidad de captura promedio (%)")
+    ax.set_xlabel("Efecto de Estado")
+    ax.set_title("Probabilidad de captura promedio por Efecto de Estado", fontsize=10, pad=20)
+
+    ax.legend(title='Pokémon', bbox_to_anchor=(1.05, 1), loc='upper left')
+
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.show()
+
+
 def plot_2b(df: pd.DataFrame, pokemon_name: str):
     fig, ax = plt.subplots()
 
@@ -258,18 +283,20 @@ def ej2():
     df_2a = pandas_aggregate_2a(catches)
     print(df_2a)
 
-    #catches = ej2b()
+    plot_2a(df_2a)
 
-    #df_2b = pandas_aggregate_2b(catches)
+    catches = ej2b()
 
-    #df_2b_caterpie = df_2b[df_2b['pokemon'] == 'caterpie']
-    #df_2b_onix = df_2b[df_2b['pokemon'] == 'onix']
+    df_2b = pandas_aggregate_2b(catches)
 
-    #print(df_2b_onix)
-    #print(df_2b_caterpie)
+    df_2b_caterpie = df_2b[df_2b['pokemon'] == 'caterpie']
+    df_2b_onix = df_2b[df_2b['pokemon'] == 'onix']
 
-    #plot_2b(df_2b_caterpie, "caterpie")
-    #plot_2b(df_2b_onix, "onix")
+    print(df_2b_onix)
+    print(df_2b_caterpie)
+
+    plot_2b(df_2b_caterpie, "caterpie")
+    plot_2b(df_2b_onix, "onix")
 
 
 def pandas_aggregate_2b(catches: list[CatchesByPokeballWithHP]):
