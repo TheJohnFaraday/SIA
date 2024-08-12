@@ -1,5 +1,4 @@
 import json
-import sys
 
 import numpy as np
 import pandas as pd
@@ -41,6 +40,11 @@ class CatchesByPokeballWithHP(CatchesByPokeball):
     hp: float
 
 
+@dataclass
+class CatchesByPokeballWithStatusEffect(CatchesByPokeball):
+    status_effect: StatusEffect
+
+
 @dataclass(frozen=True, eq=True)
 class PokeballMean:
     ball: Pokeballs
@@ -70,6 +74,14 @@ def catch_with_all_pokeballs(pokemon: Pokemon, times: int) -> list[CatchesByPoke
 def catch_with_pokeball_with_hp(pokemon: Pokemon, times: int, hp: float) -> list[CatchesByPokeballWithHP]:
     catch = catch_with_pokeball(pokemon, Pokeballs.POKEBALL, times)
     extended_catch = CatchesByPokeballWithHP(catch.pokemon, catch.ball, catch.catches, hp)
+
+    return extended_catch
+
+
+def catch_with_pokeball_with_status_effect(pokemon: Pokemon, times: int, status_effect: StatusEffect) -> list[
+    CatchesByPokeballWithStatusEffect]:
+    catch = catch_with_pokeball(pokemon, Pokeballs.POKEBALL, times)
+    extended_catch = CatchesByPokeballWithStatusEffect(catch.pokemon, catch.ball, catch.catches, status_effect)
 
     return extended_catch
 
@@ -196,6 +208,17 @@ def plot_2b(df: pd.DataFrame, pokemon_name: str):
     plt.show()
 
 
+def ej2a():
+    catches: list[CatchesByPokeballWithStatusEffect] = []
+    for pokemon in pokemons:
+        for status_effect in StatusEffect:
+            poke = factory.create(pokemon, 100, status_effect, 1)
+            catches.append(catch_with_pokeball_with_status_effect(poke, 10_000, status_effect))
+
+    print(catches)
+    return catches
+
+
 def ej2b():
     catches: list[CatchesByPokeballWithHP] = []
     for pokemon in ["caterpie", "onix"]:
@@ -229,18 +252,24 @@ def ej1():
 
 def ej2():
     print("************ Ejercicio 2 ************")
-    catches = ej2b()
 
-    df_2b = pandas_aggregate_2b(catches)
+    catches = ej2a()
 
-    df_2b_caterpie = df_2b[df_2b['pokemon'] == 'caterpie']
-    df_2b_onix = df_2b[df_2b['pokemon'] == 'onix']
+    df_2a = pandas_aggregate_2a(catches)
+    print(df_2a)
 
-    print(df_2b_onix)
-    print(df_2b_caterpie)
+    #catches = ej2b()
 
-    plot_2b(df_2b_caterpie, "caterpie")
-    plot_2b(df_2b_onix, "onix")
+    #df_2b = pandas_aggregate_2b(catches)
+
+    #df_2b_caterpie = df_2b[df_2b['pokemon'] == 'caterpie']
+    #df_2b_onix = df_2b[df_2b['pokemon'] == 'onix']
+
+    #print(df_2b_onix)
+    #print(df_2b_caterpie)
+
+    #plot_2b(df_2b_caterpie, "caterpie")
+    #plot_2b(df_2b_onix, "onix")
 
 
 def pandas_aggregate_2b(catches: list[CatchesByPokeballWithHP]):
@@ -254,6 +283,22 @@ def pandas_aggregate_2b(catches: list[CatchesByPokeballWithHP]):
         for catch in catches
     ]
     df = pd.DataFrame(data).sort_values(by=["pokemon", "hp"]).reset_index(drop=True)
+    df["mean"] = np.divide(df["catches"], df["throws"])
+
+    return df
+
+
+def pandas_aggregate_2a(catches: list[CatchesByPokeballWithStatusEffect]):
+    data = [
+        {
+            "pokemon": catch.pokemon.name,
+            "status_effect": catch.status_effect.name,
+            "catches": np.sum(catch.catches),
+            "throws": len(catch.catches),
+        }
+        for catch in catches
+    ]
+    df = pd.DataFrame(data).sort_values(by=["pokemon", "status_effect"]).reset_index(drop=True)
     df["mean"] = np.divide(df["catches"], df["throws"])
 
     return df
