@@ -178,12 +178,22 @@ def plot_1b(df: pd.DataFrame):
     plt.show()
 
 
-def plot_2b(df: pd.DataFrame):
-    fig, ax = plt.subplots(layout="constrained")
+def plot_2b(df: pd.DataFrame, pokemon_name: str):
+    fig, ax = plt.subplots()
 
-    bar_colors = ["tab:red", "#0075BE", "#FFCC00", "tab:orange"]
+    bar_colors = ["tab:red", "#0075BE", "#FFCC00", "tab:orange", "tab:red"]
 
-    pokemons = df["pokemon"]
+    ax.bar(df['hp'], df['mean'], width=0.15, color=bar_colors)
+
+    hp_values = [level.value for level in HP_LEVELS]
+    ax.set_xticks(hp_values)
+    ax.set_xticklabels([level.name for level in HP_LEVELS])
+
+    ax.set_ylabel("Probabilidad de captura promedio")
+    ax.set_xlabel("HP")
+    ax.set_title(f"Probabilidad de captura promedio por HP - {pokemon_name.capitalize()}")
+
+    plt.show()
 
 
 def ej2b():
@@ -195,7 +205,6 @@ def ej2b():
 
     print(catches)
     return catches
-
 
 
 def ej1():
@@ -222,16 +231,17 @@ def ej2():
     print("************ Ejercicio 2 ************")
     catches = ej2b()
 
-    #df_2b, df_mean_2b = pandas_aggregate_2b(catches)
+    df_2b = pandas_aggregate_2b(catches)
 
-    #print(df_2b)
-    #print(df_mean_2b)
+    df_2b_caterpie = df_2b[df_2b['pokemon'] == 'caterpie']
+    df_2b_onix = df_2b[df_2b['pokemon'] == 'onix']
 
-    #df_2b = pandas_aggregate_2b(catches)
-    #print(df_2b)
+    print(df_2b_onix)
+    print(df_2b_caterpie)
 
-    #plot_1a(df_mean_2b)
-    #plot_1b(df_2b)
+    plot_2b(df_2b_caterpie, "caterpie")
+    plot_2b(df_2b_onix, "onix")
+
 
 def pandas_aggregate_2b(catches: list[CatchesByPokeballWithHP]):
     data = [
@@ -246,19 +256,8 @@ def pandas_aggregate_2b(catches: list[CatchesByPokeballWithHP]):
     df = pd.DataFrame(data).sort_values(by=["pokemon", "hp"]).reset_index(drop=True)
     df["mean"] = np.divide(df["catches"], df["throws"])
 
-    pokeball_by_pokemon = df[df["hp"] == "hp"].set_index("pokemon")
-    """
-    df["relative_to_pokeball"] = df.apply(
-        lambda row: (
-            row["mean"] / pokeball_by_pokemon.loc[row["pokemon"]]["mean"]
-            if row["ball"] != "pokeball"
-            else 1.0
-        ),
-        axis="columns",
-    )
-    """
-
     return df
+
 
 if __name__ == "__main__":
     pokemons = get_pokemons()
