@@ -267,7 +267,7 @@ def plot_2c(df: pd.DataFrame):
 
     ax.set_ylabel("Probabilidad de captura promedio")
     ax.set_xlabel("Nivel")
-    ax.set_title("Probabilidad de captura promedio por Nivel - Caterpie")
+    ax.set_title("Probabilidad de captura promedio por Nivel - Onix")
 
     plt.show()
 
@@ -298,11 +298,11 @@ def ej2b():
 def ej2c():
     catches: list[CatchesByLevel] = []
     for lvl in range(10):
-        poke = factory.create("caterpie", lvl*10, StatusEffect.NONE, 1)
+        poke = factory.create("onix", lvl*10, StatusEffect.NONE, 1)
         catch: list[int] = []
         for _ in range(10_000):
             catch.append(1 if attempt_catch(poke, "pokeball")[0] else 0)
-        catches.append(CatchesByLevel("caterpie", lvl*10, catch))
+        catches.append(CatchesByLevel("onix", lvl*10, catch))
         
     return catches
         
@@ -379,7 +379,7 @@ def pandas_aggregate_2b(catches: list[CatchesByPokeballWithHP]):
 def pandas_aggregate_2c(catches: list[int]):
     data = [
         {
-            "pokemon": "caterpie",
+            "pokemon": "onix",
             "level": catch.level,
             "catches": np.sum(catch.catches),
             "throws": len(catch.catches),
