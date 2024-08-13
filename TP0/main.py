@@ -177,7 +177,7 @@ def plot_1a(df: pd.DataFrame):
     ax.set_xlabel("Pokeball")
     ax.set_title("Probabilidad de captura promedio por Pokeball")
 
-    plt.show()
+    plt.savefig("plots/prob_por_pokeball.png")
 
 
 def plot_1b(df: pd.DataFrame):
@@ -210,7 +210,7 @@ def plot_1b(df: pd.DataFrame):
     ax.set_xticks(x + bar_width, pokemons)
     ax.legend(loc="upper right", ncols=2)
 
-    plt.show()
+    plt.savefig("plots/efectividad_por_pokeball.png")
 
 
 def plot_2a(df: pd.DataFrame):
@@ -235,7 +235,7 @@ def plot_2a(df: pd.DataFrame):
 
     plt.xticks(rotation=45)
     plt.tight_layout()
-    plt.show()
+    plt.savefig("plots/prob_por_estado.png")
 
 
 def plot_2b(df: pd.DataFrame, pokemon_name: str):
@@ -255,7 +255,7 @@ def plot_2b(df: pd.DataFrame, pokemon_name: str):
     ax.set_xlabel("HP")
     ax.set_title(f"Probabilidad de captura promedio por HP - {pokemon_name.capitalize()}")
 
-    plt.show()
+    plt.savefig("plots/prob_por_hp.png")
 
 
 def plot_2c(df: pd.DataFrame):
@@ -267,10 +267,9 @@ def plot_2c(df: pd.DataFrame):
 
     ax.set_ylabel("Probabilidad de captura promedio")
     ax.set_xlabel("Nivel")
-    ax.set_title("Probabilidad de captura promedio por Nivel - Onix")
+    ax.set_title("Probabilidad de captura promedio por Nivel - Jolteon")
 
-    plt.show()
-
+    plt.savefig("plots/prob_por_lvl.png")
 
 
 def ej2a():
@@ -298,11 +297,11 @@ def ej2b():
 def ej2c():
     catches: list[CatchesByLevel] = []
     for lvl in range(10):
-        poke = factory.create("onix", lvl*10, StatusEffect.NONE, 1)
+        poke = factory.create("jolteon", lvl*10, StatusEffect.NONE, 1)
         catch: list[int] = []
         for _ in range(10_000):
-            catch.append(1 if attempt_catch(poke, "pokeball")[0] else 0)
-        catches.append(CatchesByLevel("onix", lvl*10, catch))
+            catch.append(1 if attempt_catch(poke, "fastball")[0] else 0)
+        catches.append(CatchesByLevel("jolteon", lvl*10, catch))
         
     return catches
         
@@ -379,7 +378,7 @@ def pandas_aggregate_2b(catches: list[CatchesByPokeballWithHP]):
 def pandas_aggregate_2c(catches: list[int]):
     data = [
         {
-            "pokemon": "onix",
+            "pokemon": "jolteon",
             "level": catch.level,
             "catches": np.sum(catch.catches),
             "throws": len(catch.catches),
