@@ -241,7 +241,7 @@ def plot_2a(df: pd.DataFrame):
 def plot_2b(df: pd.DataFrame, pokemon_name: str):
     plt.figure(figsize=(20,6))
     fig, ax = plt.subplots()
-        
+
     bar_colors = ["tab:red", "#0075BE", "#FFCC00", "tab:orange", "tab:red"]
 
     ax.bar(df['hp'], df['mean'], width=0.02, color=bar_colors)
@@ -250,12 +250,12 @@ def plot_2b(df: pd.DataFrame, pokemon_name: str):
     ax.set_xticks(hp_values)
     ax.set_xticklabels([int((level.value*100)) for level in HP_LEVELS])
     ax.tick_params(labelsize=8)
-    
+
     ax.set_ylabel("Probabilidad de captura promedio")
     ax.set_xlabel("HP")
     ax.set_title(f"Probabilidad de captura promedio por HP - {pokemon_name.capitalize()}")
 
-    plt.savefig("plots/prob_por_hp.png")
+    plt.savefig(f"plots/prob_por_hp_{pokemon_name.capitalize()}.png")
 
 
 def plot_2c(df: pd.DataFrame):
@@ -302,9 +302,9 @@ def ej2c():
         for _ in range(10_000):
             catch.append(1 if attempt_catch(poke, "fastball")[0] else 0)
         catches.append(CatchesByLevel("jolteon", lvl*10, catch))
-        
+
     return catches
-        
+
 
 
 def ej1():
