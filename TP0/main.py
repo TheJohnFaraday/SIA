@@ -21,11 +21,27 @@ class Pokeballs(Enum):
 
 
 class HP_LEVELS(Enum):
-    HP_100 = 1
-    HP_80 = 0.8
-    HP_60 = 0.6
-    HP_40 = 0.4
-    HP_20 = 0.2
+    HP100 = 1.00
+    HP95 = 0.95
+    HP90 = 0.90
+    HP85 = 0.85
+    HP80 = 0.80
+    HP75 = 0.75
+    HP70 = 0.70
+    HP65 = 0.65
+    HP60 = 0.60
+    HP55 = 0.55
+    HP50 = 0.50
+    HP45 = 0.45
+    HP40 = 0.40
+    HP35 = 0.35
+    HP30 = 0.30
+    HP25 = 0.25
+    HP20 = 0.2
+    HP15 = 0.15
+    HP10 = 0.10
+    HP05 = 0.05
+
 
 
 @dataclass
@@ -216,16 +232,18 @@ def plot_2a(df: pd.DataFrame):
 
 
 def plot_2b(df: pd.DataFrame, pokemon_name: str):
+    plt.figure(figsize=(20,6))
     fig, ax = plt.subplots()
-
+        
     bar_colors = ["tab:red", "#0075BE", "#FFCC00", "tab:orange", "tab:red"]
 
-    ax.bar(df['hp'], df['mean'], width=0.15, color=bar_colors)
+    ax.bar(df['hp'], df['mean'], width=0.02, color=bar_colors)
 
     hp_values = [level.value for level in HP_LEVELS]
     ax.set_xticks(hp_values)
-    ax.set_xticklabels([level.name for level in HP_LEVELS])
-
+    ax.set_xticklabels([int((level.value*100)) for level in HP_LEVELS])
+    ax.tick_params(labelsize=8)
+    
     ax.set_ylabel("Probabilidad de captura promedio")
     ax.set_xlabel("HP")
     ax.set_title(f"Probabilidad de captura promedio por HP - {pokemon_name.capitalize()}")
@@ -240,7 +258,7 @@ def ej2a():
             poke = factory.create(pokemon, 100, status_effect, 1)
             catches.append(catch_with_pokeball_with_status_effect(poke, 10_000, status_effect))
 
-    print(catches)
+    #print(catches)
     return catches
 
 
@@ -251,7 +269,7 @@ def ej2b():
             poke = factory.create(pokemon, 100, StatusEffect.NONE, hp.value)
             catches.append(catch_with_pokeball_with_hp(poke, 10_000, hp.value))
 
-    print(catches)
+    #print(catches)
     return catches
 
 
@@ -261,15 +279,15 @@ def ej1():
         poke = create_ideal_pokemon(factory, pokemon)
         catches.extend(catch_with_all_pokeballs(poke, 10_000))
 
-    print(catches)
+    #print(catches)
 
     df_1a, df_mean_1a = pandas_aggregate_1a(catches)
 
-    print(df_1a)
-    print(df_mean_1a)
+    #print(df_1a)
+    #print(df_mean_1a)
 
     df_1b = pandas_aggregate_1b(catches)
-    print(df_1b)
+    #print(df_1b)
 
     plot_1a(df_mean_1a)
     plot_1b(df_1b)
@@ -281,7 +299,7 @@ def ej2():
     catches = ej2a()
 
     df_2a = pandas_aggregate_2a(catches)
-    print(df_2a)
+    #print(df_2a)
 
     plot_2a(df_2a)
 
@@ -292,8 +310,8 @@ def ej2():
     df_2b_caterpie = df_2b[df_2b['pokemon'] == 'caterpie']
     df_2b_onix = df_2b[df_2b['pokemon'] == 'onix']
 
-    print(df_2b_onix)
-    print(df_2b_caterpie)
+    #print(df_2b_onix)
+    #print(df_2b_caterpie)
 
     plot_2b(df_2b_caterpie, "caterpie")
     plot_2b(df_2b_onix, "onix")
@@ -335,5 +353,7 @@ if __name__ == "__main__":
     pokemons = get_pokemons()
     factory = PokemonFactory(POKEMONS_CONFIG)
 
-    #ej1()
+    ej1()
     ej2()
+
+
