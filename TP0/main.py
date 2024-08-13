@@ -1,5 +1,4 @@
 import json
-import sys
 
 import numpy as np
 import pandas as pd
@@ -21,11 +20,29 @@ class Pokeballs(Enum):
     FAST_BALL = "fastball"
 
 
+class HP_LEVELS(Enum):
+    HP_100 = 1
+    HP_80 = 0.8
+    HP_60 = 0.6
+    HP_40 = 0.4
+    HP_20 = 0.2
+
+
 @dataclass
 class CatchesByPokeball:
     pokemon: Pokemon
     ball: Pokeballs
     catches: list[int]
+
+
+@dataclass
+class CatchesByPokeballWithHP(CatchesByPokeball):
+    hp: float
+
+
+@dataclass
+class CatchesByPokeballWithStatusEffect(CatchesByPokeball):
+    status_effect: StatusEffect
 
 
 @dataclass(frozen=True, eq=True)
@@ -38,16 +55,35 @@ def create_ideal_pokemon(factory: PokemonFactory, pokemon: str) -> Pokemon:
     return factory.create(pokemon, 100, StatusEffect.NONE, 1)
 
 
+def catch_with_pokeball(pokemon: Pokemon, ball: Pokeballs, times: int) -> CatchesByPokeball:
+    catches_with_ball: list[int] = []
+    for _ in range(times):
+        catches_with_ball.append(1 if attempt_catch(pokemon, ball.value)[0] else 0)
+
+    return CatchesByPokeball(pokemon, ball, catches_with_ball)
+
+
 def catch_with_all_pokeballs(pokemon: Pokemon, times: int) -> list[CatchesByPokeball]:
-    catches: list[CatchesByPokeball] = list()
+    catches: list[CatchesByPokeball] = []
     for ball in Pokeballs:
-        catches_with_ball: list[int] = []
-        for _ in range(times):
-            catches_with_ball.append(1 if attempt_catch(pokemon, ball.value)[0] else 0)
+        catches.append(catch_with_pokeball(pokemon, ball, times))
 
-        catches.append(CatchesByPokeball(pokemon, ball, catches_with_ball))
+    return catches
 
-    return list(catches)
+
+def catch_with_pokeball_with_hp(pokemon: Pokemon, times: int, hp: float) -> list[CatchesByPokeballWithHP]:
+    catch = catch_with_pokeball(pokemon, Pokeballs.POKEBALL, times)
+    extended_catch = CatchesByPokeballWithHP(catch.pokemon, catch.ball, catch.catches, hp)
+
+    return extended_catch
+
+
+def catch_with_pokeball_with_status_effect(pokemon: Pokemon, times: int, status_effect: StatusEffect) -> list[
+    CatchesByPokeballWithStatusEffect]:
+    catch = catch_with_pokeball(pokemon, Pokeballs.POKEBALL, times)
+    extended_catch = CatchesByPokeballWithStatusEffect(catch.pokemon, catch.ball, catch.catches, status_effect)
+
+    return extended_catch
 
 
 def get_pokemons():
@@ -153,11 +189,79 @@ def plot_1b(df: pd.DataFrame):
 
     plt.show()
 
+
+def plot_2a(df: pd.DataFrame):
+    fig, ax = plt.subplots(figsize=(5, 4))
+
+    colors = plt.get_cmap('tab20', len(pokemons))
+    color_map = {name: colors(i) for i, name in enumerate(pokemons)}
+
+    for pokemon in df['pokemon'].unique():
+        df_pokemon = df[df['pokemon'] == pokemon]
+        ax.scatter(df_pokemon['status_effect'], df_pokemon['mean'] * 100,
+                   color=color_map.get(pokemon, 'gray'),
+                   label=pokemon.capitalize(),
+                   alpha=0.7,
+                   s=100)
+
+    ax.set_ylabel("Probabilidad de captura promedio (%)")
+    ax.set_xlabel("Efecto de Estado")
+    ax.set_title("Probabilidad de captura promedio por Efecto de Estado", fontsize=10, pad=20)
+
+    ax.legend(title='Pokémon', bbox_to_anchor=(1.05, 1), loc='upper left')
+
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_2b(df: pd.DataFrame, pokemon_name: str):
+    fig, ax = plt.subplots()
+
+    bar_colors = ["tab:red", "#0075BE", "#FFCC00", "tab:orange", "tab:red"]
+
+    ax.bar(df['hp'], df['mean'], width=0.15, color=bar_colors)
+
+    hp_values = [level.value for level in HP_LEVELS]
+    ax.set_xticks(hp_values)
+    ax.set_xticklabels([level.name for level in HP_LEVELS])
+
+    ax.set_ylabel("Probabilidad de captura promedio")
+    ax.set_xlabel("HP")
+    ax.set_title(f"Probabilidad de captura promedio por HP - {pokemon_name.capitalize()}")
+
+    plt.show()
+
+
+def ej2a():
+    catches: list[CatchesByPokeballWithStatusEffect] = []
+    for pokemon in pokemons:
+        for status_effect in StatusEffect:
+            poke = factory.create(pokemon, 100, status_effect, 1)
+            catches.append(catch_with_pokeball_with_status_effect(poke, 10_000, status_effect))
+
+    print(catches)
+    return catches
+
+
+def ej2b():
+    catches: list[CatchesByPokeballWithHP] = []
+    for pokemon in ["caterpie", "onix"]:
+        for hp in HP_LEVELS:
+            poke = factory.create(pokemon, 100, StatusEffect.NONE, hp.value)
+            catches.append(catch_with_pokeball_with_hp(poke, 10_000, hp.value))
+
+    print(catches)
+    return catches
+
+
 def ej1():
     catches: list[CatchesByPokeball] = []
     for pokemon in pokemons:
         poke = create_ideal_pokemon(factory, pokemon)
         catches.extend(catch_with_all_pokeballs(poke, 10_000))
+
+    print(catches)
 
     df_1a, df_mean_1a = pandas_aggregate_1a(catches)
 
@@ -170,8 +274,61 @@ def ej1():
     plot_1a(df_mean_1a)
     plot_1b(df_1b)
 
+
 def ej2():
-    print("Ejercicio 2") 
+    print("************ Ejercicio 2 ************")
+
+    catches = ej2a()
+
+    df_2a = pandas_aggregate_2a(catches)
+    print(df_2a)
+
+    plot_2a(df_2a)
+
+    catches = ej2b()
+
+    df_2b = pandas_aggregate_2b(catches)
+
+    df_2b_caterpie = df_2b[df_2b['pokemon'] == 'caterpie']
+    df_2b_onix = df_2b[df_2b['pokemon'] == 'onix']
+
+    print(df_2b_onix)
+    print(df_2b_caterpie)
+
+    plot_2b(df_2b_caterpie, "caterpie")
+    plot_2b(df_2b_onix, "onix")
+
+
+def pandas_aggregate_2b(catches: list[CatchesByPokeballWithHP]):
+    data = [
+        {
+            "pokemon": catch.pokemon.name,
+            "hp": catch.hp,
+            "catches": np.sum(catch.catches),
+            "throws": len(catch.catches),
+        }
+        for catch in catches
+    ]
+    df = pd.DataFrame(data).sort_values(by=["pokemon", "hp"]).reset_index(drop=True)
+    df["mean"] = np.divide(df["catches"], df["throws"])
+
+    return df
+
+
+def pandas_aggregate_2a(catches: list[CatchesByPokeballWithStatusEffect]):
+    data = [
+        {
+            "pokemon": catch.pokemon.name,
+            "status_effect": catch.status_effect.name,
+            "catches": np.sum(catch.catches),
+            "throws": len(catch.catches),
+        }
+        for catch in catches
+    ]
+    df = pd.DataFrame(data).sort_values(by=["pokemon", "status_effect"]).reset_index(drop=True)
+    df["mean"] = np.divide(df["catches"], df["throws"])
+
+    return df
 
 
 if __name__ == "__main__":
@@ -180,4 +337,3 @@ if __name__ == "__main__":
 
     #ej1()
     ej2()
-    
