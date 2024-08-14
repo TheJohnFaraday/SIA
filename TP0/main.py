@@ -258,7 +258,7 @@ def plot_2b(df: pd.DataFrame, pokemon_name: str):
     plt.savefig(f"plots/prob_por_hp_{pokemon_name.capitalize()}.png")
 
 
-def plot_2c(df: pd.DataFrame):
+def plot_2c(df: pd.DataFrame, pokemon_name: str):
     fig, ax = plt.subplots()
 
     bar_colors = ["tab:red", "#0075BE", "#FFCC00", "tab:orange", "tab:red"]
@@ -267,9 +267,9 @@ def plot_2c(df: pd.DataFrame):
 
     ax.set_ylabel("Probabilidad de captura promedio")
     ax.set_xlabel("Nivel")
-    ax.set_title("Probabilidad de captura promedio por Nivel - Jolteon")
+    ax.set_title(f"Probabilidad de captura promedio por Nivel - {pokemon_name.capitalize()}")
 
-    plt.savefig("plots/prob_por_lvl.png")
+    plt.savefig(f"plots/prob_por_lvl_{pokemon_name.capitalize()}.png")
 
 
 def ej2a():
@@ -296,12 +296,13 @@ def ej2b():
 
 def ej2c():
     catches: list[CatchesByLevel] = []
-    for lvl in range(10):
-        poke = factory.create("jolteon", lvl*10, StatusEffect.NONE, 1)
-        catch: list[int] = []
-        for _ in range(10_000):
-            catch.append(1 if attempt_catch(poke, "fastball")[0] else 0)
-        catches.append(CatchesByLevel("jolteon", lvl*10, catch))
+    for pokemon in ["jolteon", "caterpie"]:
+        for lvl in range(10):
+            poke = factory.create(pokemon, lvl*10, StatusEffect.NONE, 1)
+            catch: list[int] = []
+            for _ in range(10_000):
+                catch.append(1 if attempt_catch(poke, ("fastball" if pokemon == "jolteon" else "pokeball"))[0] else 0)
+            catches.append(CatchesByLevel(pokemon, lvl*10, catch))
 
     return catches
 
@@ -355,7 +356,11 @@ def ej2():
 
     df_2c = pandas_aggregate_2c(catches)
 
-    plot_2c(df_2c)
+    df_2c_caterpie = df_2c[df_2c['pokemon'] == 'caterpie']
+    df_2c_jolteon = df_2c[df_2c['pokemon'] == 'jolteon']
+
+    plot_2c(df_2c_caterpie, "caterpie")
+    plot_2c(df_2c_jolteon, "jolteon")
 
 
 
@@ -375,17 +380,17 @@ def pandas_aggregate_2b(catches: list[CatchesByPokeballWithHP]):
     return df
 
 
-def pandas_aggregate_2c(catches: list[int]):
+def pandas_aggregate_2c(catches: list[CatchesByLevel]):
     data = [
         {
-            "pokemon": "jolteon",
+            "pokemon": catch.pokemon,
             "level": catch.level,
             "catches": np.sum(catch.catches),
             "throws": len(catch.catches),
         }
         for catch in catches
     ]
-    df = pd.DataFrame(data).sort_values(by=["level"]).reset_index(drop=True)
+    df = pd.DataFrame(data).sort_values(by=["pokemon", "level"]).reset_index(drop=True)
     df["mean"] = np.divide(df["catches"], df["throws"])
     #print(df["mean"])
 
