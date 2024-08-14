@@ -213,49 +213,74 @@ def plot_1b(df: pd.DataFrame):
     plt.savefig("plots/efectividad_por_pokeball.png")
 
 
+
 def plot_2a(df: pd.DataFrame):
-    fig, ax = plt.subplots(figsize=(5, 4))
+    fig, ax = plt.subplots(figsize=(8, 6))
 
-    colors = plt.get_cmap('tab20', len(pokemons))
-    color_map = {name: colors(i) for i, name in enumerate(pokemons)}
+    bar_colors = ["tab:red", "#0075BE", "#FFCC00", "tab:orange", "tab:cyan", "tab:purple"]
+    bar_width = 0.15  
+    x_positions = np.arange(len(df['status_effect'].unique())) 
 
-    for pokemon in df['pokemon'].unique():
-        df_pokemon = df[df['pokemon'] == pokemon]
-        ax.scatter(df_pokemon['status_effect'], df_pokemon['mean'] * 100,
-                   color=color_map.get(pokemon, 'gray'),
-                   label=pokemon.capitalize(),
-                   alpha=0.7,
-                   s=100)
+    df_none = df[df['status_effect'] == 'NONE'].set_index('pokemon')['mean']
+    
+    for i, pokemon in enumerate(df['pokemon'].unique()):
+        df_pokemon = df[df['pokemon'] == pokemon].set_index('status_effect')
+        
+        relative_means = df_pokemon['mean'] / df_none.get(pokemon, 1)
+        
+        ax.bar(x_positions + i * bar_width, relative_means,
+               color=bar_colors[i % len(bar_colors)],
+               width=bar_width,
+               label=pokemon.capitalize(),
+               alpha=0.7)
 
-    ax.set_ylabel("Probabilidad de captura promedio (%)")
+    ax.set_ylabel("Efectividad de captura relativa")
     ax.set_xlabel("Efecto de Estado")
-    ax.set_title("Probabilidad de captura promedio por Efecto de Estado", fontsize=10, pad=20)
+    ax.set_title("Efectividad de captura relativa por Efecto de Estado", fontsize=12, pad=20)
 
-    ax.legend(title='Pokémon', bbox_to_anchor=(1.05, 1), loc='upper left')
+   
+    ax.set_xticks(x_positions + bar_width * (len(df['pokemon'].unique()) - 1) / 2)
+    ax.set_xticklabels(df['status_effect'].unique(), rotation=45)
 
-    plt.xticks(rotation=45)
+    ax.set_xlim([min(x_positions) - bar_width, max(x_positions) + bar_width * len(df['pokemon'].unique())])
+
+    ax.legend(title='Pokemon', bbox_to_anchor=(1.05, 1), loc='upper left')
+
     plt.tight_layout()
-    plt.savefig("plots/prob_por_estado.png")
+    plt.savefig("plots/efectividad_por_estado_por_pokemon.png")
+
+
+def plot_2a2(df: pd.DataFrame):
+    fig, ax = plt.subplots()
+
+    bar_colors = ["tab:red", "#0075BE", "#FFCC00", "tab:orange", "tab:cyan", "tab:purple"]
+
+    ax.bar(df.index.values, df["mean"], color=bar_colors)
+
+    ax.set_ylabel("Efectividad de captura promedio relativa")
+    ax.set_xlabel("Efecto de Estado")
+    ax.set_title("Efectividad de captura promedio relativa por Efecto de Estado")
+
+    plt.savefig("plots/prob_por_pokeball.png")
 
 
 def plot_2b(df: pd.DataFrame, pokemon_name: str):
     plt.figure(figsize=(20,6))
     fig, ax = plt.subplots()
+        
+    point_colors = ["tab:red", "#0075BE", "#FFCC00", "tab:orange", "tab:green"]
 
-    bar_colors = ["tab:red", "#0075BE", "#FFCC00", "tab:orange", "tab:red"]
-
-    ax.bar(df['hp'], df['mean'], width=0.02, color=bar_colors)
-
+    ax.scatter(df['hp'], df['mean'], color=point_colors[0], s=50)
     hp_values = [level.value for level in HP_LEVELS]
     ax.set_xticks(hp_values)
-    ax.set_xticklabels([int((level.value*100)) for level in HP_LEVELS])
+    ax.set_xticklabels([int((level.value * 100)) for level in HP_LEVELS])
     ax.tick_params(labelsize=8)
-
+    
     ax.set_ylabel("Probabilidad de captura promedio")
     ax.set_xlabel("HP")
     ax.set_title(f"Probabilidad de captura promedio por HP - {pokemon_name.capitalize()}")
 
-    plt.savefig(f"plots/prob_por_hp_{pokemon_name.capitalize()}.png")
+    plt.savefig(f"plots/prob_por_hp_{pokemon_name}.png")
 
 
 def plot_2c(df: pd.DataFrame, pokemon_name: str):
@@ -271,6 +296,7 @@ def plot_2c(df: pd.DataFrame, pokemon_name: str):
 
     plt.savefig(f"plots/prob_por_lvl_{pokemon_name.capitalize()}.png")
 
+    
 
 def ej2a():
     catches: list[CatchesByPokeballWithStatusEffect] = []
@@ -334,10 +360,11 @@ def ej2():
 
     catches = ej2a()
 
-    df_2a = pandas_aggregate_2a(catches)
+    df_2a, df_mean_2a = pandas_aggregate_2a(catches)
     #print(df_2a)
 
     plot_2a(df_2a)
+    plot_2a2(df_mean_2a)
 
     catches = ej2b()
 
@@ -410,7 +437,15 @@ def pandas_aggregate_2a(catches: list[CatchesByPokeballWithStatusEffect]):
     df = pd.DataFrame(data).sort_values(by=["pokemon", "status_effect"]).reset_index(drop=True)
     df["mean"] = np.divide(df["catches"], df["throws"])
 
-    return df
+
+    grouped = df.groupby("status_effect").agg(
+        catches=("catches", "sum"), throws=("throws", "sum")
+    )
+    grouped["mean"] = grouped["catches"] / grouped["throws"]
+    grouped = grouped.sort_values(by=["status_effect"])
+
+
+    return df, grouped
 
 
 if __name__ == "__main__":
