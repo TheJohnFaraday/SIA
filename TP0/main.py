@@ -21,26 +21,26 @@ class Pokeballs(Enum):
 
 
 class HP_LEVELS(Enum):
-    HP100 = 1.00
-    HP95 = 0.95
-    HP90 = 0.90
-    HP85 = 0.85
-    HP80 = 0.80
-    HP75 = 0.75
-    HP70 = 0.70
-    HP65 = 0.65
-    HP60 = 0.60
-    HP55 = 0.55
-    HP50 = 0.50
-    HP45 = 0.45
-    HP40 = 0.40
-    HP35 = 0.35
-    HP30 = 0.30
-    HP25 = 0.25
-    HP20 = 0.2
-    HP15 = 0.15
-    HP10 = 0.10
-    HP05 = 0.05
+    HP_100 = 1.00
+    HP_95 = 0.95
+    HP_90 = 0.90
+    HP_85 = 0.85
+    HP_80 = 0.80
+    HP_75 = 0.75
+    HP_70 = 0.70
+    HP_65 = 0.65
+    HP_60 = 0.60
+    HP_55 = 0.55
+    HP_50 = 0.50
+    HP_45 = 0.45
+    HP_40 = 0.40
+    HP_35 = 0.35
+    HP_30 = 0.30
+    HP_25 = 0.25
+    HP_20 = 0.2
+    HP_15 = 0.15
+    HP_10 = 0.10
+    HP_05 = 0.05
 
 
 
@@ -48,6 +48,13 @@ class HP_LEVELS(Enum):
 class CatchesByPokeball:
     pokemon: Pokemon
     ball: Pokeballs
+    catches: list[int]
+
+
+@dataclass
+class CatchesByLevel:
+    pokemon: Pokemon
+    level: int
     catches: list[int]
 
 
@@ -170,7 +177,7 @@ def plot_1a(df: pd.DataFrame):
     ax.set_xlabel("Pokeball")
     ax.set_title("Probabilidad de captura promedio por Pokeball")
 
-    plt.show()
+    plt.savefig("plots/prob_por_pokeball.png")
 
 
 def plot_1b(df: pd.DataFrame):
@@ -203,7 +210,7 @@ def plot_1b(df: pd.DataFrame):
     ax.set_xticks(x + bar_width, pokemons)
     ax.legend(loc="upper right", ncols=2)
 
-    plt.show()
+    plt.savefig("plots/efectividad_por_pokeball.png")
 
 
 def plot_2a(df: pd.DataFrame):
@@ -228,13 +235,13 @@ def plot_2a(df: pd.DataFrame):
 
     plt.xticks(rotation=45)
     plt.tight_layout()
-    plt.show()
+    plt.savefig("plots/prob_por_estado.png")
 
 
 def plot_2b(df: pd.DataFrame, pokemon_name: str):
     plt.figure(figsize=(20,6))
     fig, ax = plt.subplots()
-        
+
     bar_colors = ["tab:red", "#0075BE", "#FFCC00", "tab:orange", "tab:red"]
 
     ax.bar(df['hp'], df['mean'], width=0.02, color=bar_colors)
@@ -243,12 +250,26 @@ def plot_2b(df: pd.DataFrame, pokemon_name: str):
     ax.set_xticks(hp_values)
     ax.set_xticklabels([int((level.value*100)) for level in HP_LEVELS])
     ax.tick_params(labelsize=8)
-    
+
     ax.set_ylabel("Probabilidad de captura promedio")
     ax.set_xlabel("HP")
     ax.set_title(f"Probabilidad de captura promedio por HP - {pokemon_name.capitalize()}")
 
-    plt.show()
+    plt.savefig(f"plots/prob_por_hp_{pokemon_name.capitalize()}.png")
+
+
+def plot_2c(df: pd.DataFrame):
+    fig, ax = plt.subplots()
+
+    bar_colors = ["tab:red", "#0075BE", "#FFCC00", "tab:orange", "tab:red"]
+
+    ax.bar(df["level"], df['mean'], width=3, color=bar_colors)
+
+    ax.set_ylabel("Probabilidad de captura promedio")
+    ax.set_xlabel("Nivel")
+    ax.set_title("Probabilidad de captura promedio por Nivel - Jolteon")
+
+    plt.savefig("plots/prob_por_lvl.png")
 
 
 def ej2a():
@@ -273,7 +294,21 @@ def ej2b():
     return catches
 
 
+def ej2c():
+    catches: list[CatchesByLevel] = []
+    for lvl in range(10):
+        poke = factory.create("jolteon", lvl*10, StatusEffect.NONE, 1)
+        catch: list[int] = []
+        for _ in range(10_000):
+            catch.append(1 if attempt_catch(poke, "fastball")[0] else 0)
+        catches.append(CatchesByLevel("jolteon", lvl*10, catch))
+
+    return catches
+
+
+
 def ej1():
+    print("************ Ejercicio 1 ************")
     catches: list[CatchesByPokeball] = []
     for pokemon in pokemons:
         poke = create_ideal_pokemon(factory, pokemon)
@@ -316,6 +351,13 @@ def ej2():
     plot_2b(df_2b_caterpie, "caterpie")
     plot_2b(df_2b_onix, "onix")
 
+    catches = ej2c()
+
+    df_2c = pandas_aggregate_2c(catches)
+
+    plot_2c(df_2c)
+
+
 
 def pandas_aggregate_2b(catches: list[CatchesByPokeballWithHP]):
     data = [
@@ -329,6 +371,23 @@ def pandas_aggregate_2b(catches: list[CatchesByPokeballWithHP]):
     ]
     df = pd.DataFrame(data).sort_values(by=["pokemon", "hp"]).reset_index(drop=True)
     df["mean"] = np.divide(df["catches"], df["throws"])
+
+    return df
+
+
+def pandas_aggregate_2c(catches: list[int]):
+    data = [
+        {
+            "pokemon": "jolteon",
+            "level": catch.level,
+            "catches": np.sum(catch.catches),
+            "throws": len(catch.catches),
+        }
+        for catch in catches
+    ]
+    df = pd.DataFrame(data).sort_values(by=["level"]).reset_index(drop=True)
+    df["mean"] = np.divide(df["catches"], df["throws"])
+    #print(df["mean"])
 
     return df
 
