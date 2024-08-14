@@ -286,14 +286,14 @@ def plot_2b(df: pd.DataFrame, pokemon_name: str):
 def plot_2c(df: pd.DataFrame, pokemon_name: str):
     fig, ax = plt.subplots()
 
-    bar_colors = ["tab:red", "#0075BE", "#FFCC00", "tab:orange", "tab:red"]
+    point_colors = ["tab:red", "#0075BE", "#FFCC00", "tab:orange", "tab:green"]
 
-    ax.bar(df["level"], df['mean'], width=3, color=bar_colors)
-
+    ax.scatter(df["level"], df['mean'], color=point_colors[0], s=50)
+    ax.set_ylim(bottom=0, top=df['mean'].max() * 1.1)
     ax.set_ylabel("Probabilidad de captura promedio")
     ax.set_xlabel("Nivel")
     ax.set_title(f"Probabilidad de captura promedio por Nivel - {pokemon_name.capitalize()}")
-
+    
     plt.savefig(f"plots/prob_por_lvl_{pokemon_name.capitalize()}.png")
 
     
@@ -345,6 +345,13 @@ def ej1():
 
     df_1a, df_mean_1a = pandas_aggregate_1a(catches)
 
+    table = pd.crosstab(
+    df_1a['pokemon'],           
+    df_1a['ball'],            
+    values=df_1a['catches'],          
+    aggfunc='sum',)
+    print(table)
+    
     #print(df_1a)
     #print(df_mean_1a)
 
