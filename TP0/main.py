@@ -261,7 +261,7 @@ def plot_2a2(df: pd.DataFrame):
     ax.set_xlabel("Efecto de Estado")
     ax.set_title("Efectividad de captura promedio relativa por Efecto de Estado")
 
-    plt.savefig("plots/prob_por_pokeball.png")
+    plt.savefig("plots/prob_relativa_por_estado.png")
 
 
 def plot_2b(df: pd.DataFrame, pokemon_name: str):
