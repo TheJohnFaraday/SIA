@@ -12,7 +12,38 @@ from src.pokemon import PokemonFactory, StatusEffect, Pokemon
 
 POKEMONS_CONFIG = "pokemon.json"
 
-CUSTOM_PALETTE = ["#508fbe", "#f37120", "#4baf4e", "#f2cb31", "#c62d2a", "#9b27b0"]
+CUSTOM_PALETTE = [
+    "#508fbe",
+    "#f37120",
+    "#4baf4e",
+    "#f2cb31",
+    "#c178ce",
+    "#cd4745",
+]
+GREY = "#6f6f6f"
+LIGHT_GREY = "#bfbfbf"
+
+plt.style.use(
+    {
+        "axes.prop_cycle": plt.cycler(color=CUSTOM_PALETTE),  # Set palette
+        "axes.spines.top": False,  # Remove spine (frame)
+        "axes.spines.right": False,
+        "axes.spines.left": False,
+        "axes.spines.bottom": True,
+        "axes.edgecolor": LIGHT_GREY,
+        "axes.titleweight": "normal",  # Optional: ensure title weight is normal (not bold)
+        "axes.titlelocation": "center",  # Center the title by default
+        "axes.titlecolor": GREY,  # Set title color
+        "axes.labelcolor": GREY,  # Set labels color
+        "axes.labelpad": 10,
+        "xtick.bottom": False,  # Remove ticks on the X axis
+        "ytick.labelcolor": GREY,  # Set Y ticks color
+        "ytick.color": GREY,  # Set Y label color
+        "savefig.dpi": 128,
+        "legend.frameon": False,
+        "legend.labelcolor": GREY,
+    }
+)
 
 
 class Pokeballs(Enum):
@@ -243,9 +274,7 @@ def plot_2a(df: pd.DataFrame):
 
     ax.set_ylabel("Efectividad de captura relativa")
     ax.set_xlabel("Efecto de Estado")
-    ax.set_title(
-        "Efectividad de captura relativa por Efecto de Estado", fontsize=12, pad=20
-    )
+    ax.set_title("Efectividad de captura relativa por Efecto de Estado", pad=40)
 
     ax.set_xticks(x_positions + bar_width * (len(df["pokemon"].unique()) - 1) / 2)
 
@@ -261,7 +290,12 @@ def plot_2a(df: pd.DataFrame):
         ]
     )
 
-    ax.legend(title="Pokemon", bbox_to_anchor=(1.05, 1), loc="upper left")
+    ax.legend(
+        loc="upper right",
+        mode="expand",
+        ncols=5,
+        bbox_to_anchor=(0.0, 0.98, 1.0, 0.102),
+    )
 
     plt.tight_layout()
     plt.savefig("plots/efectividad_por_estado_por_pokemon.png")
@@ -480,12 +514,7 @@ def pandas_aggregate_2a(catches: list[CatchesByPokeballWithStatusEffect]):
     return df, grouped
 
 
-def configure_matplotlib():
-    plt.rcParams["axes.prop_cycle"] = plt.cycler(color=CUSTOM_PALETTE)
-
-
 if __name__ == "__main__":
-    configure_matplotlib()
     pokemons = get_pokemons()
     factory = PokemonFactory(POKEMONS_CONFIG)
 
