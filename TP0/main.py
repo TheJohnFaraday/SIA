@@ -12,6 +12,8 @@ from src.pokemon import PokemonFactory, StatusEffect, Pokemon
 
 POKEMONS_CONFIG = "pokemon.json"
 
+CUSTOM_PALETTE = ["#508fbe", "#f37120", "#4baf4e", "#f2cb31", "#c62d2a", "#9b27b0"]
+
 
 class Pokeballs(Enum):
     POKEBALL = "pokeball"
@@ -177,9 +179,9 @@ def pandas_aggregate_1b(catches: list[CatchesByPokeball]):
 def plot_1a(df: pd.DataFrame):
     fig, ax = plt.subplots()
 
-    bar_colors = ["tab:red", "#0075BE", "#FFCC00", "tab:orange"]
+    label_x = list(map(lambda label: str(label).title(), df.index.values))
 
-    ax.bar(df.index.values, df["mean"], color=bar_colors)
+    ax.bar(label_x, df["mean"], color=CUSTOM_PALETTE[: len(df)])
 
     ax.set_ylabel("Probabilidad de captura promedio")
     ax.set_xlabel("Pokeball")
@@ -191,16 +193,13 @@ def plot_1a(df: pd.DataFrame):
 def plot_1b(df: pd.DataFrame):
     fig, ax = plt.subplots(layout="constrained")
 
-    bar_colors = ["tab:red", "#0075BE", "#FFCC00", "tab:orange"]
-
-    pokemons = df["pokemon"].unique().tolist()
-    balls = df["ball"].unique().tolist()
+    pokemons = list(
+        map(lambda label: str(label).title(), df["pokemon"].unique().tolist())
+    )
 
     x = np.arange(len(pokemons))
     bar_width = 0.20
     multiplier = 0
-
-    color_map = {ball: bar_colors[i % len(bar_colors)] for i, ball in enumerate(balls)}
 
     values = {}
     for ball in df["ball"].unique():
@@ -208,7 +207,7 @@ def plot_1b(df: pd.DataFrame):
 
     for ball, means in values.items():
         offset = bar_width * multiplier
-        ax.bar(x + offset, means, bar_width, label=ball, color=color_map[ball])
+        ax.bar(x + offset, means, bar_width, label=ball.title())
         multiplier += 1
 
     ax.set_ylabel("Efectividad de captura relativa")
@@ -224,14 +223,6 @@ def plot_1b(df: pd.DataFrame):
 def plot_2a(df: pd.DataFrame):
     fig, ax = plt.subplots(figsize=(8, 6))
 
-    bar_colors = [
-        "tab:red",
-        "#0075BE",
-        "#FFCC00",
-        "tab:orange",
-        "tab:cyan",
-        "tab:purple",
-    ]
     bar_width = 0.15
     x_positions = np.arange(len(df["status_effect"].unique()))
 
@@ -245,10 +236,9 @@ def plot_2a(df: pd.DataFrame):
         ax.bar(
             x_positions + i * bar_width,
             relative_means,
-            color=bar_colors[i % len(bar_colors)],
+            color=CUSTOM_PALETTE[i % len(CUSTOM_PALETTE)],
             width=bar_width,
-            label=pokemon.capitalize(),
-            alpha=0.7,
+            label=pokemon.title(),
         )
 
     ax.set_ylabel("Efectividad de captura relativa")
@@ -258,7 +248,11 @@ def plot_2a(df: pd.DataFrame):
     )
 
     ax.set_xticks(x_positions + bar_width * (len(df["pokemon"].unique()) - 1) / 2)
-    ax.set_xticklabels(df["status_effect"].unique(), rotation=45)
+
+    label_x = list(
+        map(lambda label: str(label).title(), df["status_effect"].unique().tolist())
+    )
+    ax.set_xticklabels(label_x, rotation=0)
 
     ax.set_xlim(
         [
@@ -276,20 +270,13 @@ def plot_2a(df: pd.DataFrame):
 def plot_2a2(df: pd.DataFrame):
     fig, ax = plt.subplots()
 
-    bar_colors = [
-        "tab:red",
-        "#0075BE",
-        "#FFCC00",
-        "tab:orange",
-        "tab:cyan",
-        "tab:purple",
-    ]
+    label_x = list(map(lambda label: str(label).title(), df.index.values))
 
-    ax.bar(df.index.values, df["mean"], color=bar_colors)
+    ax.bar(label_x, df["mean"], color=CUSTOM_PALETTE[: len(CUSTOM_PALETTE)])
 
     ax.set_ylabel("Efectividad de captura promedio relativa")
     ax.set_xlabel("Efecto de Estado")
-    ax.set_title("Efectividad de captura promedio relativa por Efecto de Estado")
+    ax.set_title("Efectividad de captura promedio relativa según Efecto de Estado")
 
     plt.savefig("plots/prob_relativa_por_estado.png")
 
@@ -298,9 +285,7 @@ def plot_2b(df: pd.DataFrame, pokemon_name: str):
     plt.figure(figsize=(20, 6))
     fig, ax = plt.subplots()
 
-    point_colors = ["tab:red", "#0075BE", "#FFCC00", "tab:orange", "tab:green"]
-
-    ax.scatter(df["hp"], df["mean"], color=point_colors[0], s=50)
+    ax.scatter(df["hp"], df["mean"], color=CUSTOM_PALETTE[0], s=50)
     hp_values = [level.value for level in HP_LEVELS]
     ax.set_xticks(hp_values)
     ax.set_xticklabels([int((level.value * 100)) for level in HP_LEVELS])
@@ -318,9 +303,7 @@ def plot_2b(df: pd.DataFrame, pokemon_name: str):
 def plot_2c(df: pd.DataFrame, pokemon_name: str):
     fig, ax = plt.subplots()
 
-    point_colors = ["tab:red", "#0075BE", "#FFCC00", "tab:orange", "tab:green"]
-
-    ax.scatter(df["level"], df["mean"], color=point_colors[0], s=50)
+    ax.scatter(df["level"], df["mean"], color=CUSTOM_PALETTE[2], s=50)
     ax.set_ylim(bottom=0, top=df["mean"].max() * 1.1)
     ax.set_ylabel("Probabilidad de captura promedio")
     ax.set_xlabel("Nivel")
@@ -497,7 +480,12 @@ def pandas_aggregate_2a(catches: list[CatchesByPokeballWithStatusEffect]):
     return df, grouped
 
 
+def configure_matplotlib():
+    plt.rcParams["axes.prop_cycle"] = plt.cycler(color=CUSTOM_PALETTE)
+
+
 if __name__ == "__main__":
+    configure_matplotlib()
     pokemons = get_pokemons()
     factory = PokemonFactory(POKEMONS_CONFIG)
 
