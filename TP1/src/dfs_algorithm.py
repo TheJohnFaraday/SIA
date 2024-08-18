@@ -6,7 +6,7 @@
 #   #######            # -> wall
 #   #     #            * -> player
 #   # # # #            @ -> box
-#   #. $@ #            X -> goal
+#   #X *@ #            X -> goal
 #   #######
 
 # player position is represented by a tuple. For example, (2, 1) means that the player is in the string at position 2
@@ -56,6 +56,7 @@ class DfsSolver:
             if next_pos in self.box_positions or self.board[next_pos[0]][next_pos[1]] == '#':
                 # There is another box or the wall
                 return False
+        return True
 
     def move(self, player_pos, new_pos):
         # We make the movement effective
@@ -76,6 +77,7 @@ class DfsSolver:
         while stack:
             # Next movement
             player_pos, box_positions = stack.pop()
+            print(player_pos, box_positions)
             if box_positions == self.goal_positions:
                 return True
 
@@ -87,3 +89,23 @@ class DfsSolver:
                     stack.append((new_state.player_pos, new_state.box_positions))
 
         return False
+
+
+if __name__ == '__main__':
+    board = [
+        "#######",
+        "#     #",
+        "# # # #",
+        "#X @* #",
+        "#######"
+    ]
+
+    player_pos = (3, 4)
+    box_positions = [(3, 3)]
+    goal_positions = [(3, 1)]
+
+    game = DfsSolver(board, player_pos, box_positions, goal_positions)
+    if game.dfs():
+        print("¡Solución encontrada!")
+    else:
+        print("No se encontró solución.")
