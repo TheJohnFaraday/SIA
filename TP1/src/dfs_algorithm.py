@@ -76,17 +76,17 @@ class DfsSolver:
 
         while stack:
             # Next movement
-            player_pos, box_positions = stack.pop()
-            print(player_pos, box_positions)
-            if box_positions == self.goal_positions:
+            self.player_pos, self.box_positions = stack.pop()
+            print(self.player_pos, self.box_positions)
+            if self.box_positions == self.goal_positions:
                 return True
 
-            possible_moves = self.get_possible_moves(player_pos)
+            possible_moves = self.get_possible_moves(self.player_pos)
             for move in possible_moves:
-                new_state = self.move(player_pos, move)
+                new_state = self.move(self.player_pos, move)
                 if (new_state.player_pos, frozenset(new_state.box_positions)) not in self.visited:
-                    self.visited.add((new_state.player_pos, frozenset(new_state.box_positions)))
                     stack.append((new_state.player_pos, new_state.box_positions))
+                    self.visited.add((self.player_pos, frozenset(self.box_positions)))
 
         return False
 
@@ -95,13 +95,13 @@ if __name__ == '__main__':
     board = [
         "#######",
         "#     #",
-        "# # # #",
-        "#X @* #",
+        "# #@# #",
+        "#X *  #",
         "#######"
     ]
 
-    player_pos = (3, 4)
-    box_positions = [(3, 3)]
+    player_pos = (3, 3)
+    box_positions = [(2, 3)]
     goal_positions = [(3, 1)]
 
     game = DfsSolver(board, player_pos, box_positions, goal_positions)
