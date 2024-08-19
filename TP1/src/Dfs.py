@@ -1,6 +1,6 @@
 # DFS visits one entire branch doing backtracking once arrived at the deepest node
 from enum import Enum
-
+from SearchSolver import SearchSolver
 
 # Sokoban board
 
@@ -29,13 +29,8 @@ class Directions(Enum):
     LEFT = (0, -1)
     RIGHT = (0, 1)
 
-class Dfs:
-    def __init__(self, board, player_pos, box_positions, goal_positions):
-        self.board = board
-        self.player_pos = player_pos
-        self.box_positions = set(box_positions)
-        self.goal_positions = set(goal_positions)
-        self.visited = set()
+
+class Dfs(SearchSolver):
 
     def is_solved(self):
         return self.box_positions == self.goal_positions
