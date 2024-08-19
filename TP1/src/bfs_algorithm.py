@@ -1,4 +1,5 @@
-# DFS visits one entire branch doing backtracking once arrived at the deepest node
+# BFS visits all nodes by level
+from collections import deque
 from enum import Enum
 
 
@@ -29,7 +30,8 @@ class Directions(Enum):
     LEFT = (0, -1)
     RIGHT = (0, 1)
 
-class DfsSolver:
+
+class BfsSolver:
     def __init__(self, board, player_pos, box_positions, goal_positions):
         self.board = board
         self.player_pos = player_pos
@@ -72,16 +74,16 @@ class DfsSolver:
             new_box_positions.remove(new_pos)
             new_box_positions.add(next_pos)
 
-        return DfsSolver(self.board, new_pos, new_box_positions, self.goal_positions)
+        return BfsSolver(self.board, new_pos, new_box_positions, self.goal_positions)
 
-    def dfs(self):
-        # The stack is going to persist our frontier states
-        stack = [(self.player_pos, self.box_positions)]
+    def bfs(self):
+        # The queue is going to persist our frontier states
+        queue = deque([(self.player_pos, self.box_positions)])
         self.visited.add((self.player_pos, frozenset(self.box_positions)))
 
-        while stack:
+        while queue:
             # Next movement
-            self.player_pos, self.box_positions = stack.pop()
+            self.player_pos, self.box_positions = queue.popleft()
             print(self.player_pos, self.box_positions)
 
             if self.is_solved():
@@ -91,7 +93,7 @@ class DfsSolver:
             for move in possible_moves:
                 new_state = self.move(self.player_pos, move)
                 if (new_state.player_pos, frozenset(new_state.box_positions)) not in self.visited:
-                    stack.append((new_state.player_pos, new_state.box_positions))
+                    queue.append((new_state.player_pos, new_state.box_positions))
                     self.visited.add((self.player_pos, frozenset(self.box_positions)))
 
         return False
@@ -110,8 +112,8 @@ if __name__ == '__main__':
     box_positions = [(3, 4), (3, 2)]
     goal_positions = [(3, 1), (3, 5)]
 
-    game = DfsSolver(board, player_pos, box_positions, goal_positions)
-    if game.dfs():
+    game = BfsSolver(board, player_pos, box_positions, goal_positions)
+    if game.bfs():
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
