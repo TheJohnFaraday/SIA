@@ -29,7 +29,7 @@ class Directions(Enum):
     LEFT = (0, -1)
     RIGHT = (0, 1)
 
-class DfsSolver:
+class Dfs:
     def __init__(self, board, player_pos, box_positions, goal_positions):
         self.board = board
         self.player_pos = player_pos
@@ -72,9 +72,9 @@ class DfsSolver:
             new_box_positions.remove(new_pos)
             new_box_positions.add(next_pos)
 
-        return DfsSolver(self.board, new_pos, new_box_positions, self.goal_positions)
+        return Dfs(self.board, new_pos, new_box_positions, self.goal_positions)
 
-    def dfs(self):
+    def solve(self):
         # The stack is going to persist our frontier states
         stack = [(self.player_pos, self.box_positions)]
         self.visited.add((self.player_pos, frozenset(self.box_positions)))
@@ -110,8 +110,8 @@ if __name__ == '__main__':
     box_positions = [(3, 4), (3, 2)]
     goal_positions = [(3, 1), (3, 5)]
 
-    game = DfsSolver(board, player_pos, box_positions, goal_positions)
-    if game.dfs():
+    game = Dfs(board, player_pos, box_positions, goal_positions)
+    if game.solve():
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")

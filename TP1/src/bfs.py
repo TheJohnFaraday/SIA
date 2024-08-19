@@ -31,7 +31,7 @@ class Directions(Enum):
     RIGHT = (0, 1)
 
 
-class BfsSolver:
+class Bfs:
     def __init__(self, board, player_pos, box_positions, goal_positions):
         self.board = board
         self.player_pos = player_pos
@@ -74,9 +74,9 @@ class BfsSolver:
             new_box_positions.remove(new_pos)
             new_box_positions.add(next_pos)
 
-        return BfsSolver(self.board, new_pos, new_box_positions, self.goal_positions)
+        return Bfs(self.board, new_pos, new_box_positions, self.goal_positions)
 
-    def bfs(self):
+    def solve(self):
         # The queue is going to persist our frontier states
         queue = deque([(self.player_pos, self.box_positions)])
         self.visited.add((self.player_pos, frozenset(self.box_positions)))
@@ -112,8 +112,8 @@ if __name__ == '__main__':
     box_positions = [(3, 4), (3, 2)]
     goal_positions = [(3, 1), (3, 5)]
 
-    game = BfsSolver(board, player_pos, box_positions, goal_positions)
-    if game.bfs():
+    game = Bfs(board, player_pos, box_positions, goal_positions)
+    if game.solve():
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
