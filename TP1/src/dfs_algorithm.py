@@ -78,7 +78,8 @@ class DfsSolver:
             # Next movement
             self.player_pos, self.box_positions = stack.pop()
             print(self.player_pos, self.box_positions)
-            if self.box_positions == self.goal_positions:
+
+            if self.is_solved():
                 return True
 
             possible_moves = self.get_possible_moves(self.player_pos)
@@ -94,15 +95,15 @@ class DfsSolver:
 if __name__ == '__main__':
     board = [
         "#######",
-        "#     #",
-        "# #@# #",
-        "#X *  #",
+        "#  @  #",
+        "# # #@#",
+        "#X@* X#",
         "#######"
     ]
 
     player_pos = (3, 3)
-    box_positions = [(2, 3)]
-    goal_positions = [(3, 1)]
+    box_positions = [(2, 5), (3, 2)]
+    goal_positions = [(3, 1), (3, 5)]
 
     game = DfsSolver(board, player_pos, box_positions, goal_positions)
     if game.dfs():
