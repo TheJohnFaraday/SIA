@@ -1,5 +1,6 @@
 import heapq
 import math
+import time
 
 from dataclasses import dataclass, field
 from collections import deque
@@ -59,6 +60,7 @@ class AStar(SearchSolver):
 
         self.came_from: list[AStarNode] = []
         self.latest_node: AStarNode | None = None
+        self.execution_time = 0.0
 
     def get_possible_moves(self, player_pos: Coordinates):
         possible_moves = [
@@ -92,6 +94,8 @@ class AStar(SearchSolver):
         return 1
 
     def solve(self, heuristic: callable(SearchSolver)):
+        timestamp = time.perf_counter_ns()
+
         start = AStarNode(state=self, g_value=0, h_value=0, parent=None)
 
         open_set: list[tuple[int, AStarNode]] = []
@@ -116,6 +120,7 @@ class AStar(SearchSolver):
             )
 
             if current_node.state.is_solved():
+                self.execution_time = time.perf_counter_ns() - timestamp
                 return True
 
             current_player_pos = Coordinates.from_tuple(current_node.state.player_pos)
@@ -148,6 +153,7 @@ class AStar(SearchSolver):
                     heapq.heappush(open_set, (next_node.priority(), next_node))
                     self.came_from.append(next_node)
 
+        self.execution_time = time.perf_counter_ns() - timestamp
         return False
 
 
@@ -189,3 +195,5 @@ if __name__ == "__main__":
         print(path)
     else:
         print("No se encontró solución.")
+
+    print(f"Took: {game.execution_time} ns")
