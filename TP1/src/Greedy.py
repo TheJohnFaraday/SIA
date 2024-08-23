@@ -67,7 +67,8 @@ class Greedy(SearchSolver):
                 else:
                     final_state = state
             if final_state is None:
-                final_state = StatePriority(0, path.pop())
+                final_state = path.pop()
+                # print('Popee un estado viejo owo')
             pq.heappush(queue, final_state)
 
             path.append(final_state)
