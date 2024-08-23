@@ -37,6 +37,7 @@ class Greedy(SearchSolver):
     def solve(self):
         # The stack is going to persist our frontier states
         queue = []
+        path = []
         pq.heapify(queue)
         pq.heappush(queue, StatePriority(self.euclidean(), self))
         self.visited.add((self.player_pos, frozenset(self.box_positions)))
@@ -46,7 +47,7 @@ class Greedy(SearchSolver):
             state = pq.heappop(queue)
             self.player_pos = state.state.player_pos
             self.box_positions = state.state.box_positions
-            self.visited.add
+            self.visited.add((self.player_pos, frozenset(self.box_positions)))
             print(self.euclidean(), self.player_pos, self.box_positions)
 
             if self.is_solved():
@@ -57,8 +58,19 @@ class Greedy(SearchSolver):
             for move in possible_moves:
                 possible_move = self.move(self.player_pos, move)
                 if (possible_move.player_pos, frozenset(possible_move.box_positions)) not in self.visited:
-                    pq.heappush(queue, StatePriority(possible_move.euclidean(), possible_move))
                     possible_states.append(StatePriority(possible_move.euclidean(), possible_move))
+            final_state = None
+            for state in possible_states:
+                if (final_state is not None
+                        and final_state.priority < state.priority):
+                    continue
+                else:
+                    final_state = state
+            if final_state is None:
+                final_state = StatePriority(0, path.pop())
+            pq.heappush(queue, final_state)
+
+            path.append(final_state)
 
         return False
 
@@ -67,7 +79,10 @@ class Greedy(SearchSolver):
 
         player_to_boxes = 0
         for (bx, by) in self.box_positions:
-            player_to_boxes += sqrt((px - bx)**2 + (py - by)**2)
+            if (bx, by) in self.goal_positions:
+                continue
+            else:
+                player_to_boxes += sqrt((px - bx)**2 + (py - by)**2)
 
         boxes_to_goal = 0
         for (bx, by) in self.box_positions:
