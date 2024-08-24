@@ -32,11 +32,15 @@ class LevelGenerator:
         for i in range(0, level_size):
             row = []
             for j in range(0, level_size):
-                if ((i == 0) or (i == level_size - 1)
-                        or (j == 0) or (j == level_size - 1)):
-                    row.append('#')
+                if (
+                    (i == 0)
+                    or (i == level_size - 1)
+                    or (j == 0)
+                    or (j == level_size - 1)
+                ):
+                    row.append("#")
                 else:
-                    row.append(' ')
+                    row.append(" ")
             grid.append(row)
 
         grid = np.array(grid)
@@ -48,8 +52,8 @@ class LevelGenerator:
         while buttons > 0:
             i = rnd.randint(1, level_size - 2)
             j = rnd.randint(1, level_size - 2)
-            if grid[i][j] == ' ':
-                grid[i][j] = 'x'
+            if grid[i][j] == " ":
+                grid[i][j] = "x"
                 buttons -= 1
                 buttons_location.append((i, j))
 
@@ -58,8 +62,8 @@ class LevelGenerator:
         while box_number > 0:
             i = rnd.randint(2, level_size - 3)
             j = rnd.randint(2, level_size - 3)
-            if grid[i][j] == ' ':
-                grid[i][j] = '@'
+            if grid[i][j] == " ":
+                grid[i][j] = "@"
                 box_number -= 1
                 boxes_location.append((i, j))
 
@@ -69,21 +73,22 @@ class LevelGenerator:
         while flag:
             i = rnd.randint(2, level_size - 3)
             j = rnd.randint(2, level_size - 3)
-            if grid[i][j] == ' ':
-                grid[i][j] = '*'
+            if grid[i][j] == " ":
+                grid[i][j] = "*"
                 flag = False
                 player_position = (i, j)
 
         # Randomply place walls on the game
-        random_spaces = level_size*2 - 5
+        random_spaces = level_size * 2 - 5
         while random_spaces > 0:
             i = rnd.randint(1, level_size - 2)
             j = rnd.randint(1, level_size - 2)
-            if grid[i][j] == ' ':
-                grid[i][j] = '#'
+            if grid[i][j] == " ":
+                grid[i][j] = "#"
                 random_spaces -= 1
 
         return (grid, player_position, boxes_location, buttons_location)
+
 
 # "#######"  <- # == wall
 # "#     #"  <-   == empty space
@@ -91,25 +96,45 @@ class LevelGenerator:
 # "#x@*@x#"  <- @ == box
 # "#######"  <- * == player
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     level_generator = LevelGenerator(3)
-    grid, player_position, boxes_location, buttons_location = level_generator.generate(1)
-    print(f'LEVEL ONE: PP - {player_position} | BOXL - {boxes_location} | BUTL - {buttons_location}')
-    print('##### MAP RESULT #####')
+    grid, player_position, boxes_location, buttons_location = level_generator.generate(
+        1
+    )
+    print(
+        f"LEVEL ONE: PP - {player_position} | BOXL - {boxes_location} | BUTL - {buttons_location}"
+    )
+    print("##### MAP RESULT #####")
     print(grid)
-    grid, player_position, boxes_location, buttons_location = level_generator.generate(2)
-    print(f'LEVEL TWO: PP - {player_position} | BOXL - {boxes_location} | BUTL - {buttons_location}')
-    print('##### MAP RESULT #####')
+    grid, player_position, boxes_location, buttons_location = level_generator.generate(
+        2
+    )
+    print(
+        f"LEVEL TWO: PP - {player_position} | BOXL - {boxes_location} | BUTL - {buttons_location}"
+    )
+    print("##### MAP RESULT #####")
     print(grid)
-    grid, player_position, boxes_location, buttons_location = level_generator.generate(3)
-    print(f'LEVEL THREE: PP - {player_position} | BOXL - {boxes_location} | BUTL - {buttons_location}')
-    print('##### MAP RESULT #####')
+    grid, player_position, boxes_location, buttons_location = level_generator.generate(
+        3
+    )
+    print(
+        f"LEVEL THREE: PP - {player_position} | BOXL - {boxes_location} | BUTL - {buttons_location}"
+    )
+    print("##### MAP RESULT #####")
     print(grid)
-    grid, player_position, boxes_location, buttons_location = level_generator.generate(4)
-    print(f'LEVEL FOUR: PP - {player_position} | BOXL - {boxes_location} | BUTL - {buttons_location}')
-    print('##### MAP RESULT #####')
+    grid, player_position, boxes_location, buttons_location = level_generator.generate(
+        4
+    )
+    print(
+        f"LEVEL FOUR: PP - {player_position} | BOXL - {boxes_location} | BUTL - {buttons_location}"
+    )
+    print("##### MAP RESULT #####")
     print(grid)
-    grid, player_position, boxes_location, buttons_location = level_generator.generate(5)
-    print(f'LEVEL FIVE: PP - {player_position} | BOXL - {boxes_location} | BUTL - {buttons_location}')
-    print('##### MAP RESULT #####')
+    grid, player_position, boxes_location, buttons_location = level_generator.generate(
+        5
+    )
+    print(
+        f"LEVEL FIVE: PP - {player_position} | BOXL - {boxes_location} | BUTL - {buttons_location}"
+    )
+    print("##### MAP RESULT #####")
     print(grid)

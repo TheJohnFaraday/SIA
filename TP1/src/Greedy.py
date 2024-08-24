@@ -66,7 +66,9 @@ class Greedy(SearchSolver):
             # Next movement
             state = pq.heappop(queue)
             self.player_pos: Coordinates = state.state.player_pos
-            self.box_positions: list[Coordinates] | set[Coordinates] = state.state.box_positions
+            self.box_positions: list[Coordinates] | set[Coordinates] = (
+                state.state.box_positions
+            )
             self.visited.add((self.player_pos, frozenset(self.box_positions)))
             print(heuristic(self), self.player_pos, self.box_positions)
 
@@ -87,12 +89,16 @@ class Greedy(SearchSolver):
             possible_states: [StatePriority] = []
             for move in possible_moves:
                 possible_move = self.move(self.player_pos, move)
-                if (possible_move.player_pos, frozenset(possible_move.box_positions)) not in self.visited:
-                    possible_states.append(StatePriority(heuristic(possible_move), possible_move))
+                if (
+                    possible_move.player_pos,
+                    frozenset(possible_move.box_positions),
+                ) not in self.visited:
+                    possible_states.append(
+                        StatePriority(heuristic(possible_move), possible_move)
+                    )
             final_state = None
             for state in possible_states:
-                if (final_state is not None
-                        and final_state.priority < state.priority):
+                if final_state is not None and final_state.priority < state.priority:
                     continue
                 else:
                     final_state = state
@@ -106,14 +112,8 @@ class Greedy(SearchSolver):
         return False
 
 
-if __name__ == '__main__':
-    board = [
-        "#######",
-        "#     #",
-        "# # # #",
-        "#X@*@X#",
-        "#######"
-    ]
+if __name__ == "__main__":
+    board = ["#######", "#     #", "# # # #", "#X@*@X#", "#######"]
 
     player_pos = Coordinates(y=3, x=3)
     box_positions = [Coordinates(y=3, x=4), Coordinates(y=3, x=2)]

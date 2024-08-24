@@ -3,6 +3,7 @@ import numpy as np
 from scipy.optimize import linear_sum_assignment
 from SearchSolver import SearchSolver, Coordinates
 
+
 def euclidean(state: SearchSolver) -> int:
     heuristic = 0
     player_x, player_y = state.player_pos

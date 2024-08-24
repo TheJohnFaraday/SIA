@@ -39,21 +39,20 @@ class Bfs(SearchSolver):
             possible_moves = self.get_possible_moves(self.player_pos)
             for move in possible_moves:
                 new_state = self.move(self.player_pos, move)
-                if (new_state.player_pos, frozenset(new_state.box_positions)) not in self.visited:
+                if (
+                    new_state.player_pos,
+                    frozenset(new_state.box_positions),
+                ) not in self.visited:
                     queue.append((new_state.player_pos, new_state.box_positions))
-                    self.visited.add((new_state.player_pos, frozenset(new_state.box_positions)))
+                    self.visited.add(
+                        (new_state.player_pos, frozenset(new_state.box_positions))
+                    )
 
         return False
 
 
-if __name__ == '__main__':
-    board = [
-        "#######",
-        "#     #",
-        "# # # #",
-        "#X@*@X#",
-        "#######"
-    ]
+if __name__ == "__main__":
+    board = ["#######", "#     #", "# # # #", "#X@*@X#", "#######"]
 
     player_pos = Coordinates(y=3, x=3)
     box_positions = [Coordinates(y=3, x=4), Coordinates(y=3, x=2)]

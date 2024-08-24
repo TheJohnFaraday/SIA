@@ -32,7 +32,7 @@ class SearchSolver:
         player_pos: Coordinates,
         box_positions: list[Coordinates] | set[Coordinates],
         goal_positions: list[Coordinates] | set[Coordinates],
-        max_states_repeated: int = 20
+        max_states_repeated: int = 20,
     ):
         self.board = board
         self.player_pos = player_pos
@@ -56,7 +56,9 @@ class SearchSolver:
         possible_moves = []
 
         for move in directions:
-            new_pos = Coordinates(x=player_pos.x + move.value.x, y=player_pos.y + move.value.y)
+            new_pos = Coordinates(
+                x=player_pos.x + move.value.x, y=player_pos.y + move.value.y
+            )
             if self.is_valid_move(player_pos, new_pos):
                 possible_moves.append(new_pos)
 
@@ -80,11 +82,15 @@ class SearchSolver:
         if new_pos in new_box_positions:
             next_pos = Coordinates(
                 x=new_pos.x + (new_pos.x - player_pos.x),
-                y=new_pos.y + (new_pos.y - player_pos.y)
+                y=new_pos.y + (new_pos.y - player_pos.y),
             )
             new_box_positions.remove(new_pos)
             new_box_positions.add(next_pos)
 
         return self.__class__(
-            self.board, new_pos, new_box_positions, self.goal_positions, max_states_repeated=self.max_states_repeated
+            self.board,
+            new_pos,
+            new_box_positions,
+            self.goal_positions,
+            max_states_repeated=self.max_states_repeated,
         )

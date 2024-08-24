@@ -50,14 +50,14 @@ class AStar(SearchSolver):
         player_pos: Coordinates,
         box_positions: list[Coordinates] | set[Coordinates],
         goal_positions: list[Coordinates] | set[Coordinates],
-        max_states_repeated: int = 20
+        max_states_repeated: int = 20,
     ):
         super().__init__(
             board,
             player_pos=player_pos,
             box_positions=box_positions,
             goal_positions=goal_positions,
-            max_states_repeated=max_states_repeated
+            max_states_repeated=max_states_repeated,
         )
 
         self.came_from: list[AStarNode] = []
@@ -148,12 +148,7 @@ class AStar(SearchSolver):
 
 
 if __name__ == "__main__":
-    board = [
-        "#######",
-        "#     #",
-        "# # # #",
-        "#X@*@X#",
-        "#######"]
+    board = ["#######", "#     #", "# # # #", "#X@*@X#", "#######"]
 
     player_pos = Coordinates(y=3, x=3)
     box_positions = [Coordinates(y=3, x=4), Coordinates(y=3, x=2)]
