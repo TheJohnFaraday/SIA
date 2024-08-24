@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from SearchSolver import SearchSolver
 import heapq as pq
 
+
 # Sokoban board
 
 #   #######            # -> wall
@@ -75,48 +76,48 @@ class Greedy(SearchSolver):
 
         return False
 
-    #def euclidean(self) -> int:
-        px, py = self.player_pos
-
-        player_to_boxes = 0
-        for (bx, by) in self.box_positions:
-            if (bx, by) in self.goal_positions:
-                continue
-            else:
-                player_to_boxes += sqrt((px - bx)**2 + (py - by)**2)
-
-        boxes_to_goal = 0
-        for (bx, by) in self.box_positions:
-            # If the box is in a goal position, it shouldn't be counted in the calculation
-            if (bx, by) in self.goal_positions:
-                continue
-            for (gx, gy) in self.goal_positions:
-                boxes_to_goal += sqrt((bx - gx)**2 + (by - gy)**2)
-
-        return int(player_to_boxes + boxes_to_goal)
-    
+    # def euclidean(self) -> int:
+    #    px, py = self.player_pos
+    #
+    #    player_to_boxes = 0
+    #    for (bx, by) in self.box_positions:
+    #        if (bx, by) in self.goal_positions:
+    #            continue
+    #        else:
+    #            player_to_boxes += sqrt((px - bx)**2 + (py - by)**2)
+    #
+    #    boxes_to_goal = 0
+    #    for (bx, by) in self.box_positions:
+    #        # If the box is in a goal position, it shouldn't be counted in the calculation
+    #        if (bx, by) in self.goal_positions:
+    #            continue
+    #        for (gx, gy) in self.goal_positions:
+    #            boxes_to_goal += sqrt((bx - gx)**2 + (by - gy)**2)
+    #
+    #    return int(player_to_boxes + boxes_to_goal)
 
 
 def euclidean(state: SearchSolver) -> int:
-        heuristic = 0
-        player_x, player_y = state.player_pos
+    heuristic = 0
+    player_x, player_y = state.player_pos
 
-        for box_x, box_y in state.box_positions:
-            if (box_x, box_y) in state.goal_positions:
-                continue
+    for box_x, box_y in state.box_positions:
+        if (box_x, box_y) in state.goal_positions:
+            continue
 
-            # Player to Box distance
-            heuristic += math.sqrt((player_x - box_x) ** 2 + (player_y - box_y) ** 2)
+        # Player to Box distance
+        heuristic += math.sqrt((player_x - box_x) ** 2 + (player_y - box_y) ** 2)
 
-            # Box to goal distance
-            heuristic = sum(
-                (
-                    math.sqrt((box_x - goal_x) ** 2 + abs(box_y - goal_y) ** 2)
-                    for (goal_x, goal_y) in state.goal_positions
-                ),
-                heuristic,
-            )
-        return heuristic
+        # Box to goal distance
+        heuristic = sum(
+            (
+                math.sqrt((box_x - goal_x) ** 2 + abs(box_y - goal_y) ** 2)
+                for (goal_x, goal_y) in state.goal_positions
+            ),
+            heuristic,
+        )
+    return heuristic
+
 
 def manhattan(state: SearchSolver) -> int:
     heuristic = 0
@@ -134,8 +135,9 @@ def manhattan(state: SearchSolver) -> int:
             abs(box_x - goal_x) + abs(box_y - goal_y)
             for (goal_x, goal_y) in state.goal_positions
         )
-    
+
     return heuristic
+
 
 if __name__ == '__main__':
     board = [
@@ -156,11 +158,10 @@ if __name__ == '__main__':
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
-    
+
     game = Greedy(board, player_pos, box_positions, goal_positions)
     print("Manhattan")
     if game.solve(manhattan):
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
-    
