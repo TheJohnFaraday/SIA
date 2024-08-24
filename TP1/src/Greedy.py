@@ -1,6 +1,6 @@
 # Greedy chooses based on an heuristic which node to visit
 from dataclasses import dataclass, field
-from SearchSolver import SearchSolver
+from SearchSolver import SearchSolver, Coordinates
 from Heuristics import euclidean, manhattan
 import heapq as pq
 
@@ -46,8 +46,8 @@ class Greedy(SearchSolver):
         while queue:
             # Next movement
             state = pq.heappop(queue)
-            self.player_pos = state.state.player_pos
-            self.box_positions = state.state.box_positions
+            self.player_pos: Coordinates = state.state.player_pos
+            self.box_positions: list[Coordinates] | set[Coordinates] = state.state.box_positions
             self.visited.add((self.player_pos, frozenset(self.box_positions)))
             print(heuristic(self), self.player_pos, self.box_positions)
 
@@ -76,26 +76,6 @@ class Greedy(SearchSolver):
 
         return False
 
-    # def euclidean(self) -> int:
-    #    px, py = self.player_pos
-    #
-    #    player_to_boxes = 0
-    #    for (bx, by) in self.box_positions:
-    #        if (bx, by) in self.goal_positions:
-    #            continue
-    #        else:
-    #            player_to_boxes += sqrt((px - bx)**2 + (py - by)**2)
-    #
-    #    boxes_to_goal = 0
-    #    for (bx, by) in self.box_positions:
-    #        # If the box is in a goal position, it shouldn't be counted in the calculation
-    #        if (bx, by) in self.goal_positions:
-    #            continue
-    #        for (gx, gy) in self.goal_positions:
-    #            boxes_to_goal += sqrt((bx - gx)**2 + (by - gy)**2)
-    #
-    #    return int(player_to_boxes + boxes_to_goal)
-
 
 if __name__ == '__main__':
     board = [
@@ -106,9 +86,9 @@ if __name__ == '__main__':
         "#######"
     ]
 
-    player_pos = (3, 3)
-    box_positions = [(3, 4), (3, 2)]
-    goal_positions = [(3, 1), (3, 5)]
+    player_pos = Coordinates(y=3, x=3)
+    box_positions = [Coordinates(y=3, x=4), Coordinates(y=3, x=2)]
+    goal_positions = [Coordinates(y=3, x=1), Coordinates(y=3, x=5)]
 
     game = Greedy(board, player_pos, box_positions, goal_positions)
     print("Euclidean")

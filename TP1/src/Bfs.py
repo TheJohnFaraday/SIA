@@ -1,6 +1,7 @@
 # BFS visits all nodes by level
 from collections import deque
-from SearchSolver import SearchSolver
+from SearchSolver import SearchSolver, Coordinates
+
 
 # Sokoban board
 
@@ -54,9 +55,9 @@ if __name__ == '__main__':
         "#######"
     ]
 
-    player_pos = (3, 3)
-    box_positions = [(3, 4), (3, 2)]
-    goal_positions = [(3, 1), (3, 5)]
+    player_pos = Coordinates(y=3, x=3)
+    box_positions = [Coordinates(y=3, x=4), Coordinates(y=3, x=2)]
+    goal_positions = [Coordinates(y=3, x=1), Coordinates(y=3, x=5)]
 
     game = Bfs(board, player_pos, box_positions, goal_positions)
     if game.solve():

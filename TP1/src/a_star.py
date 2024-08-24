@@ -47,9 +47,9 @@ class AStar(SearchSolver):
     def __init__(
         self,
         board,
-        player_pos: tuple[int, int],
-        box_positions: list[tuple[int, int]] | set[tuple[int, int]],
-        goal_positions: list[tuple[int, int]] | set[tuple[int, int]],
+        player_pos: Coordinates,
+        box_positions: list[Coordinates] | set[Coordinates],
+        goal_positions: list[Coordinates] | set[Coordinates],
     ):
         super().__init__(
             board,
@@ -62,31 +62,8 @@ class AStar(SearchSolver):
         self.latest_node: AStarNode | None = None
         self.execution_time = 0.0
 
-    def get_possible_moves(self, player_pos: Coordinates):
-        possible_moves = [
-            Coordinates.from_tuple(move)
-            for move in super().get_possible_moves(player_pos.as_tuple())
-        ]
-
-        return possible_moves
-
-    def move(
-        self,
-        player_pos: Coordinates | tuple[int, int],
-        new_pos: Coordinates | tuple[int, int],
-    ):
-        if type(player_pos) is Coordinates:
-            player_pos = player_pos.as_tuple()
-
-        if type(new_pos) is Coordinates:
-            new_pos = new_pos.as_tuple()
-
-        return super().move(player_pos, new_pos)
-
     def reconstruct_path(self):
-        return [
-            Coordinates.from_tuple(node.state.player_pos) for node in self.came_from
-        ]
+        return self.came_from
 
     @staticmethod
     def move_cost(current: Coordinates, neighbor: Coordinates):
@@ -105,9 +82,7 @@ class AStar(SearchSolver):
             (heuristic(start.state), start),
         )
 
-        nodes_visited: dict[Coordinates, AStarNode] = {
-            Coordinates.from_tuple(self.player_pos): start
-        }
+        nodes_visited: dict[Coordinates, AStarNode] = {self.player_pos: start}
         self.came_from.append(start)
 
         while open_set:
@@ -123,7 +98,7 @@ class AStar(SearchSolver):
                 self.execution_time = time.perf_counter_ns() - timestamp
                 return True
 
-            current_player_pos = Coordinates.from_tuple(current_node.state.player_pos)
+            current_player_pos = current_node.state.player_pos
 
             for neighbor in current_node.state.get_possible_moves(current_player_pos):
                 new_state = current_node.state.move(
@@ -158,11 +133,16 @@ class AStar(SearchSolver):
 
 
 if __name__ == "__main__":
-    board = ["#######", "#     #", "# # # #", "#X@*@X#", "#######"]
+    board = [
+        "#######",
+        "#     #",
+        "# # # #",
+        "#X@*@X#",
+        "#######"]
 
-    player_pos = (3, 3)
-    box_positions = [(3, 4), (3, 2)]
-    goal_positions = [(3, 1), (3, 5)]
+    player_pos = Coordinates(y=3, x=3)
+    box_positions = [Coordinates(y=3, x=4), Coordinates(y=3, x=2)]
+    goal_positions = [Coordinates(y=3, x=1), Coordinates(y=3, x=5)]
 
     game = AStar(board, player_pos, box_positions, goal_positions)
 
@@ -181,7 +161,7 @@ if __name__ == "__main__":
             heuristic = sum(
                 (
                     math.sqrt((box_x - goal_x) ** 2 + abs(box_y - goal_y) ** 2)
-                    for (goal_x, goal_y) in state.goal_positions
+                    for goal_x, goal_y in state.goal_positions
                 ),
                 heuristic,
             )
