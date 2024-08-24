@@ -1,5 +1,5 @@
 # Greedy chooses based on an heuristic which node to visit
-from math import sqrt, pow
+import math
 from dataclasses import dataclass, field
 from SearchSolver import SearchSolver
 import heapq as pq
@@ -34,12 +34,12 @@ class StatePriority:
 
 class Greedy(SearchSolver):
 
-    def solve(self):
+    def solve(self, heuristic: callable(SearchSolver)):
         # The stack is going to persist our frontier states
         queue = []
         path = []
         pq.heapify(queue)
-        pq.heappush(queue, StatePriority(self.euclidean(), self))
+        pq.heappush(queue, StatePriority(heuristic(self), self))
         self.visited.add((self.player_pos, frozenset(self.box_positions)))
 
         while queue:
@@ -48,7 +48,7 @@ class Greedy(SearchSolver):
             self.player_pos = state.state.player_pos
             self.box_positions = state.state.box_positions
             self.visited.add((self.player_pos, frozenset(self.box_positions)))
-            print(self.euclidean(), self.player_pos, self.box_positions)
+            print(heuristic(self), self.player_pos, self.box_positions)
 
             if self.is_solved():
                 return True
@@ -58,7 +58,7 @@ class Greedy(SearchSolver):
             for move in possible_moves:
                 possible_move = self.move(self.player_pos, move)
                 if (possible_move.player_pos, frozenset(possible_move.box_positions)) not in self.visited:
-                    possible_states.append(StatePriority(possible_move.euclidean(), possible_move))
+                    possible_states.append(StatePriority(heuristic(possible_move), possible_move))
             final_state = None
             for state in possible_states:
                 if (final_state is not None
@@ -75,7 +75,7 @@ class Greedy(SearchSolver):
 
         return False
 
-    def euclidean(self) -> int:
+    #def euclidean(self) -> int:
         px, py = self.player_pos
 
         player_to_boxes = 0
@@ -94,7 +94,48 @@ class Greedy(SearchSolver):
                 boxes_to_goal += sqrt((bx - gx)**2 + (by - gy)**2)
 
         return int(player_to_boxes + boxes_to_goal)
+    
 
+
+def euclidean(state: SearchSolver) -> int:
+        heuristic = 0
+        player_x, player_y = state.player_pos
+
+        for box_x, box_y in state.box_positions:
+            if (box_x, box_y) in state.goal_positions:
+                continue
+
+            # Player to Box distance
+            heuristic += math.sqrt((player_x - box_x) ** 2 + (player_y - box_y) ** 2)
+
+            # Box to goal distance
+            heuristic = sum(
+                (
+                    math.sqrt((box_x - goal_x) ** 2 + abs(box_y - goal_y) ** 2)
+                    for (goal_x, goal_y) in state.goal_positions
+                ),
+                heuristic,
+            )
+        return heuristic
+
+def manhattan(state: SearchSolver) -> int:
+    heuristic = 0
+    player_x, player_y = state.player_pos
+
+    for box_x, box_y in state.box_positions:
+        if (box_x, box_y) in state.goal_positions:
+            continue
+
+        # Player to Box distance 
+        heuristic += abs(player_x - box_x) + abs(player_y - box_y)
+
+        # Box to goal distance 
+        heuristic += min(
+            abs(box_x - goal_x) + abs(box_y - goal_y)
+            for (goal_x, goal_y) in state.goal_positions
+        )
+    
+    return heuristic
 
 if __name__ == '__main__':
     board = [
@@ -110,7 +151,16 @@ if __name__ == '__main__':
     goal_positions = [(3, 1), (3, 5)]
 
     game = Greedy(board, player_pos, box_positions, goal_positions)
-    if game.solve():
+    print("Euclidean")
+    if game.solve(euclidean):
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
+    
+    game = Greedy(board, player_pos, box_positions, goal_positions)
+    print("Manhattan")
+    if game.solve(manhattan):
+        print("¡Solución encontrada!")
+    else:
+        print("No se encontró solución.")
+    
