@@ -4,7 +4,7 @@ import math
 
 from dataclasses import dataclass, field
 from SearchSolver import SearchSolver, Coordinates
-from Heuristics import euclidean, manhattan
+from Heuristics import euclidean, manhattan, minimum_matching_lower_bound
 
 
 # Sokoban board
@@ -129,6 +129,13 @@ if __name__ == '__main__':
     game = Greedy(board, player_pos, box_positions, goal_positions)
     print("Manhattan")
     if game.solve(manhattan):
+        print("¡Solución encontrada!")
+    else:
+        print("No se encontró solución.")
+
+    game = Greedy(board, player_pos, box_positions, goal_positions)
+    print("MMLB")
+    if game.solve(minimum_matching_lower_bound):
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
