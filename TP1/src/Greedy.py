@@ -1,8 +1,10 @@
 # Greedy chooses based on an heuristic which node to visit
+import heapq as pq
+import math
+
 from dataclasses import dataclass, field
 from SearchSolver import SearchSolver, Coordinates
 from Heuristics import euclidean, manhattan
-import heapq as pq
 
 
 # Sokoban board
@@ -29,8 +31,22 @@ import heapq as pq
 
 @dataclass(order=True)
 class StatePriority:
-    priority: int
+    priority: int | float
     state: SearchSolver = field(compare=False)
+
+    def __eq__(self, other: "StatePriority"):
+        if not other:
+            return False
+
+        if type(other) is not StatePriority:
+            return False
+
+        if type(self.priority) is int and type(other.priority) is int:
+            eq_priority = self.priority == other.priority
+        else:
+            eq_priority = math.isclose(self.priority, other.priority, rel_tol=1e-5)
+
+        return eq_priority and self.state == other.state
 
 
 class Greedy(SearchSolver):
@@ -43,6 +59,9 @@ class Greedy(SearchSolver):
         pq.heappush(queue, StatePriority(heuristic(self), self))
         self.visited.add((self.player_pos, frozenset(self.box_positions)))
 
+        previous_state: StatePriority | None = None
+        repeated_states = 0
+
         while queue:
             # Next movement
             state = pq.heappop(queue)
@@ -53,6 +72,16 @@ class Greedy(SearchSolver):
 
             if self.is_solved():
                 return True
+
+            if state == previous_state:
+                repeated_states += 1
+            else:
+                repeated_states = 0
+
+            if repeated_states > self.max_states_repeated:
+                return False
+
+            previous_state = state
 
             possible_moves = self.get_possible_moves(self.player_pos)
             possible_states: [StatePriority] = []

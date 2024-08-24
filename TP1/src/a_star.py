@@ -3,9 +3,9 @@ import math
 import time
 
 from dataclasses import dataclass, field
-from collections import deque
 from SearchSolver import SearchSolver, Coordinates
-from typing import Callable, Union
+from typing import Union
+from Heuristics import euclidean, manhattan
 
 # Sokoban board
 
@@ -50,12 +50,14 @@ class AStar(SearchSolver):
         player_pos: Coordinates,
         box_positions: list[Coordinates] | set[Coordinates],
         goal_positions: list[Coordinates] | set[Coordinates],
+        max_states_repeated: int = 20
     ):
         super().__init__(
             board,
             player_pos=player_pos,
             box_positions=box_positions,
             goal_positions=goal_positions,
+            max_states_repeated=max_states_repeated
         )
 
         self.came_from: list[AStarNode] = []
@@ -85,6 +87,9 @@ class AStar(SearchSolver):
         nodes_visited: dict[Coordinates, AStarNode] = {self.player_pos: start}
         self.came_from.append(start)
 
+        previous_node: AStarNode | None = None
+        repeated_states = 0
+
         while open_set:
             _, current_node = heapq.heappop(open_set)
 
@@ -97,6 +102,16 @@ class AStar(SearchSolver):
             if current_node.state.is_solved():
                 self.execution_time = time.perf_counter_ns() - timestamp
                 return True
+
+            if current_node == previous_node:
+                repeated_states += 1
+            else:
+                repeated_states = 0
+
+            if repeated_states > self.max_states_repeated:
+                return False
+
+            previous_node = current_node
 
             current_player_pos = current_node.state.player_pos
 
@@ -146,28 +161,20 @@ if __name__ == "__main__":
 
     game = AStar(board, player_pos, box_positions, goal_positions)
 
-    def h(state: SearchSolver) -> int:
-        heuristic = 0
-        player_x, player_y = state.player_pos
+    print("Euclidean")
+    if game.solve(euclidean):
+        print("¡Solución encontrada!")
 
-        for box_x, box_y in state.box_positions:
-            if (box_x, box_y) in state.goal_positions:
-                continue
+        path = game.reconstruct_path()
+        print("Path:")
+        print(path)
+    else:
+        print("No se encontró solución.")
 
-            # Player to Box distance
-            heuristic += math.sqrt((player_x - box_x) ** 2 + (player_y - box_y) ** 2)
+    print(f"Took: {game.execution_time} ns")
 
-            # Box to goal distance
-            heuristic = sum(
-                (
-                    math.sqrt((box_x - goal_x) ** 2 + abs(box_y - goal_y) ** 2)
-                    for goal_x, goal_y in state.goal_positions
-                ),
-                heuristic,
-            )
-        return heuristic
-
-    if game.solve(h):
+    print("Manhattan")
+    if game.solve(manhattan):
         print("¡Solución encontrada!")
 
         path = game.reconstruct_path()

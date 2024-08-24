@@ -32,12 +32,15 @@ class SearchSolver:
         player_pos: Coordinates,
         box_positions: list[Coordinates] | set[Coordinates],
         goal_positions: list[Coordinates] | set[Coordinates],
+        max_states_repeated: int = 20
     ):
         self.board = board
         self.player_pos = player_pos
         self.box_positions = set(box_positions)
         self.goal_positions = set(goal_positions)
         self.visited = set()
+
+        self.max_states_repeated = max_states_repeated
 
     def __eq__(self, other: "SearchSolver"):
         return (
@@ -83,5 +86,5 @@ class SearchSolver:
             new_box_positions.add(next_pos)
 
         return self.__class__(
-            self.board, new_pos, new_box_positions, self.goal_positions
+            self.board, new_pos, new_box_positions, self.goal_positions, max_states_repeated=self.max_states_repeated
         )
