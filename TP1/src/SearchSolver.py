@@ -95,6 +95,19 @@ class SearchSolver:
                 return False
         return True
 
+    def is_deadlock(self):
+        board = self.board
+        for box in self.box_positions:
+            # Check if the box is in a corner
+            if ((board[box.y][box.x+1] == '#' and board[box.y+1][box.x] == '#')
+                or (board[box.y][box.x-1] == '#'
+                    and board[box.y-1][box.x] == '#')
+                or (board[box.y][box.x+1] == '#'
+                    and board[box.y-1][box.x] == '#')
+                    or (board[box.y][box.x-1] == '#'
+                        and board[box.y+1][box.x] == '#')):
+                return True
+
     def move(self, player_pos: Coordinates, new_pos: Coordinates):
         new_box_positions = set(self.box_positions)
         if new_pos in new_box_positions:

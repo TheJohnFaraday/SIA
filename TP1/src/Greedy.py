@@ -4,8 +4,9 @@ import math
 
 from dataclasses import dataclass, field
 from SearchSolver import SearchSolver, Coordinates, State
-from Heuristics import (euclidean, manhattan,
-                        minimum_matching_lower_bound, trivial)
+from Heuristics import (euclidean, manhattan, deadlock,
+                        minimum_matching_lower_bound, trivial,
+                        euclidean_plus_deadlock)
 
 
 # Sokoban board
@@ -141,7 +142,7 @@ if __name__ == '__main__':
         "#X@*@X#",
         "#######"
     ]
-    '''
+
     board = [
         '##### ',
         '# X ##',
@@ -156,6 +157,27 @@ if __name__ == '__main__':
     player_pos = Coordinates(y=6, x=4)
     box_positions = [Coordinates(y=3, x=3), Coordinates(y=4, x=3)]
     goal_positions = [Coordinates(y=1, x=2), Coordinates(y=3, x=2)]
+    '''
+    board = [
+        "########",
+        "###   ##",
+        "#X*@  ##",
+        "### @X##",
+        "#X##@ ##",
+        "# # X ##",
+        "#@ @@@X#",
+        "#   X  #",
+        "########"
+    ]
+
+    player_pos = Coordinates(y=2, x=2)
+    box_positions = [Coordinates(y=2, x=3), Coordinates(y=3, x=4),
+                     Coordinates(y=4, x=4), Coordinates(y=6, x=1),
+                     Coordinates(y=6, x=3), Coordinates(y=6, x=4),
+                     Coordinates(y=6, x=5)]
+    goal_positions = [Coordinates(y=2, x=1), Coordinates(y=3, x=5),
+                      Coordinates(y=4, x=1), Coordinates(y=5, x=4),
+                      Coordinates(y=6, x=6), Coordinates(y=7, x=4)]
 
     game = Greedy(board, player_pos, box_positions, goal_positions)
     print("Euclidean")
@@ -181,6 +203,20 @@ if __name__ == '__main__':
     game = Greedy(board, player_pos, box_positions, goal_positions)
     print("Trivial")
     if game.solve(trivial):
+        print("¡Solución encontrada!")
+    else:
+        print("No se encontró solución.")
+
+    game = Greedy(board, player_pos, box_positions, goal_positions)
+    print("Deadlock")
+    if game.solve(deadlock):
+        print("¡Solución encontrada!")
+    else:
+        print("No se encontró solución.")
+
+    game = Greedy(board, player_pos, box_positions, goal_positions)
+    print("Euclidean+Deadlock")
+    if game.solve(euclidean_plus_deadlock):
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")

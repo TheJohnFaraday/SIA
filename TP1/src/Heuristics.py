@@ -63,5 +63,15 @@ def minimum_matching_lower_bound(state: SearchSolver) -> int:
     return int(total_cost)
 
 
+def deadlock(state: SearchSolver) -> int:
+    if state.is_deadlock():
+        return 1000000000000000
+    return 1
+
+
 def trivial(state: SearchSolver) -> int:
     return 1
+
+
+def euclidean_plus_deadlock(state: SearchSolver) -> int:
+    return euclidean(state) + deadlock(state)
