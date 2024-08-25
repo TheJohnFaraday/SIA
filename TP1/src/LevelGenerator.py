@@ -1,5 +1,4 @@
 import random as rnd
-import numpy as np
 
 from Board import Coordinates, Board
 
@@ -45,8 +44,6 @@ class LevelGenerator:
                     row.append(Board.Cell.EMPTY)
             grid.append(row)
 
-        grid = np.array(grid)
-
         buttons = box_number
 
         buttons_location = []
@@ -81,7 +78,7 @@ class LevelGenerator:
                 player_position = Coordinates(y=i, x=j)
 
         # Randomply place walls on the game
-        random_spaces = level_size * 2 - 5
+        random_spaces = level_size * 2 - 10
         while random_spaces > 0:
             i = rnd.randint(1, level_size - 2)
             j = rnd.randint(1, level_size - 2)

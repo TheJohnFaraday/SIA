@@ -122,7 +122,8 @@ class Greedy(SearchSolver):
                 possible_move = current_state.state.move(player_pos, move)
                 if (
                     State(
-                        possible_move.board.player, frozenset(possible_move.board.boxes)
+                        possible_move.board.player,
+                        frozenset(possible_move.board.boxes)
                     )
                 ) not in visited:
                     possible_states.append(
@@ -148,6 +149,7 @@ class Greedy(SearchSolver):
             else:
                 path.append(final_state)
 
+            # print(f'NEXT STATE: \n{final_state.state.board}\n')
             pq.heappush(queue, final_state)
             pasos += 1
 
@@ -157,7 +159,7 @@ class Greedy(SearchSolver):
 
 
 if __name__ == "__main__":
-    board = Levels.simple()
+    board = Levels.random(5, 1)
     print(board)
 
     game = Greedy(board)
@@ -166,10 +168,11 @@ if __name__ == "__main__":
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
-
+    '''
     for state in game.states:
         # print(state.state.board)
         print(euclidean(state.state), state.state.board.player, state.state.board.boxes)
+    '''
 
     game = Greedy(board)
     print("Manhattan")
@@ -178,9 +181,11 @@ if __name__ == "__main__":
     else:
         print("No se encontró solución.")
 
+    '''
     for state in game.states:
         # print(state.state.board)
         print(manhattan(state.state), state.state.board.player, state.state.board.boxes)
+    '''
 
     game = Greedy(board)
     print("MMLB")
@@ -189,6 +194,7 @@ if __name__ == "__main__":
     else:
         print("No se encontró solución.")
 
+    '''
     for state in game.states:
         # print(state.state.board)
         print(
@@ -196,6 +202,7 @@ if __name__ == "__main__":
             state.state.board.player,
             state.state.board.boxes,
         )
+    '''
 
     game = Greedy(board)
     print("Trivial")

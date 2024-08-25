@@ -46,7 +46,8 @@ class SearchSolver:
         return self.board.boxes == self.board.goals
 
     def get_possible_moves(self, player_pos: Coordinates):
-        directions = [Directions.DOWN, Directions.UP, Directions.LEFT, Directions.RIGHT]
+        directions = [Directions.DOWN, Directions.UP,
+                      Directions.LEFT, Directions.RIGHT]
         possible_moves = []
 
         for move in directions:
@@ -67,7 +68,8 @@ class SearchSolver:
             return False
 
         if new_pos in self.board.boxes:
-            next_pos = Coordinates(x=x + (x - player_pos.x), y=y + (y - player_pos.y))
+            next_pos = Coordinates(x=x + (x - player_pos.x),
+                                   y=y + (y - player_pos.y))
             if (
                 next_pos in self.board.boxes
                 or self.board.cell(next_pos) == Board.Cell.WALL
@@ -78,6 +80,7 @@ class SearchSolver:
 
     def is_deadlock(self):
         board = self.board
+        print('Deadlock :((((')
         for box in self.board.boxes:
             # Check if the box is in a corner
 
@@ -108,12 +111,16 @@ class SearchSolver:
 
         return False
 
-    def move(self, player_position: Coordinates, new_player_position: Coordinates):
+    def move(self,
+             player_position: Coordinates,
+             new_player_position: Coordinates):
         new_board = self.board
         if new_player_position in self.board.boxes:
             next_box_position = Coordinates(
-                x=new_player_position.x + (new_player_position.x - player_position.x),
-                y=new_player_position.y + (new_player_position.y - player_position.y),
+                x=new_player_position.x + (new_player_position.x
+                                           - player_position.x),
+                y=new_player_position.y + (new_player_position.y
+                                           - player_position.y),
             )
             new_board = self.board.move_box(
                 box=new_player_position, new_position=next_box_position
@@ -121,5 +128,7 @@ class SearchSolver:
 
         new_board = new_board.move_player(new_player_position)
         return self.__class__(
-            new_board, max_states_repeated=self.max_states_repeated, states=self.states
+            new_board,
+            max_states_repeated=self.max_states_repeated,
+            states=self.states
         )
