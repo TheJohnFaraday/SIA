@@ -1,9 +1,10 @@
 # Greedy chooses based on an heuristic which node to visit
 import heapq as pq
 import math
+import time
 
 from dataclasses import dataclass, field
-from SearchSolver import SearchSolver, Coordinates
+from SearchSolver import SearchSolver, Coordinates, Board
 from Heuristics import euclidean, manhattan, minimum_matching_lower_bound
 
 
@@ -52,90 +53,118 @@ class StatePriority:
 class Greedy(SearchSolver):
 
     def solve(self, heuristic: callable(SearchSolver)):
-        # The stack is going to persist our frontier states
-        queue = []
+        timestamp = time.perf_counter_ns()
+        self.states: list[StatePriority] = []
+
+        initial_state = StatePriority(heuristic(self), self)
+
+        queue: list[StatePriority] = []
         path = []
+
         pq.heapify(queue)
-        pq.heappush(queue, StatePriority(heuristic(self), self))
-        self.visited.add((self.player_pos, frozenset(self.box_positions)))
+        pq.heappush(queue, initial_state)
+
+        visited = {(initial_state.state.board.player, frozenset(initial_state.state.board.boxes))}
 
         previous_state: StatePriority | None = None
         repeated_states = 0
 
         while queue:
             # Next movement
-            state = pq.heappop(queue)
-            self.player_pos: Coordinates = state.state.player_pos
-            self.box_positions: list[Coordinates] | set[Coordinates] = (
-                state.state.box_positions
-            )
-            self.visited.add((self.player_pos, frozenset(self.box_positions)))
-            print(heuristic(self), self.player_pos, self.box_positions)
+            current_state: StatePriority = pq.heappop(queue)
 
-            if self.is_solved():
+            self.states.append(current_state)
+
+            if current_state.state.is_solved():
+                self.execution_time = time.perf_counter_ns() - timestamp
                 return True
 
-            if state == previous_state:
+            # Avoid loop
+            if current_state == previous_state:
                 repeated_states += 1
             else:
                 repeated_states = 0
 
             if repeated_states > self.max_states_repeated:
+                self.execution_time = time.perf_counter_ns() - timestamp
                 return False
 
-            previous_state = state
+            previous_state = current_state
+            # == END == Avoid loop
 
-            possible_moves = self.get_possible_moves(self.player_pos)
+            player_pos = current_state.state.board.player
+            box_positions = current_state.state.board.boxes
+
+            visited.add((player_pos, frozenset(box_positions)))
+
+            possible_moves = current_state.state.get_possible_moves(player_pos)
             possible_states: [StatePriority] = []
             for move in possible_moves:
-                possible_move = self.move(self.player_pos, move)
+                possible_move = current_state.state.move(player_pos, move)
                 if (
-                    possible_move.player_pos,
-                    frozenset(possible_move.box_positions),
-                ) not in self.visited:
+                    possible_move.board.player,
+                    frozenset(possible_move.board.boxes),
+                ) not in visited:
                     possible_states.append(
                         StatePriority(heuristic(possible_move), possible_move)
                     )
+
             final_state = None
-            for state in possible_states:
-                if final_state is not None and final_state.priority < state.priority:
+            for current_state in possible_states:
+                if final_state is not None and final_state.priority < current_state.priority:
                     continue
                 else:
-                    final_state = state
+                    final_state = current_state
+
             if final_state is None:
                 final_state = path.pop()
-                # print('Popee un estado viejo owo')
             pq.heappush(queue, final_state)
 
             path.append(final_state)
 
+        self.execution_time = time.perf_counter_ns() - timestamp
         return False
 
 
 if __name__ == "__main__":
-    board = ["#######", "#     #", "# # # #", "#X@*@X#", "#######"]
+    board = Board(
+        player=Coordinates(x=3, y=3),
+        boxes={Coordinates(y=3, x=4), Coordinates(y=3, x=2)},
+        goals={Coordinates(y=3, x=1), Coordinates(y=3, x=5)},
+        n_rows=5,
+        n_cols=7,
+        blocks=[Coordinates(y=2, x=2), Coordinates(y=2, x=4)],
+    )
 
-    player_pos = Coordinates(y=3, x=3)
-    box_positions = [Coordinates(y=3, x=4), Coordinates(y=3, x=2)]
-    goal_positions = [Coordinates(y=3, x=1), Coordinates(y=3, x=5)]
-
-    game = Greedy(board, player_pos, box_positions, goal_positions)
+    game = Greedy(board)
     print("Euclidean")
     if game.solve(euclidean):
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
 
-    game = Greedy(board, player_pos, box_positions, goal_positions)
+    for state in game.states:
+        # print(state.state.board)
+        print(euclidean(state.state), state.state.board.player, state.state.board.boxes)
+
+    game = Greedy(board)
     print("Manhattan")
     if game.solve(manhattan):
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
 
-    game = Greedy(board, player_pos, box_positions, goal_positions)
+    for state in game.states:
+        # print(state.state.board)
+        print(manhattan(state.state), state.state.board.player, state.state.board.boxes)
+
+    game = Greedy(board)
     print("MMLB")
     if game.solve(minimum_matching_lower_bound):
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
+
+    for state in game.states:
+        # print(state.state.board)
+        print(minimum_matching_lower_bound(state.state), state.state.board.player, state.state.board.boxes)
