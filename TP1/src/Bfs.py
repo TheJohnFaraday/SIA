@@ -1,6 +1,9 @@
 # BFS visits all nodes by level
+import time
+
 from collections import deque
-from SearchSolver import SearchSolver, Coordinates
+from SearchSolver import SearchSolver, Coordinates, Board
+import Levels
 
 
 # Sokoban board
@@ -27,60 +30,70 @@ from SearchSolver import SearchSolver, Coordinates
 
 class Bfs(SearchSolver):
     def solve(self):
-        queue = deque([(self.player_pos, self.box_positions)])
-        self.visited.add((self.player_pos, frozenset(self.box_positions)))
+        timestamp = time.perf_counter_ns()
+        self.states = []
         pasos = 0
 
+        initial_state = self
+
+        queue: deque[SearchSolver] = deque([self])
+        visited = {(initial_state.board.player, frozenset(initial_state.board.boxes))}
+
         while queue:
-            self.player_pos, self.box_positions = queue.popleft()
-            # print(self.player_pos, self.box_positions)
-            if self.box_positions == self.goal_positions:
+            current_state = queue.popleft()
+
+            self.states.append(current_state)
+
+            if current_state.is_solved():
+                self.execution_time = time.perf_counter_ns() - timestamp
                 print(f'#### PASOS: {pasos}')
                 return True
 
-            possible_moves = self.get_possible_moves(self.player_pos)
+            player_pos = current_state.board.player
+            box_positions = current_state.board.boxes
+
+            possible_moves = current_state.get_possible_moves(player_pos)
             for move in possible_moves:
-                new_state = self.move(self.player_pos, move)
+                new_state = current_state.move(player_pos, move)
                 if (
-                    new_state.player_pos,
-                    frozenset(new_state.box_positions),
-                ) not in self.visited:
-                    queue.append((new_state.player_pos, new_state.box_positions))
-                    self.visited.add(
-                        (new_state.player_pos, frozenset(new_state.box_positions))
+                    new_state.board.player,
+                    frozenset(new_state.board.boxes),
+                ) not in visited:
+                    visited.add(
+                        # TODO: Revisar cuál es correcto
+                        # (new_state.board.player, frozenset(new_state.board.boxes))
+                        (player_pos, frozenset(box_positions))
                     )
+                    queue.append(new_state)
             pasos += 1
 
+        self.execution_time = time.perf_counter_ns() - timestamp
         print(f'#### PASOS: {pasos}')
         return False
 
 
 if __name__ == "__main__":
-    '''
-    board = ["#######", "#     #", "# # # #", "#X@*@X#", "#######"]
+    board = Levels.simple()
+    board_2 = Levels.narrow()
 
-    player_pos = Coordinates(y=3, x=3)
-    box_positions = [Coordinates(y=3, x=4), Coordinates(y=3, x=2)]
-    goal_positions = [Coordinates(y=3, x=1), Coordinates(y=3, x=5)]
-    '''
-
-    board = [
-        '##### ',
-        '# X ##',
-        '#    #',
-        '# X@ #',
-        '###@ #',
-        '  #  #',
-        '  # *#',
-        '  ####'
-    ]
-
-    player_pos = Coordinates(y=6, x=4)
-    box_positions = [Coordinates(y=3, x=3), Coordinates(y=4, x=3)]
-    goal_positions = [Coordinates(y=1, x=2), Coordinates(y=3, x=2)]
-
-    game = Bfs(board, player_pos, box_positions, goal_positions)
+    game = Bfs(board)
     if game.solve():
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
+
+    for state in game.states:
+        print(state.board)
+
+    print(f"Took: {game.execution_time} ns")
+
+    game = Bfs(board_2)
+    if game.solve():
+        print("¡Solución encontrada!")
+    else:
+        print("No se encontró solución.")
+
+    for state in game.states:
+        print(state.board)
+
+    print(f"Took: {game.execution_time} ns")

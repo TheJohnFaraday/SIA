@@ -1,21 +1,7 @@
 from enum import Enum
 from dataclasses import dataclass
 
-
-@dataclass(frozen=True, eq=True)
-class Coordinates:
-    x: int
-    y: int
-
-    def as_tuple(self):
-        return self.x, self.y
-
-    @staticmethod
-    def from_tuple(t: tuple[int, int]):
-        return Coordinates(x=t[0], y=t[1])
-
-    def __iter__(self):
-        return iter((self.x, self.y))
+from Board import Board, Coordinates
 
 
 @dataclass(frozen=True, eq=True)
@@ -43,33 +29,24 @@ class Directions(Enum):
 
 class SearchSolver:
     def __init__(
-        self,
-        board,
-        player_pos: Coordinates,
-        box_positions: list[Coordinates] | set[Coordinates],
-        goal_positions: list[Coordinates] | set[Coordinates],
-        max_states_repeated: int = 20,
+        self, board: Board, max_states_repeated: int = 20, states: list = None
     ):
         self.board = board
-        self.player_pos = player_pos
-        self.box_positions = set(box_positions)
-        self.goal_positions = set(goal_positions)
-        self.visited = set()
-
         self.max_states_repeated = max_states_repeated
+        self.states = states if states else []
+        self.execution_time = 0.0
 
     def __eq__(self, other: "SearchSolver"):
         return (
-            self.player_pos == other.player_pos
-            and self.box_positions == other.box_positions
+            self.board.player == other.board.player
+            and self.board.boxes == other.board.boxes
         )
 
     def is_solved(self):
-        return self.box_positions == self.goal_positions
+        return self.board.boxes == self.board.goals
 
     def get_possible_moves(self, player_pos: Coordinates):
-        directions = [Directions.DOWN, Directions.UP,
-                      Directions.LEFT, Directions.RIGHT]
+        directions = [Directions.DOWN, Directions.UP, Directions.LEFT, Directions.RIGHT]
         possible_moves = []
 
         for move in directions:
@@ -83,45 +60,66 @@ class SearchSolver:
 
     def is_valid_move(self, player_pos: Coordinates, new_pos: Coordinates):
         x, y = new_pos
-        if self.board[y][x] == "#":
+        if (
+            self.board.cell(new_pos) == Board.Cell.WALL
+            or self.board.cell(new_pos) == Board.Cell.WALL
+        ):
             return False
-        if new_pos in self.box_positions:
-            next_pos = Coordinates(x=x + (x - player_pos.x),
-                                   y=y + (y - player_pos.y))
+
+        if new_pos in self.board.boxes:
+            next_pos = Coordinates(x=x + (x - player_pos.x), y=y + (y - player_pos.y))
             if (
-                next_pos in self.box_positions
-                or self.board[next_pos.y][next_pos.x] == "#"
+                next_pos in self.board.boxes
+                or self.board.cell(next_pos) == Board.Cell.WALL
+                or self.board.cell(next_pos) == Board.Cell.WALL
             ):
                 return False
         return True
 
     def is_deadlock(self):
         board = self.board
-        for box in self.box_positions:
+        for box in self.board.boxes:
             # Check if the box is in a corner
-            if ((board[box.y][box.x+1] == '#' and board[box.y+1][box.x] == '#')
-                or (board[box.y][box.x-1] == '#'
-                    and board[box.y-1][box.x] == '#')
-                or (board[box.y][box.x+1] == '#'
-                    and board[box.y-1][box.x] == '#')
-                    or (board[box.y][box.x-1] == '#'
-                        and board[box.y+1][box.x] == '#')):
+
+            right = Coordinates(y=box.y, x=box.x + 1)
+            above = Coordinates(y=box.y - 1, x=box.x)
+            left = Coordinates(y=box.y, x=box.x - 1)
+            below = Coordinates(y=box.y + 1, x=box.x)
+
+            if (
+                (
+                    board.cell(right) == Board.Cell.WALL
+                    and board.cell(below) == Board.Cell.WALL
+                )
+                or (
+                    board.cell(left) == Board.Cell.WALL
+                    and board.cell(below) == Board.Cell.WALL
+                )
+                or (
+                    board.cell(right) == Board.Cell.WALL
+                    and board.cell(above) == Board.Cell.WALL
+                )
+                or (
+                    board.cell(left) == Board.Cell.WALL
+                    and board.cell(above) == Board.Cell.WALL
+                )
+            ):
                 return True
 
-    def move(self, player_pos: Coordinates, new_pos: Coordinates):
-        new_box_positions = set(self.box_positions)
-        if new_pos in new_box_positions:
-            next_pos = Coordinates(
-                x=new_pos.x + (new_pos.x - player_pos.x),
-                y=new_pos.y + (new_pos.y - player_pos.y),
-            )
-            new_box_positions.remove(new_pos)
-            new_box_positions.add(next_pos)
+        return False
 
+    def move(self, player_position: Coordinates, new_player_position: Coordinates):
+        new_board = self.board
+        if new_player_position in self.board.boxes:
+            next_box_position = Coordinates(
+                x=new_player_position.x + (new_player_position.x - player_position.x),
+                y=new_player_position.y + (new_player_position.y - player_position.y),
+            )
+            new_board = self.board.move_box(
+                box=new_player_position, new_position=next_box_position
+            )
+
+        new_board = new_board.move_player(new_player_position)
         return self.__class__(
-            self.board,
-            new_pos,
-            new_box_positions,
-            self.goal_positions,
-            max_states_repeated=self.max_states_repeated,
+            new_board, max_states_repeated=self.max_states_repeated, states=self.states
         )
