@@ -1,4 +1,16 @@
 from Board import Coordinates, Board
+from LevelGenerator import LevelGenerator
+
+
+def random(seed: int = 3, level: int = 1):
+    generator = LevelGenerator(seed)
+    board, player, boxes, goals = generator.generate(level)
+    return Board(
+        player=player,
+        boxes=boxes,
+        goals=goals,
+        board=board
+    )
 
 
 def simple():

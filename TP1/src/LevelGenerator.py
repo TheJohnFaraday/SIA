@@ -1,6 +1,8 @@
 import random as rnd
 import numpy as np
 
+from Board import Coordinates, Board
+
 
 class LevelGenerator:
     def __init__(self, seed: int = 3):
@@ -38,9 +40,9 @@ class LevelGenerator:
                     or (j == 0)
                     or (j == level_size - 1)
                 ):
-                    row.append("#")
+                    row.append(Board.Cell.WALL)
                 else:
-                    row.append(" ")
+                    row.append(Board.Cell.EMPTY)
             grid.append(row)
 
         grid = np.array(grid)
@@ -52,20 +54,20 @@ class LevelGenerator:
         while buttons > 0:
             i = rnd.randint(1, level_size - 2)
             j = rnd.randint(1, level_size - 2)
-            if grid[i][j] == " ":
-                grid[i][j] = "x"
+            if grid[i][j] == Board.Cell.EMPTY:
+                grid[i][j] = Board.Cell.GOAL
                 buttons -= 1
-                buttons_location.append((i, j))
+                buttons_location.append(Coordinates(y=i, x=j))
 
         boxes_location = []
         # Randomly place the boxes (outside the buttons)
         while box_number > 0:
             i = rnd.randint(2, level_size - 3)
             j = rnd.randint(2, level_size - 3)
-            if grid[i][j] == " ":
-                grid[i][j] = "@"
+            if grid[i][j] == Board.Cell.EMPTY:
+                grid[i][j] = Board.Cell.BOX
                 box_number -= 1
-                boxes_location.append((i, j))
+                boxes_location.append(Coordinates(y=i, x=j))
 
         player_position = None
         # Randomly place the player somewhere in the board
@@ -73,18 +75,18 @@ class LevelGenerator:
         while flag:
             i = rnd.randint(2, level_size - 3)
             j = rnd.randint(2, level_size - 3)
-            if grid[i][j] == " ":
-                grid[i][j] = "*"
+            if grid[i][j] == Board.Cell.EMPTY:
+                grid[i][j] = Board.Cell.PLAYER
                 flag = False
-                player_position = (i, j)
+                player_position = Coordinates(y=i, x=j)
 
         # Randomply place walls on the game
         random_spaces = level_size * 2 - 5
         while random_spaces > 0:
             i = rnd.randint(1, level_size - 2)
             j = rnd.randint(1, level_size - 2)
-            if grid[i][j] == " ":
-                grid[i][j] = "#"
+            if grid[i][j] == Board.Cell.EMPTY:
+                grid[i][j] = Board.Cell.WALL
                 random_spaces -= 1
 
         return (grid, player_position, boxes_location, buttons_location)

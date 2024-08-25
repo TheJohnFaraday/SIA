@@ -86,8 +86,9 @@ class SearchSolver:
             left = Coordinates(y=box.y, x=box.x - 1)
             below = Coordinates(y=box.y + 1, x=box.x)
 
-            if (
-                (
+            if (Coordinates(y=box.y, x=box.x) not in board.goals
+                and
+                ((
                     board.cell(right) == Board.Cell.WALL
                     and board.cell(below) == Board.Cell.WALL
                 )
@@ -102,8 +103,7 @@ class SearchSolver:
                 or (
                     board.cell(left) == Board.Cell.WALL
                     and board.cell(above) == Board.Cell.WALL
-                )
-            ):
+                    ))):
                 return True
 
         return False

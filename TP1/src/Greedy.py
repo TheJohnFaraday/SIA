@@ -114,7 +114,7 @@ class Greedy(SearchSolver):
             player_pos = current_state.state.board.player
             box_positions = current_state.state.board.boxes
 
-            visited.add((player_pos, frozenset(box_positions)))
+            visited.add(State(player_pos, frozenset(box_positions)))
 
             possible_moves = current_state.state.get_possible_moves(player_pos)
             possible_states: [StatePriority] = []
@@ -158,6 +158,7 @@ class Greedy(SearchSolver):
 
 if __name__ == "__main__":
     board = Levels.simple()
+    print(board)
 
     game = Greedy(board)
     print("Euclidean")
