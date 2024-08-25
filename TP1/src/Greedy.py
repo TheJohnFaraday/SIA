@@ -84,8 +84,6 @@ class Greedy(SearchSolver):
         previous_state: StatePriority | None = None
         repeated_states = 0
 
-        pasos = 0
-
         while queue:
             # Next movement
             current_state: StatePriority = pq.heappop(queue)
@@ -93,7 +91,6 @@ class Greedy(SearchSolver):
             self.states.append(current_state)
 
             if current_state.state.is_solved():
-                print(f"### PASOS: {pasos}")
                 return True
 
             # Avoid loop
@@ -103,7 +100,6 @@ class Greedy(SearchSolver):
                 repeated_states = 0
 
             if repeated_states > self.max_states_repeated:
-                print(f"### PASOS: {pasos}")
                 return False
 
             previous_state = current_state
@@ -139,7 +135,6 @@ class Greedy(SearchSolver):
 
             if final_state is None:
                 if len(path) < 1:
-                    print(f"### PASOS: {pasos}")
                     return False
                 else:
                     final_state = path.pop()
@@ -148,9 +143,8 @@ class Greedy(SearchSolver):
 
             # print(f'NEXT STATE: \n{final_state.state.board}\n')
             pq.heappush(queue, final_state)
-            pasos += 1
+            self.step()
 
-        print(f"### PASOS: {pasos}")
         return False
 
 
@@ -165,6 +159,7 @@ if __name__ == "__main__":
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
+    print(f"Steps: {game.steps}")
     """
     for state in game.states:
         # print(state.state.board)
@@ -178,6 +173,7 @@ if __name__ == "__main__":
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
+    print(f"Steps: {game.steps}")
 
     """
     for state in game.states:
@@ -192,6 +188,7 @@ if __name__ == "__main__":
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
+    print(f"Steps: {game.steps}")
 
     """
     for state in game.states:
@@ -210,6 +207,7 @@ if __name__ == "__main__":
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
+    print(f"Steps: {game.steps}")
 
     game = Greedy(board)
     print("Deadlock")
@@ -218,6 +216,7 @@ if __name__ == "__main__":
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
+    print(f"Steps: {game.steps}")
 
     game = Greedy(board)
     print("Euclidean+Deadlock")
@@ -226,3 +225,4 @@ if __name__ == "__main__":
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
+    print(f"Steps: {game.steps}")

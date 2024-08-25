@@ -31,7 +31,6 @@ class Bfs(SearchSolver):
     @measure_exec_time
     def solve(self):
         self.states = []
-        pasos = 0
 
         initial_state = self
 
@@ -44,7 +43,6 @@ class Bfs(SearchSolver):
             self.states.append(current_state)
 
             if current_state.is_solved():
-                print(f'#### PASOS: {pasos}')
                 return True
 
             player_pos = current_state.board.player
@@ -63,9 +61,8 @@ class Bfs(SearchSolver):
                         (player_pos, frozenset(box_positions))
                     )
                     queue.append(new_state)
-            pasos += 1
+            self.step()
 
-        print(f'#### PASOS: {pasos}')
         return False
 
 
@@ -79,6 +76,7 @@ if __name__ == "__main__":
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
+    print(f"Steps: {game.steps}")
 
     for state in game.states:
         print(state.board)
@@ -91,6 +89,7 @@ if __name__ == "__main__":
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
+    print(f"Steps: {game.steps}")
 
     for state in game.states:
         print(state.board)

@@ -32,7 +32,6 @@ class Dfs(SearchSolver):
     @measure_exec_time
     def solve(self):
         self.states: list[SearchSolver] = []
-        pasos = 0
 
         initial_state = self
         # The stack is going to persist our frontier states
@@ -46,7 +45,6 @@ class Dfs(SearchSolver):
             self.states.append(current_state)
 
             if current_state.is_solved():
-                print(f'#### PASOS: {pasos}')
                 return True
 
             player_pos = current_state.board.player
@@ -61,9 +59,9 @@ class Dfs(SearchSolver):
                 ) not in visited:
                     visited.add((player_pos, frozenset(box_positions)))
                     stack.append(new_state)
-            pasos += 1
 
-        print(f'#### PASOS: {pasos}')
+            self.step()
+
         return False
 
 
@@ -76,6 +74,8 @@ if __name__ == "__main__":
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
+
+    print(f"Steps: {game.steps}")
 
     for state in game.states:
         print(state.board)

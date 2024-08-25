@@ -47,9 +47,9 @@ class AStarNode:
 
 class AStar(SearchSolver):
     def __init__(
-        self, board: Board, max_states_repeated: int = 20, states: list = None
+        self, board: Board, max_states_repeated: int = 20, states: list = None, steps: int = 0
     ):
-        super().__init__(board, max_states_repeated=max_states_repeated, states=states)
+        super().__init__(board, max_states_repeated=max_states_repeated, states=states, steps=steps)
 
         self.came_from: list[AStarNode] = []
         self.latest_node: AStarNode | None = None
@@ -136,6 +136,7 @@ class AStar(SearchSolver):
                     nodes_visited[neighbor] = next_node
                     heapq.heappush(open_set, (next_node.priority(), next_node))
                     self.came_from.append(next_node)
+            self.step()
 
         return False
 
@@ -156,6 +157,7 @@ if __name__ == "__main__":
             print(p)
     else:
         print("No se encontró solución.")
+    print(f"Steps: {game.steps}")
 
     print(f"Took: {exec_time} ns")
 
@@ -170,5 +172,6 @@ if __name__ == "__main__":
             print(p)
     else:
         print("No se encontró solución.")
+    print(f"Steps: {game.steps}")
 
     print(f"Took: {exec_time} ns")
