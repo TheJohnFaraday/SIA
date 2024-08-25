@@ -18,6 +18,22 @@ class Coordinates:
         return iter((self.x, self.y))
 
 
+@dataclass(frozen=True, eq=True)
+class State:
+    player_pos: Coordinates
+    box_positions: set[Coordinates]
+
+    def as_tuple(self):
+        return self.player_pos, self.box_positions
+
+    @staticmethod
+    def from_tuple(t: tuple[Coordinates, set[Coordinates]]):
+        return State(player_pos=t[0], box_positions=t[1])
+
+    def __iter__(self):
+        return iter((self.player_pos, self.box_positions))
+
+
 class Directions(Enum):
     DOWN = Coordinates(y=1, x=0)
     UP = Coordinates(y=-1, x=0)
@@ -52,7 +68,8 @@ class SearchSolver:
         return self.box_positions == self.goal_positions
 
     def get_possible_moves(self, player_pos: Coordinates):
-        directions = [Directions.DOWN, Directions.UP, Directions.LEFT, Directions.RIGHT]
+        directions = [Directions.DOWN, Directions.UP,
+                      Directions.LEFT, Directions.RIGHT]
         possible_moves = []
 
         for move in directions:
@@ -69,7 +86,8 @@ class SearchSolver:
         if self.board[y][x] == "#":
             return False
         if new_pos in self.box_positions:
-            next_pos = Coordinates(x=x + (x - player_pos.x), y=y + (y - player_pos.y))
+            next_pos = Coordinates(x=x + (x - player_pos.x),
+                                   y=y + (y - player_pos.y))
             if (
                 next_pos in self.box_positions
                 or self.board[next_pos.y][next_pos.x] == "#"

@@ -3,8 +3,9 @@ import heapq as pq
 import math
 
 from dataclasses import dataclass, field
-from SearchSolver import SearchSolver, Coordinates
-from Heuristics import euclidean, manhattan, minimum_matching_lower_bound
+from SearchSolver import SearchSolver, Coordinates, State
+from Heuristics import (euclidean, manhattan,
+                        minimum_matching_lower_bound, trivial)
 
 
 # Sokoban board
@@ -44,7 +45,9 @@ class StatePriority:
         if type(self.priority) is int and type(other.priority) is int:
             eq_priority = self.priority == other.priority
         else:
-            eq_priority = math.isclose(self.priority, other.priority, rel_tol=1e-5)
+            eq_priority = math.isclose(self.priority,
+                                       other.priority,
+                                       rel_tol=1e-5)
 
         return eq_priority and self.state == other.state
 
@@ -57,22 +60,27 @@ class Greedy(SearchSolver):
         path = []
         pq.heapify(queue)
         pq.heappush(queue, StatePriority(heuristic(self), self))
-        self.visited.add((self.player_pos, frozenset(self.box_positions)))
+        self.visited.add(State(self.player_pos, frozenset(self.box_positions)))
 
         previous_state: StatePriority | None = None
         repeated_states = 0
 
+        pasos = 0
+
         while queue:
             # Next movement
+            # print(f'\n#### PATH: {path}\n')
             state = pq.heappop(queue)
             self.player_pos: Coordinates = state.state.player_pos
             self.box_positions: list[Coordinates] | set[Coordinates] = (
                 state.state.box_positions
             )
-            self.visited.add((self.player_pos, frozenset(self.box_positions)))
-            print(heuristic(self), self.player_pos, self.box_positions)
+            self.visited.add(State(self.player_pos,
+                                   frozenset(self.box_positions)))
+            # print(heuristic(self), self.player_pos, self.box_positions)
 
             if self.is_solved():
+                print(f'### PASOS: {pasos}')
                 return True
 
             if state == previous_state:
@@ -81,6 +89,7 @@ class Greedy(SearchSolver):
                 repeated_states = 0
 
             if repeated_states > self.max_states_repeated:
+                print(f'### PASOS: {pasos}')
                 return False
 
             previous_state = state
@@ -90,34 +99,63 @@ class Greedy(SearchSolver):
             for move in possible_moves:
                 possible_move = self.move(self.player_pos, move)
                 if (
-                    possible_move.player_pos,
-                    frozenset(possible_move.box_positions),
+                    State(possible_move.player_pos,
+                          frozenset(possible_move.box_positions))
                 ) not in self.visited:
                     possible_states.append(
                         StatePriority(heuristic(possible_move), possible_move)
                     )
-            final_state = None
+            final_state: StatePriority | None = None
+            # print(f'##### POSSIBLE STATES: {possible_states}')
             for state in possible_states:
-                if final_state is not None and final_state.priority < state.priority:
+                if (
+                    final_state is not None
+                    and final_state.priority < state.priority
+                        ):
                     continue
                 else:
                     final_state = state
             if final_state is None:
-                final_state = path.pop()
+                if len(path) < 1:
+                    print(f'### PASOS: {pasos}')
+                    return False
+                else:
+                    final_state = path.pop()
                 # print('Popee un estado viejo owo')
+            else:
+                path.append(final_state)
+            # print(f'##### FINAL STATE: {final_state}')
             pq.heappush(queue, final_state)
+            pasos += 1
 
-            path.append(final_state)
-
+        print(f'### PASOS: {pasos}')
         return False
 
 
-if __name__ == "__main__":
-    board = ["#######", "#     #", "# # # #", "#X@*@X#", "#######"]
+if __name__ == '__main__':
+    '''
+    board = [
+        "#######",
+        "#     #",
+        "# # # #",
+        "#X@*@X#",
+        "#######"
+    ]
+    '''
+    board = [
+        '##### ',
+        '# X ##',
+        '#    #',
+        '# X@ #',
+        '###@ #',
+        '  #  #',
+        '  # *#',
+        '  ####'
+    ]
 
-    player_pos = Coordinates(y=3, x=3)
-    box_positions = [Coordinates(y=3, x=4), Coordinates(y=3, x=2)]
-    goal_positions = [Coordinates(y=3, x=1), Coordinates(y=3, x=5)]
+    player_pos = Coordinates(y=6, x=4)
+    box_positions = [Coordinates(y=3, x=3), Coordinates(y=4, x=3)]
+    goal_positions = [Coordinates(y=1, x=2), Coordinates(y=3, x=2)]
 
     game = Greedy(board, player_pos, box_positions, goal_positions)
     print("Euclidean")
@@ -136,6 +174,13 @@ if __name__ == "__main__":
     game = Greedy(board, player_pos, box_positions, goal_positions)
     print("MMLB")
     if game.solve(minimum_matching_lower_bound):
+        print("¡Solución encontrada!")
+    else:
+        print("No se encontró solución.")
+
+    game = Greedy(board, player_pos, box_positions, goal_positions)
+    print("Trivial")
+    if game.solve(trivial):
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")

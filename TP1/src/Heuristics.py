@@ -61,3 +61,7 @@ def minimum_matching_lower_bound(state: SearchSolver) -> int:
     total_cost = cost_matrix[row_indices, col_indices].sum()
 
     return int(total_cost)
+
+
+def trivial(state: SearchSolver) -> int:
+    return 1

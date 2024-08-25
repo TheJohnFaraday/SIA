@@ -31,13 +31,15 @@ class Dfs(SearchSolver):
         # The stack is going to persist our frontier states
         stack = [(self.player_pos, self.box_positions)]
         self.visited.add((self.player_pos, frozenset(self.box_positions)))
+        pasos = 0
 
         while stack:
             # Next movement
             self.player_pos, self.box_positions = stack.pop()
-            print(self.player_pos, self.box_positions)
+            # print(self.player_pos, self.box_positions)
 
             if self.is_solved():
+                print(f'#### PASOS: {pasos}')
                 return True
 
             possible_moves = self.get_possible_moves(self.player_pos)
@@ -49,16 +51,34 @@ class Dfs(SearchSolver):
                 ) not in self.visited:
                     stack.append((new_state.player_pos, new_state.box_positions))
                     self.visited.add((self.player_pos, frozenset(self.box_positions)))
-
+            pasos += 1
+        print(f'CANTIDAD DE PASOS: {pasos}')
         return False
 
 
 if __name__ == "__main__":
+    '''
     board = ["#######", "#     #", "# # # #", "#X@*@X#", "#######"]
 
     player_pos = Coordinates(y=3, x=3)
     box_positions = [Coordinates(y=3, x=4), Coordinates(y=3, x=2)]
     goal_positions = [Coordinates(y=3, x=1), Coordinates(y=3, x=5)]
+    '''
+
+    board = [
+        '##### ',
+        '# X ##',
+        '#    #',
+        '# X@ #',
+        '###@ #',
+        '  #  #',
+        '  # *#',
+        '  ####'
+    ]
+
+    player_pos = Coordinates(y=6, x=4)
+    box_positions = [Coordinates(y=3, x=3), Coordinates(y=4, x=3)]
+    goal_positions = [Coordinates(y=1, x=2), Coordinates(y=3, x=2)]
 
     game = Dfs(board, player_pos, box_positions, goal_positions)
     if game.solve():

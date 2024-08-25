@@ -29,11 +29,13 @@ class Bfs(SearchSolver):
     def solve(self):
         queue = deque([(self.player_pos, self.box_positions)])
         self.visited.add((self.player_pos, frozenset(self.box_positions)))
+        pasos = 0
 
         while queue:
             self.player_pos, self.box_positions = queue.popleft()
-            print(self.player_pos, self.box_positions)
+            # print(self.player_pos, self.box_positions)
             if self.box_positions == self.goal_positions:
+                print(f'#### PASOS: {pasos}')
                 return True
 
             possible_moves = self.get_possible_moves(self.player_pos)
@@ -47,16 +49,35 @@ class Bfs(SearchSolver):
                     self.visited.add(
                         (new_state.player_pos, frozenset(new_state.box_positions))
                     )
+            pasos += 1
 
+        print(f'#### PASOS: {pasos}')
         return False
 
 
 if __name__ == "__main__":
+    '''
     board = ["#######", "#     #", "# # # #", "#X@*@X#", "#######"]
 
     player_pos = Coordinates(y=3, x=3)
     box_positions = [Coordinates(y=3, x=4), Coordinates(y=3, x=2)]
     goal_positions = [Coordinates(y=3, x=1), Coordinates(y=3, x=5)]
+    '''
+
+    board = [
+        '##### ',
+        '# X ##',
+        '#    #',
+        '# X@ #',
+        '###@ #',
+        '  #  #',
+        '  # *#',
+        '  ####'
+    ]
+
+    player_pos = Coordinates(y=6, x=4)
+    box_positions = [Coordinates(y=3, x=3), Coordinates(y=4, x=3)]
+    goal_positions = [Coordinates(y=1, x=2), Coordinates(y=3, x=2)]
 
     game = Bfs(board, player_pos, box_positions, goal_positions)
     if game.solve():
