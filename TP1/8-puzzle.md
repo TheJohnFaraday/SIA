@@ -43,7 +43,6 @@ Thinking about possible heuristics, here we have some examples:
 2. The sum of the distances of each tile from its goal position ("Manhattan distance")
 3. As above but takes into account the number of direct adjacent tile inversions present. Having many adjacent inversions suggests that the current configuration is far from the solution, as you will have to make additional moves to correct each inversion, which makes it more accurate by reflecting the “effort” needed to solve the puzzle.
 
-
 #### Current state
 
 | 5 | 7 | 3 |
@@ -61,6 +60,25 @@ Thinking about possible heuristics, here we have some examples:
 Heuristic 1. tiles 5, 1, 4, 2, 7 and 8 are out of place, so estimate = 6. <br>
 Heuristic 2. estimate = 4 + 3 + 0 + 2 + 1 + 2 + 0 + 1 = 13. <br>
 Heuristic 3. in this case we don't have any case of direct reversal, so the cost is 13.
+
+#### Iterative Deepening A* (IDA*)
+
+IDA* combines A*'s heuristic with iterative deepening depth-first search. Instead of keeping all nodes in memory, it performs depth-limited searches with an increasing threshold. This threshold is initially set to the f(n) value at the root node and incrementally increases until the solution is found. In steps:
+1. Initially, Lim = f(root) is taken.
+2. As long as no solution is found, DFS is performed up to Lim.
+3. If no solution is found, take n′ as the boundary node with the smallest value of f, and take this value as the new limit.
+
+Finally, in resume,
+
+|          | **Pros**                                                   | **Cons**                                               |
+|----------|------------------------------------------------------------|--------------------------------------------------------|
+| **A***   | - Optimal and complete with admissible heuristics          | - High memory usage, storing all generated nodes       |
+|          | - Generally faster due to controlled node expansion        | - Can be prohibitive for large problems                |
+|          | - Well-suited for problems where memory isn't a constraint |                                                        |
+| **IDA*** | - Much lower memory usage                                  | - Slower due to repeated searches at increasing depths |
+|          | - Optimal and complete with admissible heuristics          | - May require more computational time than A*          |
+|          | - Better for large problems or limited-memory environments |                                                        |
+
 
 ## Bibliography
 
