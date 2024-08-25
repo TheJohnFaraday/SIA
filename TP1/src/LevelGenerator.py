@@ -85,6 +85,12 @@ class LevelGenerator:
             if grid[i][j] == Board.Cell.EMPTY:
                 grid[i][j] = Board.Cell.WALL
                 random_spaces -= 1
+        for i in range(level_size):
+            for j in range(level_size):
+                if (grid[i][j] == Board.Cell.PLAYER
+                    or grid[i][j] == Board.Cell.BOX
+                        or grid[i][j] == Board.Cell.GOAL):
+                    grid[i][j] = Board.Cell.EMPTY
 
         return (grid, player_position, boxes_location, buttons_location)
 

@@ -73,8 +73,9 @@ class Bfs(SearchSolver):
 
 
 if __name__ == "__main__":
+    # board = Levels.random(seed=5, level=1)
     board = Levels.simple()
-    board_2 = Levels.narrow()
+    print(board)
 
     game = Bfs(board)
     if game.solve():
@@ -87,7 +88,8 @@ if __name__ == "__main__":
 
     print(f"Took: {game.execution_time} ns")
 
-    game = Bfs(board_2)
+    '''
+    game = Bfs(board)
     if game.solve():
         print("¡Solución encontrada!")
     else:
@@ -97,3 +99,4 @@ if __name__ == "__main__":
         print(state.board)
 
     print(f"Took: {game.execution_time} ns")
+    '''

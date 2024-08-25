@@ -80,7 +80,6 @@ class SearchSolver:
 
     def is_deadlock(self):
         board = self.board
-        print('Deadlock :((((')
         for box in self.board.boxes:
             # Check if the box is in a corner
 

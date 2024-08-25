@@ -95,7 +95,6 @@ class Board:
 
         if not self.is_valid():
             logging.error("Initialized with an invalid board")
-        self.update_board()
 
     def __str__(self):
         board_str = ""
@@ -197,15 +196,3 @@ class Board:
             goals=self._goals,
             board=self._board,
         )
-
-    def update_board(self):
-        for i in range(self._n_rows):
-            for j in range(self._n_cols):
-                if (self._board[i][j] == Board.Cell.PLAYER
-                        or self._board[i][j] == Board.Cell.BOX):
-                    self._board[i][j] = Board.Cell.EMPTY
-        for goal in self._goals:
-            self._board[goal.y][goal.x] = Board.Cell.GOAL
-        for box in self._boxes:
-            self._board[box.y][box.x] = Board.Cell.BOX
-        self._board[self._player.y][self._player.x] = Board.Cell.PLAYER

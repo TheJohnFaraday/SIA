@@ -159,7 +159,7 @@ class Greedy(SearchSolver):
 
 
 if __name__ == "__main__":
-    board = Levels.random(5, 1)
+    board = Levels.random(seed=5, level=1)
     print(board)
 
     game = Greedy(board)

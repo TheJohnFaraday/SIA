@@ -65,7 +65,6 @@ def minimum_matching_lower_bound(state: SearchSolver) -> int:
 
 def deadlock(state: SearchSolver) -> int:
     if state.is_deadlock():
-        print('Toy en deadlock :((((((')
         return 1000000000000000
     return 1
 

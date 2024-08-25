@@ -71,7 +71,8 @@ class Dfs(SearchSolver):
 
 
 if __name__ == "__main__":
-    board = Levels.simple()
+    board = Levels.random(seed=5, level=1)
+    print(board)
 
     game = Dfs(board)
     if game.solve():
@@ -79,7 +80,9 @@ if __name__ == "__main__":
     else:
         print("No se encontró solución.")
 
+    '''
     for state in game.states:
         print(state.board)
+    '''
 
     print(f"Took: {game.execution_time} ns")
