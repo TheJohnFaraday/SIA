@@ -3,7 +3,7 @@ import math
 import time
 
 from dataclasses import dataclass, field
-from SearchSolver import SearchSolver, Coordinates
+from SearchSolver import SearchSolver, Coordinates, Board
 from typing import Union
 from Heuristics import euclidean, manhattan
 
@@ -45,27 +45,19 @@ class AStarNode:
 
 class AStar(SearchSolver):
     def __init__(
-        self,
-        board,
-        player_pos: Coordinates,
-        box_positions: list[Coordinates] | set[Coordinates],
-        goal_positions: list[Coordinates] | set[Coordinates],
-        max_states_repeated: int = 20,
+        self, board: Board, max_states_repeated: int = 20, states: list = None
     ):
-        super().__init__(
-            board,
-            player_pos=player_pos,
-            box_positions=box_positions,
-            goal_positions=goal_positions,
-            max_states_repeated=max_states_repeated,
-        )
+        super().__init__(board, max_states_repeated=max_states_repeated, states=states)
 
         self.came_from: list[AStarNode] = []
         self.latest_node: AStarNode | None = None
-        self.execution_time = 0.0
 
     def reconstruct_path(self):
-        return self.came_from
+        path = []
+        for node in self.came_from:
+            path.append(node.state.board)
+
+        return path
 
     @staticmethod
     def move_cost(current: Coordinates, neighbor: Coordinates):
@@ -75,50 +67,53 @@ class AStar(SearchSolver):
     def solve(self, heuristic: callable(SearchSolver)):
         timestamp = time.perf_counter_ns()
 
-        start = AStarNode(state=self, g_value=0, h_value=0, parent=None)
+        initial_node = AStarNode(state=self, g_value=0, h_value=0, parent=None)
 
         open_set: list[tuple[int, AStarNode]] = []
         heapq.heapify(open_set)
         heapq.heappush(
             open_set,
-            (heuristic(start.state), start),
+            (heuristic(initial_node.state), initial_node),
         )
 
-        nodes_visited: dict[Coordinates, AStarNode] = {self.player_pos: start}
-        self.came_from.append(start)
+        nodes_visited: dict[Coordinates, AStarNode] = {
+            initial_node.state.board.player: initial_node
+        }
+        self.came_from.append(initial_node)
 
         previous_node: AStarNode | None = None
         repeated_states = 0
 
         while open_set:
+            current_node: AStarNode
             _, current_node = heapq.heappop(open_set)
 
             self.latest_node = current_node
-
-            print(
-                f"Player: {current_node.state.player_pos} | Boxes: {current_node.state.box_positions}"
-            )
+            self.states.append(current_node)
 
             if current_node.state.is_solved():
                 self.execution_time = time.perf_counter_ns() - timestamp
                 return True
 
+            # Avoid loop
             if current_node == previous_node:
                 repeated_states += 1
             else:
                 repeated_states = 0
 
             if repeated_states > self.max_states_repeated:
+                self.execution_time = time.perf_counter_ns() - timestamp
                 return False
 
             previous_node = current_node
+            # == END == Avoid loop
 
-            current_player_pos = current_node.state.player_pos
+            current_player_pos = current_node.state.board.player
 
             for neighbor in current_node.state.get_possible_moves(current_player_pos):
                 new_state = current_node.state.move(
-                    player_pos=current_player_pos,
-                    new_pos=neighbor,
+                    player_position=current_player_pos,
+                    new_player_position=neighbor,
                 )
 
                 tentative_g_score = current_node.g_value + AStar.move_cost(
@@ -148,13 +143,16 @@ class AStar(SearchSolver):
 
 
 if __name__ == "__main__":
-    board = ["#######", "#     #", "# # # #", "#X@*@X#", "#######"]
+    board = Board(
+        player=Coordinates(x=3, y=3),
+        boxes={Coordinates(y=3, x=4), Coordinates(y=3, x=2)},
+        goals={Coordinates(y=3, x=1), Coordinates(y=3, x=5)},
+        n_rows=5,
+        n_cols=7,
+        blocks=[Coordinates(y=2, x=2), Coordinates(y=2, x=4)],
+    )
 
-    player_pos = Coordinates(y=3, x=3)
-    box_positions = [Coordinates(y=3, x=4), Coordinates(y=3, x=2)]
-    goal_positions = [Coordinates(y=3, x=1), Coordinates(y=3, x=5)]
-
-    game = AStar(board, player_pos, box_positions, goal_positions)
+    game = AStar(board)
 
     print("Euclidean")
     if game.solve(euclidean):
@@ -162,7 +160,8 @@ if __name__ == "__main__":
 
         path = game.reconstruct_path()
         print("Path:")
-        print(path)
+        for p in path:
+            print(p)
     else:
         print("No se encontró solución.")
 
@@ -174,7 +173,8 @@ if __name__ == "__main__":
 
         path = game.reconstruct_path()
         print("Path:")
-        print(path)
+        for p in path:
+            print(p)
     else:
         print("No se encontró solución.")
 

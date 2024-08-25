@@ -6,20 +6,20 @@ from SearchSolver import SearchSolver, Coordinates
 
 def euclidean(state: SearchSolver) -> int:
     heuristic = 0
-    player_x, player_y = state.player_pos
+    player = state.board.player
 
-    for box_x, box_y in state.box_positions:
-        if Coordinates(box_x, box_y) in state.goal_positions:
+    for box in state.board.boxes:
+        if box in state.board.goals:
             continue
 
         # Player to Box distance
-        heuristic += math.sqrt((player_x - box_x) ** 2 + (player_y - box_y) ** 2)
+        heuristic += math.sqrt((player.x - box.x) ** 2 + (player.y - box.y) ** 2)
 
         # Box to Goal distance
         heuristic = sum(
             (
-                math.sqrt((box_x - goal_x) ** 2 + abs(box_y - goal_y) ** 2)
-                for goal_x, goal_y in state.goal_positions
+                math.sqrt((box.x - goal.x) ** 2 + abs(box.y - goal.y) ** 2)
+                for goal in state.board.goals
             ),
             heuristic,
         )
@@ -28,33 +28,33 @@ def euclidean(state: SearchSolver) -> int:
 
 def manhattan(state: SearchSolver) -> int:
     heuristic = 0
-    player_x, player_y = state.player_pos
+    player = state.board.player
 
-    for box_x, box_y in state.box_positions:
-        if Coordinates(box_x, box_y) in state.goal_positions:
+    for box in state.board.boxes:
+        if box in state.board.goals:
             continue
 
         # Player to Box distance
-        heuristic += abs(player_x - box_x) + abs(player_y - box_y)
+        heuristic += abs(player.x - box.x) + abs(player.y - box.y)
 
         # Box to Goal distance
         heuristic += min(
-            abs(box_x - goal_x) + abs(box_y - goal_y)
-            for (goal_x, goal_y) in state.goal_positions
+            abs(box.x - goal.x) + abs(box.y - goal.y)
+            for goal in state.board.goals
         )
 
     return heuristic
 
 
 def minimum_matching_lower_bound(state: SearchSolver) -> int:
-    num_boxes = len(state.box_positions)
+    num_boxes = len(state.board.boxes)
     cost_matrix = np.zeros((num_boxes, num_boxes))
 
     # cost matrix boxes X goals
-    for i, (box_x, box_y) in enumerate(state.box_positions):
-        for j, (goal_x, goal_y) in enumerate(state.goal_positions):
+    for i, box in enumerate(state.board.boxes):
+        for j, goal in enumerate(state.board.goals):
             # Manhattan
-            cost_matrix[i, j] = abs(box_x - goal_x) + abs(box_y - goal_y)
+            cost_matrix[i, j] = abs(box.x - goal.x) + abs(box.y - goal.y)
 
     # Apply Hungarian method
     row_indices, col_indices = linear_sum_assignment(cost_matrix)

@@ -25,7 +25,7 @@ class SearchSolver:
     def __eq__(self, other: "SearchSolver"):
         return (
             self.board.player == other.board.player
-            and self.board.player == other.board.player
+            and self.board.boxes == other.board.boxes
         )
 
     def is_solved(self):
