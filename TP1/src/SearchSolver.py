@@ -34,7 +34,6 @@ class SearchSolver:
         self.board = board
         self.max_states_repeated = max_states_repeated
         self.states = states if states else []
-        self.execution_time = 0.0
 
     def __eq__(self, other: "SearchSolver"):
         return (

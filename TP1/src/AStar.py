@@ -1,6 +1,4 @@
 import heapq
-import math
-import time
 from dataclasses import dataclass, field
 from typing import Union
 
@@ -8,6 +6,7 @@ import Levels
 
 from Heuristics import euclidean, manhattan
 from SearchSolver import SearchSolver, Coordinates, Board
+from utils import measure_exec_time
 
 
 # Sokoban board
@@ -67,9 +66,8 @@ class AStar(SearchSolver):
         # TODO: Deadlock must return infinite cost
         return 1
 
+    @measure_exec_time
     def solve(self, heuristic: callable(SearchSolver)):
-        timestamp = time.perf_counter_ns()
-
         initial_node = AStarNode(state=self, g_value=0, h_value=0, parent=None)
 
         open_set: list[tuple[int, AStarNode]] = []
@@ -95,7 +93,6 @@ class AStar(SearchSolver):
             self.states.append(current_node)
 
             if current_node.state.is_solved():
-                self.execution_time = time.perf_counter_ns() - timestamp
                 return True
 
             # Avoid loop
@@ -105,7 +102,6 @@ class AStar(SearchSolver):
                 repeated_states = 0
 
             if repeated_states > self.max_states_repeated:
-                self.execution_time = time.perf_counter_ns() - timestamp
                 return False
 
             previous_node = current_node
@@ -141,7 +137,6 @@ class AStar(SearchSolver):
                     heapq.heappush(open_set, (next_node.priority(), next_node))
                     self.came_from.append(next_node)
 
-        self.execution_time = time.perf_counter_ns() - timestamp
         return False
 
 
@@ -151,7 +146,8 @@ if __name__ == "__main__":
     game = AStar(board)
 
     print("Euclidean")
-    if game.solve(euclidean):
+    solution, exec_time = game.solve(euclidean)
+    if solution:
         print("¡Solución encontrada!")
 
         path = game.reconstruct_path()
@@ -161,10 +157,11 @@ if __name__ == "__main__":
     else:
         print("No se encontró solución.")
 
-    print(f"Took: {game.execution_time} ns")
+    print(f"Took: {exec_time} ns")
 
     print("Manhattan")
-    if game.solve(manhattan):
+    solution, exec_time = game.solve(manhattan)
+    if solution:
         print("¡Solución encontrada!")
 
         path = game.reconstruct_path()
@@ -174,4 +171,4 @@ if __name__ == "__main__":
     else:
         print("No se encontró solución.")
 
-    print(f"Took: {game.execution_time} ns")
+    print(f"Took: {exec_time} ns")

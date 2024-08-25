@@ -1,10 +1,9 @@
 # BFS visits all nodes by level
-import time
-
 from collections import deque
-from SearchSolver import SearchSolver, Coordinates, Board
-import Levels
 
+import Levels
+from SearchSolver import SearchSolver, Coordinates, Board
+from utils import measure_exec_time
 
 # Sokoban board
 
@@ -29,8 +28,8 @@ import Levels
 
 
 class Bfs(SearchSolver):
+    @measure_exec_time
     def solve(self):
-        timestamp = time.perf_counter_ns()
         self.states = []
         pasos = 0
 
@@ -45,7 +44,6 @@ class Bfs(SearchSolver):
             self.states.append(current_state)
 
             if current_state.is_solved():
-                self.execution_time = time.perf_counter_ns() - timestamp
                 print(f'#### PASOS: {pasos}')
                 return True
 
@@ -67,7 +65,6 @@ class Bfs(SearchSolver):
                     queue.append(new_state)
             pasos += 1
 
-        self.execution_time = time.perf_counter_ns() - timestamp
         print(f'#### PASOS: {pasos}')
         return False
 
@@ -77,7 +74,8 @@ if __name__ == "__main__":
     board_2 = Levels.narrow()
 
     game = Bfs(board)
-    if game.solve():
+    solution, exec_time = game.solve()
+    if solution:
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
@@ -85,10 +83,11 @@ if __name__ == "__main__":
     for state in game.states:
         print(state.board)
 
-    print(f"Took: {game.execution_time} ns")
+    print(f"Took: {exec_time} ns")
 
     game = Bfs(board_2)
-    if game.solve():
+    solution, exec_time = game.solve()
+    if solution:
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
@@ -96,4 +95,4 @@ if __name__ == "__main__":
     for state in game.states:
         print(state.board)
 
-    print(f"Took: {game.execution_time} ns")
+    print(f"Took: {exec_time} ns")

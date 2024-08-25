@@ -1,10 +1,9 @@
 # DFS visits one entire branch doing backtracking once arrived at the deepest node
-import time
-
 import Levels
 
 from SearchSolver import SearchSolver, Coordinates, Board
 
+from utils import measure_exec_time
 
 # Sokoban board
 
@@ -30,8 +29,8 @@ from SearchSolver import SearchSolver, Coordinates, Board
 
 class Dfs(SearchSolver):
 
+    @measure_exec_time
     def solve(self):
-        timestamp = time.perf_counter_ns()
         self.states: list[SearchSolver] = []
         pasos = 0
 
@@ -47,7 +46,6 @@ class Dfs(SearchSolver):
             self.states.append(current_state)
 
             if current_state.is_solved():
-                self.execution_time = time.perf_counter_ns() - timestamp
                 print(f'#### PASOS: {pasos}')
                 return True
 
@@ -65,7 +63,6 @@ class Dfs(SearchSolver):
                     stack.append(new_state)
             pasos += 1
 
-        self.execution_time = time.perf_counter_ns() - timestamp
         print(f'#### PASOS: {pasos}')
         return False
 
@@ -74,7 +71,8 @@ if __name__ == "__main__":
     board = Levels.simple()
 
     game = Dfs(board)
-    if game.solve():
+    solution, exec_time = game.solve()
+    if solution:
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
@@ -82,4 +80,4 @@ if __name__ == "__main__":
     for state in game.states:
         print(state.board)
 
-    print(f"Took: {game.execution_time} ns")
+    print(f"Took: {exec_time} ns")

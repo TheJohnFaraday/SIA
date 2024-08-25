@@ -1,7 +1,6 @@
 # Greedy chooses based on an heuristic which node to visit
 import heapq as pq
 import math
-import time
 
 from dataclasses import dataclass, field
 
@@ -16,6 +15,7 @@ from Heuristics import (
     trivial,
     euclidean_plus_deadlock,
 )
+from utils import measure_exec_time
 
 
 # Sokoban board
@@ -62,8 +62,8 @@ class StatePriority:
 
 class Greedy(SearchSolver):
 
+    @measure_exec_time
     def solve(self, heuristic: callable(SearchSolver)):
-        timestamp = time.perf_counter_ns()
         self.states: list[StatePriority] = []
 
         initial_state = StatePriority(heuristic(self), self)
@@ -93,7 +93,6 @@ class Greedy(SearchSolver):
             self.states.append(current_state)
 
             if current_state.state.is_solved():
-                self.execution_time = time.perf_counter_ns() - timestamp
                 print(f"### PASOS: {pasos}")
                 return True
 
@@ -104,7 +103,6 @@ class Greedy(SearchSolver):
                 repeated_states = 0
 
             if repeated_states > self.max_states_repeated:
-                self.execution_time = time.perf_counter_ns() - timestamp
                 print(f"### PASOS: {pasos}")
                 return False
 
@@ -122,8 +120,7 @@ class Greedy(SearchSolver):
                 possible_move = current_state.state.move(player_pos, move)
                 if (
                     State(
-                        possible_move.board.player,
-                        frozenset(possible_move.board.boxes)
+                        possible_move.board.player, frozenset(possible_move.board.boxes)
                     )
                 ) not in visited:
                     possible_states.append(
@@ -153,48 +150,50 @@ class Greedy(SearchSolver):
             pq.heappush(queue, final_state)
             pasos += 1
 
-        self.execution_time = time.perf_counter_ns() - timestamp
         print(f"### PASOS: {pasos}")
         return False
 
 
 if __name__ == "__main__":
-    board = Levels.random(5, 1)
+    board = Levels.narrow()
     print(board)
 
     game = Greedy(board)
     print("Euclidean")
-    if game.solve(euclidean):
+    solution, exec_time = game.solve(euclidean)
+    if solution:
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
-    '''
+    """
     for state in game.states:
         # print(state.state.board)
         print(euclidean(state.state), state.state.board.player, state.state.board.boxes)
-    '''
+    """
 
     game = Greedy(board)
     print("Manhattan")
-    if game.solve(manhattan):
+    solution, exec_time = game.solve(manhattan)
+    if solution:
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
 
-    '''
+    """
     for state in game.states:
         # print(state.state.board)
         print(manhattan(state.state), state.state.board.player, state.state.board.boxes)
-    '''
+    """
 
     game = Greedy(board)
     print("MMLB")
-    if game.solve(minimum_matching_lower_bound):
+    solution, exec_time = game.solve(minimum_matching_lower_bound)
+    if solution:
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
 
-    '''
+    """
     for state in game.states:
         # print(state.state.board)
         print(
@@ -202,25 +201,28 @@ if __name__ == "__main__":
             state.state.board.player,
             state.state.board.boxes,
         )
-    '''
+    """
 
     game = Greedy(board)
     print("Trivial")
-    if game.solve(trivial):
+    solution, exec_time = game.solve(trivial)
+    if solution:
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
 
     game = Greedy(board)
     print("Deadlock")
-    if game.solve(deadlock):
+    solution, exec_time = game.solve(deadlock)
+    if solution:
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
 
     game = Greedy(board)
     print("Euclidean+Deadlock")
-    if game.solve(euclidean_plus_deadlock):
+    solution, exec_time = game.solve(euclidean_plus_deadlock)
+    if solution:
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
