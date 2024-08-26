@@ -1,7 +1,7 @@
 from enum import Enum
 from dataclasses import dataclass
 
-from Board import Board, Coordinates
+from .Board import Board, Coordinates
 
 
 @dataclass(frozen=True, eq=True)
@@ -29,12 +29,13 @@ class Directions(Enum):
 
 class SearchSolver:
     def __init__(
-        self, board: Board, max_states_repeated: int = 20, states: list = None, steps: int = 0
+        self, board: Board, max_states_repeated: int = 20, states: list = None, steps: int = 0, frontier_nodes: int = 0
     ):
         self.board = board
         self.max_states_repeated = max_states_repeated
         self.states = states if states else []
         self._steps = steps
+        self._frontier_nodes = frontier_nodes
 
     def __eq__(self, other: "SearchSolver"):
         return (
@@ -48,6 +49,13 @@ class SearchSolver:
 
     def step(self):
         self._steps += 1
+
+    @property
+    def frontier_nodes(self):
+        return self._frontier_nodes
+
+    def increment_frontier_nodes(self):
+        self._frontier_nodes += 1
 
     def is_solved(self):
         return self.board.boxes == self.board.goals

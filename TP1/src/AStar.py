@@ -2,11 +2,11 @@ import heapq
 from dataclasses import dataclass, field
 from typing import Union
 
-import Levels
-
-from Heuristics import euclidean, manhattan
-from SearchSolver import SearchSolver, Coordinates, Board
-from utils import measure_exec_time
+from .Heuristics import euclidean, manhattan
+from .Levels import simple
+from .SearchSolver import SearchSolver, Coordinates, Board
+from .SearchSolverResult import SearchSolverResult
+from .utils import measure_exec_time
 
 
 # Sokoban board
@@ -93,7 +93,11 @@ class AStar(SearchSolver):
             self.states.append(current_node)
 
             if current_node.state.is_solved():
-                return True
+                return SearchSolverResult(
+                    has_solution=True,
+                    nodes_visited=len(nodes_visited),
+                    border_nodes=len(open_set),
+                )
 
             # Avoid loop
             if current_node == previous_node:
@@ -102,7 +106,11 @@ class AStar(SearchSolver):
                 repeated_states = 0
 
             if repeated_states > self.max_states_repeated:
-                return False
+                return SearchSolverResult(
+                    has_solution=False,
+                    nodes_visited=len(nodes_visited),
+                    border_nodes=len(open_set),
+                )
 
             previous_node = current_node
             # == END == Avoid loop
@@ -138,11 +146,15 @@ class AStar(SearchSolver):
                     self.came_from.append(next_node)
             self.step()
 
-        return False
+        return SearchSolverResult(
+            has_solution=False,
+            nodes_visited=len(nodes_visited),
+            border_nodes=len(open_set),
+        )
 
 
 if __name__ == "__main__":
-    board = Levels.simple()
+    board = simple()
 
     game = AStar(board)
 

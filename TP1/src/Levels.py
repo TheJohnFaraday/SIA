@@ -1,5 +1,5 @@
-from Board import Coordinates, Board
-from LevelGenerator import LevelGenerator
+from .Board import Coordinates, Board
+from .LevelGenerator import LevelGenerator
 
 
 def random(seed: int = 3, level: int = 1):

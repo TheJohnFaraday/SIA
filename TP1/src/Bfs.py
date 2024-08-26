@@ -1,9 +1,10 @@
 # BFS visits all nodes by level
 from collections import deque
 
-import Levels
-from SearchSolver import SearchSolver, Coordinates, Board
-from utils import measure_exec_time
+from .Levels import simple, narrow
+from .SearchSolver import SearchSolver, Coordinates, Board
+from .SearchSolverResult import SearchSolverResult
+from .utils import measure_exec_time
 
 # Sokoban board
 
@@ -43,7 +44,11 @@ class Bfs(SearchSolver):
             self.states.append(current_state)
 
             if current_state.is_solved():
-                return True
+                return SearchSolverResult(
+                    has_solution=True,
+                    nodes_visited=len(visited),
+                    border_nodes=len(queue),
+                )
 
             player_pos = current_state.board.player
             box_positions = current_state.board.boxes
@@ -63,12 +68,16 @@ class Bfs(SearchSolver):
                     queue.append(new_state)
             self.step()
 
-        return False
+        return SearchSolverResult(
+            has_solution=False,
+            nodes_visited=len(visited),
+            border_nodes=len(queue),
+        )
 
 
 if __name__ == "__main__":
-    board = Levels.simple()
-    board_2 = Levels.narrow()
+    board = simple()
+    board_2 = narrow()
 
     game = Bfs(board)
     solution, exec_time = game.solve()

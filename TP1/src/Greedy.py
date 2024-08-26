@@ -4,10 +4,9 @@ import math
 
 from dataclasses import dataclass, field
 
-import Levels
 
-from SearchSolver import SearchSolver, Coordinates, Board, State
-from Heuristics import (
+from .Levels import narrow
+from .Heuristics import (
     euclidean,
     manhattan,
     deadlock,
@@ -15,7 +14,9 @@ from Heuristics import (
     trivial,
     euclidean_plus_deadlock,
 )
-from utils import measure_exec_time
+from .SearchSolver import SearchSolver, Coordinates, Board, State
+from .SearchSolverResult import SearchSolverResult
+from .utils import measure_exec_time
 
 
 # Sokoban board
@@ -91,7 +92,11 @@ class Greedy(SearchSolver):
             self.states.append(current_state)
 
             if current_state.state.is_solved():
-                return True
+                return SearchSolverResult(
+                    has_solution=True,
+                    nodes_visited=len(visited),
+                    border_nodes=len(queue),
+                )
 
             # Avoid loop
             if current_state == previous_state:
@@ -100,7 +105,11 @@ class Greedy(SearchSolver):
                 repeated_states = 0
 
             if repeated_states > self.max_states_repeated:
-                return False
+                return SearchSolverResult(
+                    has_solution=False,
+                    nodes_visited=len(visited),
+                    border_nodes=len(queue),
+                )
 
             previous_state = current_state
             # == END == Avoid loop
@@ -135,7 +144,11 @@ class Greedy(SearchSolver):
 
             if final_state is None:
                 if len(path) < 1:
-                    return False
+                    return SearchSolverResult(
+                        has_solution=False,
+                        nodes_visited=len(visited),
+                        border_nodes=len(queue),
+                    )
                 else:
                     final_state = path.pop()
             else:
@@ -145,11 +158,15 @@ class Greedy(SearchSolver):
             pq.heappush(queue, final_state)
             self.step()
 
-        return False
+        return SearchSolverResult(
+            has_solution=False,
+            nodes_visited=len(visited),
+            border_nodes=len(queue),
+        )
 
 
 if __name__ == "__main__":
-    board = Levels.narrow()
+    board = narrow()
     print(board)
 
     game = Greedy(board)
