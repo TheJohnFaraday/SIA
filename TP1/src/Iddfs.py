@@ -1,9 +1,10 @@
 # IDDFS explores nodes incrementally by depth, restarting from the root at each depth limit.
 import time
 
-import Levels
-
-from SearchSolver import SearchSolver, Coordinates, Board
+from src import Levels
+from src.SearchSolver import SearchSolver
+from src.SearchSolverResult import SearchSolverResult
+from src.utils import measure_exec_time
 
 
 # Sokoban board
@@ -29,45 +30,52 @@ from SearchSolver import SearchSolver, Coordinates, Board
 
 
 class Iddfs(SearchSolver):
+
+    @measure_exec_time
     def solve(self):
-        timestamp = time.perf_counter_ns()
-        self.states = []
-        pasos = 0
-        depth_limit = 0
+            timestamp = time.perf_counter_ns()
+            self.states = []
+            pasos = 0
+            depth_limit = 0
 
-        while True:
-            stack: list[tuple[SearchSolver, int]] = [(self, 0)]
-            visited = {(self.board.player, frozenset(self.board.boxes))}
+            while True:
+                stack: list[tuple[SearchSolver, int]] = [(self, 0)]
+                visited = {(self.board.player, frozenset(self.board.boxes))}
 
-            while stack:
-                current_state, current_depth = stack.pop()
+                while stack:
+                    current_state, current_depth = stack.pop()
 
-                if current_state.is_solved():
-                    self.execution_time = time.perf_counter_ns() - timestamp
-                    print(f'#### PASOS: {pasos}')
-                    return True
+                    if current_state.is_solved():
+                        self.execution_time = time.perf_counter_ns() - timestamp
+                        #print(f'#### PASOS: {pasos}')
+                        return SearchSolverResult(
+                            has_solution=True,
+                            nodes_visited=len(visited),
+                            path_len=len(stack),
+                            border_nodes=len(stack),
+                        )
 
-                if current_depth < depth_limit:
-                    player_pos = current_state.board.player
-                    possible_moves = current_state.get_possible_moves(player_pos)
+                    if current_depth < depth_limit:
+                        player_pos = current_state.board.player
+                        possible_moves = current_state.get_possible_moves(player_pos)
 
-                    for move in possible_moves:
-                        new_state = current_state.move(player_pos, move)
-                        state_tuple = (new_state.board.player, frozenset(new_state.board.boxes))
+                        for move in possible_moves:
+                            new_state = current_state.move(player_pos, move)
+                            state_tuple = (new_state.board.player, frozenset(new_state.board.boxes))
 
-                        if state_tuple not in visited:
-                            visited.add(state_tuple)
-                            stack.append((new_state, current_depth + 1))
+                            if state_tuple not in visited:
+                                visited.add(state_tuple)
+                                stack.append((new_state, current_depth + 1))
 
-                pasos += 1
+                    pasos += 1
 
-            depth_limit += 1
-            self.execution_time = time.perf_counter_ns() - timestamp
-            print(f'#### Depth: {depth_limit} #### PASOS: {pasos}')
+                depth_limit += 1
+                self.execution_time = time.perf_counter_ns() - timestamp
+                #print(f'#### Depth: {depth_limit} #### PASOS: {pasos}')
 
 
 if __name__ == "__main__":
-    board = Levels.random(seed=5, level=1)
+    board = Levels.simple()
     print(board)
 
     game = Iddfs(board)

@@ -12,6 +12,7 @@ from src.Bfs import Bfs
 from src.Board import Board
 from src.Dfs import Dfs
 from src.Greedy import Greedy
+from src.Iddfs import Iddfs
 from src.SearchSolverResult import SearchSolverResult
 import src.Heuristics as heuristics
 
@@ -37,6 +38,12 @@ def solve_greedy(level: Callable[[], Board], heuristic: Callable):
 def solve_a_star(level: Callable[[], Board], heuristic: Callable):
     a_star = AStar(level())
     result = a_star.solve(heuristic)
+    return result
+
+
+def solve_iddfs(level: Callable[[], Board]):
+    iddfs = Iddfs(level())
+    result = iddfs.solve()
     return result
 
 
@@ -66,6 +73,7 @@ def solve(level: Callable[[], Board], times: int):
         futures = [
             executor.submit(run_solver, "DFS", solve_dfs, "", None),
             executor.submit(run_solver, "BFS", solve_bfs, "", None),
+            executor.submit(run_solver, "IDDFS", solve_iddfs, "", None),
             executor.submit(
                 run_solver, "A*", solve_a_star, "Euclidean", heuristics.euclidean
             ),
