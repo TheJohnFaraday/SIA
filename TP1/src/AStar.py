@@ -55,10 +55,17 @@ class AStar(SearchSolver):
         self.latest_node: AStarNode | None = None
 
     def reconstruct_path(self):
-        path = []
-        for node in self.came_from:
-            path.append(node.state.board)
+        path: list[AStarNode] = []
 
+        node = self.latest_node
+        path.append(node)
+        while node.parent is not None:
+            node = node.parent
+            path.append(node)
+
+        path.reverse()
+        for node in path:
+            print(node.state.board)
         return path
 
     @staticmethod
@@ -80,7 +87,6 @@ class AStar(SearchSolver):
         nodes_visited: dict[Coordinates, AStarNode] = {
             initial_node.state.board.player: initial_node
         }
-        self.came_from.append(initial_node)
 
         previous_node: AStarNode | None = None
         repeated_states = 0
@@ -145,7 +151,6 @@ class AStar(SearchSolver):
 
                     nodes_visited[neighbor] = next_node
                     heapq.heappush(open_set, (next_node.priority(), next_node))
-                    self.came_from.append(next_node)
             self.step()
 
         return SearchSolverResult(
