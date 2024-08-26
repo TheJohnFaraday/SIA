@@ -15,6 +15,8 @@ from Heuristics import (
     minimum_matching_lower_bound,
     trivial,
     euclidean_plus_deadlock,
+    minimum_matching_lower_bound_plus_deadlock,
+    euclidean_minimum_matching_lower_bound,
 )
 
 
@@ -114,14 +116,14 @@ class Greedy(SearchSolver):
             player_pos = current_state.state.board.player
             box_positions = current_state.state.board.boxes
 
-            visited.add(State(player_pos, frozenset(box_positions)))
+            visited.add((player_pos, frozenset(box_positions)))
 
             possible_moves = current_state.state.get_possible_moves(player_pos)
             possible_states: [StatePriority] = []
             for move in possible_moves:
                 possible_move = current_state.state.move(player_pos, move)
                 if (
-                    State(
+                    (
                         possible_move.board.player,
                         frozenset(possible_move.board.boxes)
                     )
@@ -150,6 +152,8 @@ class Greedy(SearchSolver):
                 path.append(final_state)
 
             # print(f'NEXT STATE: \n{final_state.state.board}\n')
+            # print(f"### PASOS: {len(path)}")
+            # print(f"### VISITED: {len(visited)}")
             pq.heappush(queue, final_state)
             pasos += 1
 
@@ -159,10 +163,28 @@ class Greedy(SearchSolver):
 
 
 if __name__ == "__main__":
-    board = Levels.random(seed=5, level=1)
+    board = Levels.random(seed=5, level=3)
+
     print(board)
+    '''
+    print(f'#### PLAYER: {board.player}')
+    print(f'#### BOXES: {board.boxes}')
+    print(f'#### GOALS: {board.goals}')
+    '''
 
     game = Greedy(board)
+    print("MMLB + Deadlock")
+    if game.solve(minimum_matching_lower_bound_plus_deadlock):
+        print("¡Solución encontrada!")
+    else:
+        print("No se encontró solución.")
+
+    print("Euclidean + MMLB")
+    if game.solve(euclidean_minimum_matching_lower_bound):
+        print("¡Solución encontrada!")
+    else:
+        print("No se encontró solución.")
+
     print("Euclidean")
     if game.solve(euclidean):
         print("¡Solución encontrada!")

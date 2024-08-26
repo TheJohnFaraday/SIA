@@ -44,27 +44,28 @@ class LevelGenerator:
                     row.append(Board.Cell.EMPTY)
             grid.append(row)
 
-        buttons = box_number
+        goals = box_number
 
-        buttons_location = []
+        goals_location = set()
         # Randomly place the solution buttons
-        while buttons > 0:
+        while goals > 0:
             i = rnd.randint(1, level_size - 2)
             j = rnd.randint(1, level_size - 2)
-            if grid[i][j] == Board.Cell.EMPTY:
-                grid[i][j] = Board.Cell.GOAL
-                buttons -= 1
-                buttons_location.append(Coordinates(y=i, x=j))
+            if (Coordinates(y=i, x=j) not in goals_location
+                    and grid[i][j] == Board.Cell.EMPTY):
+                goals -= 1
+                goals_location.add(Coordinates(y=i, x=j))
 
-        boxes_location = []
+        boxes_location = set()
         # Randomly place the boxes (outside the buttons)
         while box_number > 0:
             i = rnd.randint(2, level_size - 3)
             j = rnd.randint(2, level_size - 3)
-            if grid[i][j] == Board.Cell.EMPTY:
-                grid[i][j] = Board.Cell.BOX
+            if (Coordinates(y=i, x=j) not in goals_location
+                and Coordinates(y=i, x=j) not in boxes_location
+                    and grid[i][j] == Board.Cell.EMPTY):
                 box_number -= 1
-                boxes_location.append(Coordinates(y=i, x=j))
+                boxes_location.add(Coordinates(y=i, x=j))
 
         player_position = None
         # Randomly place the player somewhere in the board
@@ -72,7 +73,9 @@ class LevelGenerator:
         while flag:
             i = rnd.randint(2, level_size - 3)
             j = rnd.randint(2, level_size - 3)
-            if grid[i][j] == Board.Cell.EMPTY:
+            if (Coordinates(y=i, x=j) not in goals_location
+                and Coordinates(y=i, x=j) not in boxes_location
+                    and grid[i][j] == Board.Cell.EMPTY):
                 grid[i][j] = Board.Cell.PLAYER
                 flag = False
                 player_position = Coordinates(y=i, x=j)
@@ -82,17 +85,14 @@ class LevelGenerator:
         while random_spaces > 0:
             i = rnd.randint(1, level_size - 2)
             j = rnd.randint(1, level_size - 2)
-            if grid[i][j] == Board.Cell.EMPTY:
+            if (Coordinates(y=i, x=j) not in goals_location
+                and Coordinates(y=i, x=j) not in boxes_location
+                and Coordinates(y=j, x=j) != player_position
+                    and grid[i][j] == Board.Cell.EMPTY):
                 grid[i][j] = Board.Cell.WALL
                 random_spaces -= 1
-        for i in range(level_size):
-            for j in range(level_size):
-                if (grid[i][j] == Board.Cell.PLAYER
-                    or grid[i][j] == Board.Cell.BOX
-                        or grid[i][j] == Board.Cell.GOAL):
-                    grid[i][j] = Board.Cell.EMPTY
 
-        return (grid, player_position, boxes_location, buttons_location)
+        return (grid, player_position, boxes_location, goals_location)
 
 
 # "#######"  <- # == wall

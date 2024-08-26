@@ -26,6 +26,24 @@ def euclidean(state: SearchSolver) -> int:
     return heuristic
 
 
+def euclidean_minimum_matching_lower_bound(state: SearchSolver) -> int:
+    num_boxes = len(state.board.boxes)
+    cost_matrix = np.zeros((num_boxes, num_boxes))
+
+    # cost matrix boxes X goals
+    for i, box in enumerate(state.board.boxes):
+        for j, goal in enumerate(state.board.goals):
+            # Manhattan
+            cost_matrix[i, j] = math.sqrt((box.x - goal.x)**2
+                                          + (box.y - goal.y)**2)
+
+    # Apply Hungarian method
+    row_indices, col_indices = linear_sum_assignment(cost_matrix)
+    total_cost = cost_matrix[row_indices, col_indices].sum()
+
+    return int(total_cost)
+
+
 def manhattan(state: SearchSolver) -> int:
     heuristic = 0
     player = state.board.player
@@ -75,3 +93,9 @@ def trivial(state: SearchSolver) -> int:
 
 def euclidean_plus_deadlock(state: SearchSolver) -> int:
     return euclidean(state) + deadlock(state)
+
+
+def minimum_matching_lower_bound_plus_deadlock(
+        state: SearchSolver
+        ) -> int:
+    return minimum_matching_lower_bound(state) + deadlock(state)
