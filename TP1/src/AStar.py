@@ -96,6 +96,7 @@ class AStar(SearchSolver):
                 return SearchSolverResult(
                     has_solution=True,
                     nodes_visited=len(nodes_visited),
+                    path_len=len(self.reconstruct_path()),
                     border_nodes=len(open_set),
                 )
 
@@ -109,6 +110,7 @@ class AStar(SearchSolver):
                 return SearchSolverResult(
                     has_solution=False,
                     nodes_visited=len(nodes_visited),
+                    path_len=0,
                     border_nodes=len(open_set),
                 )
 
@@ -149,6 +151,7 @@ class AStar(SearchSolver):
         return SearchSolverResult(
             has_solution=False,
             nodes_visited=len(nodes_visited),
+            path_len=0,
             border_nodes=len(open_set),
         )
 

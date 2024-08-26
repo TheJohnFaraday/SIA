@@ -49,6 +49,7 @@ class Dfs(SearchSolver):
                 return SearchSolverResult(
                     has_solution=True,
                     nodes_visited=len(visited),
+                    path_len=len(stack),
                     border_nodes=len(stack),
                 )
 
@@ -70,6 +71,7 @@ class Dfs(SearchSolver):
         return SearchSolverResult(
             has_solution=False,
             nodes_visited=len(visited),
+            path_len=0,
             border_nodes=len(stack),
         )
 

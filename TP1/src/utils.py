@@ -15,6 +15,7 @@ def measure_exec_time(f):
             has_solution=r.has_solution,
             nodes_visited=r.nodes_visited,
             border_nodes=r.nodes_visited,
+            path_len=r.path_len,
             execution_time_ns=execution_time,
         )
 

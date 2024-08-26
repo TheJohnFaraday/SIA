@@ -47,6 +47,7 @@ class Bfs(SearchSolver):
                 return SearchSolverResult(
                     has_solution=True,
                     nodes_visited=len(visited),
+                    path_len=len(queue),
                     border_nodes=len(queue),
                 )
 
@@ -71,6 +72,7 @@ class Bfs(SearchSolver):
         return SearchSolverResult(
             has_solution=False,
             nodes_visited=len(visited),
+            path_len=0,
             border_nodes=len(queue),
         )
 

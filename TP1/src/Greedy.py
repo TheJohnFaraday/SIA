@@ -97,6 +97,7 @@ class Greedy(SearchSolver):
                 return SearchSolverResult(
                     has_solution=True,
                     nodes_visited=len(visited),
+                    path_len=len(path),
                     border_nodes=len(queue),
                 )
 
@@ -110,6 +111,7 @@ class Greedy(SearchSolver):
                 return SearchSolverResult(
                     has_solution=False,
                     nodes_visited=len(visited),
+                    path_len=0,
                     border_nodes=len(queue),
                 )
 
@@ -166,6 +168,7 @@ class Greedy(SearchSolver):
         return SearchSolverResult(
             has_solution=False,
             nodes_visited=len(visited),
+            path_len=0,
             border_nodes=len(queue),
         )
 
