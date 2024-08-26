@@ -1,14 +1,12 @@
 # Greedy chooses based on an heuristic which node to visit
 import heapq as pq
 import math
-import time
 
 from dataclasses import dataclass, field
 
-import Levels
 
-from SearchSolver import SearchSolver, Coordinates, Board, State
-from Heuristics import (
+from .Levels import narrow
+from .Heuristics import (
     euclidean,
     manhattan,
     deadlock,
@@ -18,6 +16,9 @@ from Heuristics import (
     minimum_matching_lower_bound_plus_deadlock,
     euclidean_minimum_matching_lower_bound,
 )
+from .SearchSolver import SearchSolver, Coordinates, Board, State
+from .SearchSolverResult import SearchSolverResult
+from .utils import measure_exec_time
 
 
 # Sokoban board
@@ -64,8 +65,8 @@ class StatePriority:
 
 class Greedy(SearchSolver):
 
+    @measure_exec_time
     def solve(self, heuristic: callable(SearchSolver)):
-        timestamp = time.perf_counter_ns()
         self.states: list[StatePriority] = []
 
         initial_state = StatePriority(heuristic(self), self)
@@ -86,8 +87,6 @@ class Greedy(SearchSolver):
         previous_state: StatePriority | None = None
         repeated_states = 0
 
-        pasos = 0
-
         while queue:
             # Next movement
             current_state: StatePriority = pq.heappop(queue)
@@ -95,9 +94,11 @@ class Greedy(SearchSolver):
             self.states.append(current_state)
 
             if current_state.state.is_solved():
-                self.execution_time = time.perf_counter_ns() - timestamp
-                print(f"### PASOS: {pasos}")
-                return True
+                return SearchSolverResult(
+                    has_solution=True,
+                    nodes_visited=len(visited),
+                    border_nodes=len(queue),
+                )
 
             # Avoid loop
             if current_state == previous_state:
@@ -106,9 +107,11 @@ class Greedy(SearchSolver):
                 repeated_states = 0
 
             if repeated_states > self.max_states_repeated:
-                self.execution_time = time.perf_counter_ns() - timestamp
-                print(f"### PASOS: {pasos}")
-                return False
+                return SearchSolverResult(
+                    has_solution=False,
+                    nodes_visited=len(visited),
+                    border_nodes=len(queue),
+                )
 
             previous_state = current_state
             # == END == Avoid loop
@@ -144,8 +147,11 @@ class Greedy(SearchSolver):
 
             if final_state is None:
                 if len(path) < 1:
-                    print(f"### PASOS: {pasos}")
-                    return False
+                    return SearchSolverResult(
+                        has_solution=False,
+                        nodes_visited=len(visited),
+                        border_nodes=len(queue),
+                    )
                 else:
                     final_state = path.pop()
             else:
@@ -155,16 +161,17 @@ class Greedy(SearchSolver):
             # print(f"### PASOS: {len(path)}")
             # print(f"### VISITED: {len(visited)}")
             pq.heappush(queue, final_state)
-            pasos += 1
+            self.step()
 
-        self.execution_time = time.perf_counter_ns() - timestamp
-        print(f"### PASOS: {pasos}")
-        return False
+        return SearchSolverResult(
+            has_solution=False,
+            nodes_visited=len(visited),
+            border_nodes=len(queue),
+        )
 
 
 if __name__ == "__main__":
-    board = Levels.random(seed=5, level=3)
-
+    board = narrow()
     print(board)
     '''
     print(f'#### PLAYER: {board.player}')
@@ -186,37 +193,43 @@ if __name__ == "__main__":
         print("No se encontró solución.")
 
     print("Euclidean")
-    if game.solve(euclidean):
+    solution, exec_time = game.solve(euclidean)
+    if solution:
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
-    '''
+    print(f"Steps: {game.steps}")
+    """
     for state in game.states:
         # print(state.state.board)
         print(euclidean(state.state), state.state.board.player, state.state.board.boxes)
-    '''
+    """
 
     game = Greedy(board)
     print("Manhattan")
-    if game.solve(manhattan):
+    solution, exec_time = game.solve(manhattan)
+    if solution:
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
+    print(f"Steps: {game.steps}")
 
-    '''
+    """
     for state in game.states:
         # print(state.state.board)
         print(manhattan(state.state), state.state.board.player, state.state.board.boxes)
-    '''
+    """
 
     game = Greedy(board)
     print("MMLB")
-    if game.solve(minimum_matching_lower_bound):
+    solution, exec_time = game.solve(minimum_matching_lower_bound)
+    if solution:
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
+    print(f"Steps: {game.steps}")
 
-    '''
+    """
     for state in game.states:
         # print(state.state.board)
         print(
@@ -224,25 +237,31 @@ if __name__ == "__main__":
             state.state.board.player,
             state.state.board.boxes,
         )
-    '''
+    """
 
     game = Greedy(board)
     print("Trivial")
-    if game.solve(trivial):
+    solution, exec_time = game.solve(trivial)
+    if solution:
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
+    print(f"Steps: {game.steps}")
 
     game = Greedy(board)
     print("Deadlock")
-    if game.solve(deadlock):
+    solution, exec_time = game.solve(deadlock)
+    if solution:
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
+    print(f"Steps: {game.steps}")
 
     game = Greedy(board)
     print("Euclidean+Deadlock")
-    if game.solve(euclidean_plus_deadlock):
+    solution, exec_time = game.solve(euclidean_plus_deadlock)
+    if solution:
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
+    print(f"Steps: {game.steps}")

@@ -1,13 +1,12 @@
 import heapq
-import math
-import time
 from dataclasses import dataclass, field
 from typing import Union
 
-import Levels
-
-from Heuristics import euclidean, manhattan
-from SearchSolver import SearchSolver, Coordinates, Board
+from .Heuristics import euclidean, manhattan
+from .Levels import simple
+from .SearchSolver import SearchSolver, Coordinates, Board
+from .SearchSolverResult import SearchSolverResult
+from .utils import measure_exec_time
 
 
 # Sokoban board
@@ -48,9 +47,9 @@ class AStarNode:
 
 class AStar(SearchSolver):
     def __init__(
-        self, board: Board, max_states_repeated: int = 20, states: list = None
+        self, board: Board, max_states_repeated: int = 20, states: list = None, steps: int = 0
     ):
-        super().__init__(board, max_states_repeated=max_states_repeated, states=states)
+        super().__init__(board, max_states_repeated=max_states_repeated, states=states, steps=steps)
 
         self.came_from: list[AStarNode] = []
         self.latest_node: AStarNode | None = None
@@ -67,9 +66,8 @@ class AStar(SearchSolver):
         # TODO: Deadlock must return infinite cost
         return 1
 
+    @measure_exec_time
     def solve(self, heuristic: callable(SearchSolver)):
-        timestamp = time.perf_counter_ns()
-
         initial_node = AStarNode(state=self, g_value=0, h_value=0, parent=None)
 
         open_set: list[tuple[int, AStarNode]] = []
@@ -95,8 +93,11 @@ class AStar(SearchSolver):
             self.states.append(current_node)
 
             if current_node.state.is_solved():
-                self.execution_time = time.perf_counter_ns() - timestamp
-                return True
+                return SearchSolverResult(
+                    has_solution=True,
+                    nodes_visited=len(nodes_visited),
+                    border_nodes=len(open_set),
+                )
 
             # Avoid loop
             if current_node == previous_node:
@@ -105,8 +106,11 @@ class AStar(SearchSolver):
                 repeated_states = 0
 
             if repeated_states > self.max_states_repeated:
-                self.execution_time = time.perf_counter_ns() - timestamp
-                return False
+                return SearchSolverResult(
+                    has_solution=False,
+                    nodes_visited=len(nodes_visited),
+                    border_nodes=len(open_set),
+                )
 
             previous_node = current_node
             # == END == Avoid loop
@@ -140,18 +144,23 @@ class AStar(SearchSolver):
                     nodes_visited[neighbor] = next_node
                     heapq.heappush(open_set, (next_node.priority(), next_node))
                     self.came_from.append(next_node)
+            self.step()
 
-        self.execution_time = time.perf_counter_ns() - timestamp
-        return False
+        return SearchSolverResult(
+            has_solution=False,
+            nodes_visited=len(nodes_visited),
+            border_nodes=len(open_set),
+        )
 
 
 if __name__ == "__main__":
-    board = Levels.simple()
+    board = simple()
 
     game = AStar(board)
 
     print("Euclidean")
-    if game.solve(euclidean):
+    solution, exec_time = game.solve(euclidean)
+    if solution:
         print("¡Solución encontrada!")
 
         path = game.reconstruct_path()
@@ -160,11 +169,13 @@ if __name__ == "__main__":
             print(p)
     else:
         print("No se encontró solución.")
+    print(f"Steps: {game.steps}")
 
-    print(f"Took: {game.execution_time} ns")
+    print(f"Took: {exec_time} ns")
 
     print("Manhattan")
-    if game.solve(manhattan):
+    solution, exec_time = game.solve(manhattan)
+    if solution:
         print("¡Solución encontrada!")
 
         path = game.reconstruct_path()
@@ -173,5 +184,6 @@ if __name__ == "__main__":
             print(p)
     else:
         print("No se encontró solución.")
+    print(f"Steps: {game.steps}")
 
-    print(f"Took: {game.execution_time} ns")
+    print(f"Took: {exec_time} ns")

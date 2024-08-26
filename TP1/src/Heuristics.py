@@ -1,7 +1,7 @@
 import math
 import numpy as np
 from scipy.optimize import linear_sum_assignment
-from SearchSolver import SearchSolver, Coordinates
+from .SearchSolver import SearchSolver
 
 
 def euclidean(state: SearchSolver) -> int:

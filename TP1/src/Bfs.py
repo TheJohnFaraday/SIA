@@ -1,10 +1,10 @@
 # BFS visits all nodes by level
-import time
-
 from collections import deque
-from SearchSolver import SearchSolver, Coordinates, Board
-import Levels
 
+from .Levels import simple, narrow
+from .SearchSolver import SearchSolver, Coordinates, Board
+from .SearchSolverResult import SearchSolverResult
+from .utils import measure_exec_time
 
 # Sokoban board
 
@@ -29,10 +29,9 @@ import Levels
 
 
 class Bfs(SearchSolver):
+    @measure_exec_time
     def solve(self):
-        timestamp = time.perf_counter_ns()
         self.states = []
-        pasos = 0
 
         initial_state = self
 
@@ -45,9 +44,11 @@ class Bfs(SearchSolver):
             self.states.append(current_state)
 
             if current_state.is_solved():
-                self.execution_time = time.perf_counter_ns() - timestamp
-                print(f'#### PASOS: {pasos}')
-                return True
+                return SearchSolverResult(
+                    has_solution=True,
+                    nodes_visited=len(visited),
+                    border_nodes=len(queue),
+                )
 
             player_pos = current_state.board.player
             box_positions = current_state.board.boxes
@@ -65,38 +66,29 @@ class Bfs(SearchSolver):
                         (player_pos, frozenset(box_positions))
                     )
                     queue.append(new_state)
-            pasos += 1
+            self.step()
 
-        self.execution_time = time.perf_counter_ns() - timestamp
-        print(f'#### PASOS: {pasos}')
-        return False
+        return SearchSolverResult(
+            has_solution=False,
+            nodes_visited=len(visited),
+            border_nodes=len(queue),
+        )
 
 
 if __name__ == "__main__":
     # board = Levels.random(seed=5, level=1)
-    board = Levels.simple()
+    board = simple()
     print(board)
 
     game = Bfs(board)
-    if game.solve():
+    solution, exec_time = game.solve()
+    if solution:
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
+    print(f"Steps: {game.steps}")
 
     for state in game.states:
         print(state.board)
 
-    print(f"Took: {game.execution_time} ns")
-
-    '''
-    game = Bfs(board)
-    if game.solve():
-        print("¡Solución encontrada!")
-    else:
-        print("No se encontró solución.")
-
-    for state in game.states:
-        print(state.board)
-
-    print(f"Took: {game.execution_time} ns")
-    '''
+    print(f"Took: {exec_time} ns")

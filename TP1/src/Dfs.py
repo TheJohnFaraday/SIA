@@ -1,10 +1,10 @@
 # DFS visits one entire branch doing backtracking once arrived at the deepest node
-import time
 
-import Levels
+from .Levels import simple
+from .SearchSolver import SearchSolver, Coordinates, Board
+from .SearchSolverResult import SearchSolverResult
 
-from SearchSolver import SearchSolver, Coordinates, Board
-
+from .utils import measure_exec_time
 
 # Sokoban board
 
@@ -30,10 +30,9 @@ from SearchSolver import SearchSolver, Coordinates, Board
 
 class Dfs(SearchSolver):
 
+    @measure_exec_time
     def solve(self):
-        timestamp = time.perf_counter_ns()
         self.states: list[SearchSolver] = []
-        pasos = 0
 
         initial_state = self
         # The stack is going to persist our frontier states
@@ -47,9 +46,11 @@ class Dfs(SearchSolver):
             self.states.append(current_state)
 
             if current_state.is_solved():
-                self.execution_time = time.perf_counter_ns() - timestamp
-                print(f'#### PASOS: {pasos}')
-                return True
+                return SearchSolverResult(
+                    has_solution=True,
+                    nodes_visited=len(visited),
+                    border_nodes=len(stack),
+                )
 
             player_pos = current_state.board.player
             box_positions = current_state.board.boxes
@@ -63,26 +64,24 @@ class Dfs(SearchSolver):
                 ) not in visited:
                     visited.add((player_pos, frozenset(box_positions)))
                     stack.append(new_state)
-            pasos += 1
 
-        self.execution_time = time.perf_counter_ns() - timestamp
-        print(f'#### PASOS: {pasos}')
-        return False
+            self.step()
+
+        return SearchSolverResult(
+            has_solution=False,
+            nodes_visited=len(visited),
+            border_nodes=len(stack),
+        )
 
 
 if __name__ == "__main__":
-    board = Levels.random(seed=5, level=1)
-    print(board)
+    board = simple()
 
     game = Dfs(board)
-    if game.solve():
+    solution, exec_time = game.solve()
+    if solution:
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
 
-    '''
-    for state in game.states:
-        print(state.board)
-    '''
-
-    print(f"Took: {game.execution_time} ns")
+    print(f"Took: {exec_time} ns")

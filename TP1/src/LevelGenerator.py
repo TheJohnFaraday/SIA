@@ -1,6 +1,6 @@
 import random as rnd
 
-from Board import Coordinates, Board
+from .Board import Coordinates, Board
 
 
 class LevelGenerator:
