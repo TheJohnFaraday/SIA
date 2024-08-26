@@ -81,11 +81,35 @@ def solve(level: Callable[[], Board], times: int):
                 run_solver, "A*", solve_a_star, "Manhattan", heuristics.manhattan
             ),
             executor.submit(
+                run_solver, "A*", solve_a_star, "MMLB", heuristics.minimum_matching_lower_bound
+            ),
+            executor.submit(
+                run_solver, "A*", solve_a_star, "Deadlock", heuristics.deadlock
+            ),
+            executor.submit(
+                run_solver, "A*", solve_a_star, "Euclidean + Deadlock", heuristics.euclidean_plus_deadlock
+            ),
+            executor.submit(
+                run_solver, "A*", solve_a_star, "Euclidean MMLB", heuristics.euclidean_minimum_matching_lower_bound
+            ),
+            executor.submit(
                 run_solver, "Greedy", solve_greedy, "Euclidean", heuristics.euclidean
             ),
             executor.submit(
                 run_solver, "Greedy", solve_greedy, "Manhattan", heuristics.manhattan
             ),
+            executor.submit(
+                run_solver, "Greedy", solve_greedy, "MMLB", heuristics.minimum_matching_lower_bound
+            ),
+            executor.submit(
+                run_solver, "Greedy", solve_greedy, "Deadlock", heuristics.deadlock
+            ),
+            executor.submit(
+                run_solver, "Greedy", solve_greedy, "Euclidean + Deadlock", heuristics.euclidean_plus_deadlock
+            ),
+            executor.submit(
+                run_solver, "Greedy", solve_greedy, "Euclidean MMLB", heuristics.euclidean_minimum_matching_lower_bound
+            )
         ]
 
         for future in as_completed(futures):
@@ -97,7 +121,11 @@ def solve(level: Callable[[], Board], times: int):
 
     print(df)
     print(f"Total execution time: {total_execution_time}")
+    average_times_by_method_heuristic = df.groupby(['method', 'heuristic',
+                                                    'has_solution', 'border_nodes'
+                                                    , 'path_len'])['execution_time_ns'].mean().reset_index()
+    print(average_times_by_method_heuristic)
 
 
 if __name__ == "__main__":
-    solve(Levels.simple, times=10)
+    solve(Levels.level53, times=10)

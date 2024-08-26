@@ -153,6 +153,7 @@ class Greedy(SearchSolver):
                         has_solution=False,
                         nodes_visited=len(visited),
                         border_nodes=len(queue),
+                        path_len=0
                     )
                 else:
                     final_state = path.pop()

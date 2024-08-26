@@ -51,7 +51,7 @@ class Iddfs(SearchSolver):
                         return SearchSolverResult(
                             has_solution=True,
                             nodes_visited=len(visited),
-                            path_len=len(stack),
+                            path_len=current_depth,
                             border_nodes=len(stack),
                         )
 
