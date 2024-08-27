@@ -121,12 +121,14 @@ def solve(level: Callable[[], Board], times: int):
 
     print(df)
     print(f"Total execution time: {total_execution_time}")
+    '''
     average_times_by_method_heuristic = (
         df.groupby(["method", "heuristic", "has_solution", "border_nodes", "path_len"])
         .agg({"execution_time_ns": ["mean", "std"]})
         .reset_index()
     )
     print(average_times_by_method_heuristic)
+    '''
     return df
 
 
@@ -135,7 +137,7 @@ def graph_nodes(df):
     df_to_graph['heuristic'].fillna('No aplica')
     df_to_graph['method_heuristic'] = df_to_graph['method'] + ' (' + df_to_graph['heuristic'] + ')'
 
-    print(df_to_graph)
+    # print(df_to_graph)
 
     chart = alt.Chart(df_to_graph).mark_bar().encode(
             x=alt.X("method_heuristic:N", title="Algoritmo", sort="x"),
@@ -149,9 +151,30 @@ def graph_nodes(df):
     chart.show()
 
 
+def graph_exec_time(df):
+    df_to_graph = df[["method", "heuristic", "execution_time_ns"]].copy()
+    df_to_graph['heuristic'].fillna('No aplica')
+    df_to_graph['method_heuristic'] = df_to_graph['method'] + ' (' + df_to_graph['heuristic'] + ')'
+    print(df_to_graph)
+
+    base = alt.Chart(df_to_graph).mark_point().encode(
+        x=alt.X("method_heuristic:N", title="Algoritmo", sort="x"),
+        y=alt.Y("mean(execution_time_ns):Q", title="Tiempo de ejecución (ns)"),
+        color="method_heuristic:N",
+    )
+
+    errorbars = alt.Chart(df_to_graph).mark_errorbar(extent="ci").encode(
+        x='method_heuristic',
+        y=alt.Y("execution_time_ns", title=''),
+    )
+    chart = base + errorbars
+    chart.show()
+
+
 if __name__ == "__main__":
-    df = solve(Levels.level53, times=10)
+    df = solve(Levels.level53, times=3)
 
     alt.renderers.enable("browser")
 
     graph_nodes(df)
+    graph_exec_time(df.copy())
