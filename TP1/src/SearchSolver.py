@@ -5,6 +5,12 @@ from .Board import Board, Coordinates
 
 
 @dataclass(frozen=True, eq=True)
+class Node:
+    state: "SearchSolver"
+    path: list["SearchSolver"]
+
+
+@dataclass(frozen=True, eq=True)
 class State:
     player_pos: Coordinates
     box_positions: frozenset[Coordinates]
@@ -48,7 +54,7 @@ class SearchSolver:
         )
 
     def __hash__(self):
-        return hash((self.board.player, self.board.boxes.__hash__))
+        return hash((self.board.player, self.board))
 
     @property
     def steps(self):

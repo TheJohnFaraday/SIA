@@ -46,22 +46,14 @@ class AStarNode:
 
 
 class AStar(SearchSolver):
-    def __init__(
-        self, board: Board, max_states_repeated: int = 20, states: list = None, steps: int = 0
-    ):
-        super().__init__(board, max_states_repeated=max_states_repeated, states=states, steps=steps)
-
-        self.came_from: list[AStarNode] = []
-        self.latest_node: AStarNode | None = None
-
     def reconstruct_path(self):
-        path: list[AStarNode] = []
+        path: list[SearchSolver] = []
 
-        node = self.latest_node
-        path.append(node)
+        node = self._latest_node
+        path.append(node.state)
         while node.parent is not None:
             node = node.parent
-            path.append(node)
+            path.append(node.state)
 
         path.reverse()
         return path
@@ -93,8 +85,7 @@ class AStar(SearchSolver):
             current_node: AStarNode
             _, current_node = heapq.heappop(open_set)
 
-            self.latest_node = current_node
-            self.states.append(current_node)
+            self._latest_node = current_node
 
             if current_node.state.is_solved():
                 return SearchSolverResult(
@@ -165,8 +156,8 @@ if __name__ == "__main__":
     game = AStar(board)
 
     print("Euclidean")
-    solution, exec_time = game.solve(euclidean)
-    if solution:
+    solution = game.solve(euclidean)
+    if solution.has_solution:
         print("¡Solución encontrada!")
 
         path = game.reconstruct_path()
@@ -177,11 +168,11 @@ if __name__ == "__main__":
         print("No se encontró solución.")
     print(f"Steps: {game.steps}")
 
-    print(f"Took: {exec_time} ns")
+    print(f"Took: {solution.execution_time_ns} ns")
 
     print("Manhattan")
-    solution, exec_time = game.solve(manhattan)
-    if solution:
+    solution = game.solve(manhattan)
+    if solution.has_solution:
         print("¡Solución encontrada!")
 
         path = game.reconstruct_path()
@@ -192,4 +183,4 @@ if __name__ == "__main__":
         print("No se encontró solución.")
     print(f"Steps: {game.steps}")
 
-    print(f"Took: {exec_time} ns")
+    print(f"Took: {solution.execution_time_ns} ns")

@@ -86,11 +86,11 @@ if __name__ == "__main__":
     print(board)
 
     game = Bfs(board)
-    solution, exec_time = game.solve()
-    if solution:
+    solution = game.solve()
+    if solution.has_solution:
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
     print(f"Steps: {game.steps}")
 
-    print(f"Took: {exec_time} ns")
+    print(f"Took: {solution.execution_time_ns} ns")

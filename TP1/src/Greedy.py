@@ -67,8 +67,6 @@ class Greedy(SearchSolver):
 
     @measure_exec_time
     def solve(self, heuristic: callable(SearchSolver)):
-        self.states: list[StatePriority] = []
-
         initial_state = StatePriority(heuristic(self), self)
 
         queue: list[StatePriority] = []
@@ -90,8 +88,6 @@ class Greedy(SearchSolver):
         while queue:
             # Next movement
             current_state: StatePriority = pq.heappop(queue)
-
-            self.states.append(current_state)
 
             if current_state.state.is_solved():
                 return SearchSolverResult(
@@ -197,8 +193,8 @@ if __name__ == "__main__":
         print("No se encontró solución.")
 
     print("Euclidean")
-    solution, exec_time = game.solve(euclidean)
-    if solution:
+    solution = game.solve(euclidean)
+    if solution.has_solution:
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
@@ -211,8 +207,8 @@ if __name__ == "__main__":
 
     game = Greedy(board)
     print("Manhattan")
-    solution, exec_time = game.solve(manhattan)
-    if solution:
+    solution = game.solve(manhattan)
+    if solution.has_solution:
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
@@ -226,8 +222,8 @@ if __name__ == "__main__":
 
     game = Greedy(board)
     print("MMLB")
-    solution, exec_time = game.solve(minimum_matching_lower_bound)
-    if solution:
+    solution = game.solve(minimum_matching_lower_bound)
+    if solution.has_solution:
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
@@ -245,8 +241,8 @@ if __name__ == "__main__":
 
     game = Greedy(board)
     print("Trivial")
-    solution, exec_time = game.solve(trivial)
-    if solution:
+    solution = game.solve(trivial)
+    if solution.has_solution:
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
@@ -254,8 +250,8 @@ if __name__ == "__main__":
 
     game = Greedy(board)
     print("Deadlock")
-    solution, exec_time = game.solve(deadlock)
-    if solution:
+    solution = game.solve(deadlock)
+    if solution.has_solution:
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
@@ -263,8 +259,8 @@ if __name__ == "__main__":
 
     game = Greedy(board)
     print("Euclidean+Deadlock")
-    solution, exec_time = game.solve(euclidean_plus_deadlock)
-    if solution:
+    solution = game.solve(euclidean_plus_deadlock)
+    if solution.has_solution:
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")

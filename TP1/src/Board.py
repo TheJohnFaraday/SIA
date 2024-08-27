@@ -32,8 +32,8 @@ class Board:
     def __init__(
         self,
         player: Coordinates,
-        boxes: set[Coordinates],
-        goals: set[Coordinates],
+        boxes: frozenset[Coordinates],
+        goals: frozenset[Coordinates],
         board: list[list[Cell]] = None,
         n_rows: int = None,
         n_cols: int = None,
@@ -192,7 +192,7 @@ class Board:
 
         return self.__class__(
             player=new_position,
-            boxes=new_boxes,
+            boxes=frozenset(new_boxes),
             goals=self._goals,
             board=self._board,
         )
