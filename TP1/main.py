@@ -75,40 +75,66 @@ def solve(level: Callable[[], Board], times: int):
             executor.submit(run_solver, "BFS", solve_bfs, "", None),
             executor.submit(run_solver, "IDDFS", solve_iddfs, "", None),
             executor.submit(
-                run_solver, "A*", solve_a_star, "Euclidean", heuristics.euclidean
+                run_solver,
+                "A*", solve_a_star,
+                "Euclidean", heuristics.euclidean
             ),
             executor.submit(
-                run_solver, "A*", solve_a_star, "Manhattan", heuristics.manhattan
+                run_solver,
+                "A*", solve_a_star,
+                "Manhattan", heuristics.manhattan
             ),
             executor.submit(
-                run_solver, "A*", solve_a_star, "MMLB", heuristics.minimum_matching_lower_bound
+                run_solver,
+                "A*", solve_a_star,
+                "MMLB", heuristics.minimum_matching_lower_bound
             ),
             executor.submit(
-                run_solver, "A*", solve_a_star, "Deadlock", heuristics.deadlock
+                run_solver,
+                "A*", solve_a_star,
+                "Deadlock", heuristics.deadlock
             ),
             executor.submit(
-                run_solver, "A*", solve_a_star, "Euclidean + Deadlock", heuristics.euclidean_plus_deadlock
+                run_solver,
+                "A*", solve_a_star,
+                "Euclidean + Deadlock", heuristics.euclidean_plus_deadlock
             ),
             executor.submit(
-                run_solver, "A*", solve_a_star, "Euclidean MMLB", heuristics.euclidean_minimum_matching_lower_bound
+                run_solver,
+                "A*", solve_a_star,
+                "Euclidean MMLB",
+                heuristics.euclidean_minimum_matching_lower_bound
             ),
             executor.submit(
-                run_solver, "Greedy", solve_greedy, "Euclidean", heuristics.euclidean
+                run_solver,
+                "Greedy", solve_greedy,
+                "Euclidean", heuristics.euclidean
             ),
             executor.submit(
-                run_solver, "Greedy", solve_greedy, "Manhattan", heuristics.manhattan
+                run_solver,
+                "Greedy", solve_greedy,
+                "Manhattan", heuristics.manhattan
             ),
             executor.submit(
-                run_solver, "Greedy", solve_greedy, "MMLB", heuristics.minimum_matching_lower_bound
+                run_solver,
+                "Greedy", solve_greedy,
+                "MMLB", heuristics.minimum_matching_lower_bound
             ),
             executor.submit(
-                run_solver, "Greedy", solve_greedy, "Deadlock", heuristics.deadlock
+                run_solver,
+                "Greedy", solve_greedy,
+                "Deadlock", heuristics.deadlock
             ),
             executor.submit(
-                run_solver, "Greedy", solve_greedy, "Euclidean + Deadlock", heuristics.euclidean_plus_deadlock
+                run_solver,
+                "Greedy", solve_greedy,
+                "Euclidean + Deadlock", heuristics.euclidean_plus_deadlock
             ),
             executor.submit(
-                run_solver, "Greedy", solve_greedy, "Euclidean MMLB", heuristics.euclidean_minimum_matching_lower_bound
+                run_solver,
+                "Greedy", solve_greedy,
+                "Euclidean MMLB",
+                heuristics.euclidean_minimum_matching_lower_bound
             )
         ]
 
@@ -117,13 +143,14 @@ def solve(level: Callable[[], Board], times: int):
 
     df = pd.DataFrame(results)
 
-    total_execution_time = time.perf_counter_ns() - initial_timestamp
+    # total_execution_time = time.perf_counter_ns() - initial_timestamp
 
-    print(df)
-    print(f"Total execution time: {total_execution_time}")
+    # print(df)
+    # print(f"Total execution time: {total_execution_time}")
     '''
     average_times_by_method_heuristic = (
-        df.groupby(["method", "heuristic", "has_solution", "border_nodes", "path_len"])
+        df.groupby(["method", "heuristic",
+                    "has_solution", "border_nodes", "path_len"])
         .agg({"execution_time_ns": ["mean", "std"]})
         .reset_index()
     )
@@ -132,16 +159,18 @@ def solve(level: Callable[[], Board], times: int):
     return df
 
 
-def graph_nodes(df):
+def graph_expanded_nodes(df):
     df_to_graph = df[["method", 'heuristic', "border_nodes"]].copy()
     df_to_graph['heuristic'].fillna('No aplica')
-    df_to_graph['method_heuristic'] = df_to_graph['method'] + ' (' + df_to_graph['heuristic'] + ')'
+    df_to_graph['method_heuristic'] = (df_to_graph['method']
+                                       + ' (' + df_to_graph['heuristic'] + ')')
 
     # print(df_to_graph)
 
     chart = alt.Chart(df_to_graph).mark_bar().encode(
             x=alt.X("method_heuristic:N", title="Algoritmo", sort="x"),
-            y=alt.Y("border_nodes:Q", title="Cantidad de nodos expandidos"),
+            y=alt.Y("mean(border_nodes):Q",
+                    title="Cantidad de nodos expandidos"),
             color=alt.Color("heuristic:N", title="Heurística"),
             tooltip=['method', 'heuristic', 'border_nodes']
         ).properties(width=800, height=400).resolve_scale(y="independent")
@@ -151,16 +180,38 @@ def graph_nodes(df):
     chart.show()
 
 
+def graph_visited_nodes(df):
+    df_to_graph = df[["method", 'heuristic', "nodes_visited"]].copy()
+    df_to_graph['heuristic'].fillna('No aplica')
+    df_to_graph['method_heuristic'] = (df_to_graph['method']
+                                       + ' (' + df_to_graph['heuristic'] + ')')
+
+    # print(df_to_graph)
+
+    chart = alt.Chart(df_to_graph).mark_bar().encode(
+            x=alt.X("method_heuristic:N", title="Algoritmo", sort="x"),
+            y=alt.Y("mean(nodes_visited):Q",
+                    title="Cantidad de nodos visitados"),
+            color=alt.Color("heuristic:N", title="Heurística"),
+            tooltip=['method', 'heuristic', 'nodes_visited']
+        ).properties(width=800, height=400).resolve_scale(y="independent")
+    chart.mark_bar()
+    chart.mark_text(align="center", baseline="bottom", dx=2)
+
+    chart.show()
+
+
+
 def graph_exec_time(df):
     df_to_graph = df[["method", "heuristic", "execution_time_ns"]].copy()
     df_to_graph['heuristic'].fillna('No aplica')
-    df_to_graph['method_heuristic'] = df_to_graph['method'] + ' (' + df_to_graph['heuristic'] + ')'
-    print(df_to_graph)
+    df_to_graph['method_heuristic'] = (df_to_graph['method']
+                                       + ' (' + df_to_graph['heuristic'] + ')')
 
     base = alt.Chart(df_to_graph).mark_point().encode(
         x=alt.X("method_heuristic:N", title="Algoritmo", sort="x"),
         y=alt.Y("mean(execution_time_ns):Q", title="Tiempo de ejecución (ns)"),
-        color="method_heuristic:N",
+        color=alt.Color("method_heuristic:N", title="Heurística"),
     )
 
     errorbars = alt.Chart(df_to_graph).mark_errorbar(extent="ci").encode(
@@ -171,10 +222,30 @@ def graph_exec_time(df):
     chart.show()
 
 
+def graph_path(df):
+    df_to_graph = df[["method", 'heuristic', "path_len"]].copy()
+    df_to_graph['heuristic'].fillna('No aplica')
+    df_to_graph['method_heuristic'] = (df_to_graph['method']
+                                       + ' (' + df_to_graph['heuristic'] + ')')
+
+    chart = alt.Chart(df_to_graph).mark_bar().encode(
+            x=alt.X("method_heuristic:N", title="Algoritmo", sort="x"),
+            y=alt.Y("mean(path_len):Q", title="Cantidad de pasos"),
+            color=alt.Color("heuristic:N", title="Heurística"),
+            tooltip=['method', 'heuristic', 'path_len']
+        ).properties(width=800, height=400).resolve_scale(y="independent")
+    chart.mark_bar()
+    chart.mark_text(align="center", baseline="bottom", dx=2)
+
+    chart.show()
+
+
 if __name__ == "__main__":
-    df = solve(Levels.level53, times=3)
+    df = solve(Levels.level53, times=10)
 
     alt.renderers.enable("browser")
 
-    graph_nodes(df)
-    graph_exec_time(df.copy())
+    graph_expanded_nodes(df)
+    graph_visited_nodes(df)
+    graph_exec_time(df)
+    graph_path(df)
