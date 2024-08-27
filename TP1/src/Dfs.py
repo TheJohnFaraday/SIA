@@ -1,7 +1,9 @@
 # DFS visits one entire branch doing backtracking once arrived at the deepest node
 
+from dataclasses import dataclass
+
 from .Levels import simple
-from .SearchSolver import SearchSolver, Coordinates, Board
+from .SearchSolver import SearchSolver, State
 from .SearchSolverResult import SearchSolverResult
 
 from .utils import measure_exec_time
@@ -28,43 +30,50 @@ from .utils import measure_exec_time
 # we must check if it is possible to move the box
 
 
+@dataclass(frozen=True, eq=True)
+class Node:
+    state: SearchSolver
+    path: list[SearchSolver]
+
+
 class Dfs(SearchSolver):
+    def reconstruct_path(self):
+        return self._latest_node.path
 
     @measure_exec_time
     def solve(self):
         self.states: list[SearchSolver] = []
 
         initial_state = self
-        # The stack is going to persist our frontier states
-        stack: list[SearchSolver] = [initial_state]
-        visited = {(initial_state.board.player, frozenset(initial_state.board.boxes))}
+
+        stack: list[Node] = [Node(initial_state, [])]
+        visited = set()
 
         while stack:
             # Next movement
-            current_state = stack.pop()
+            current_node = stack.pop()
 
-            self.states.append(current_state)
-
-            if current_state.is_solved():
+            if current_node.state.is_solved():
+                self._latest_node = current_node
                 return SearchSolverResult(
                     has_solution=True,
                     nodes_visited=len(visited),
-                    path_len=len(stack),
+                    path_len=len(current_node.path),
                     border_nodes=len(stack),
                 )
 
-            player_pos = current_state.board.player
-            box_positions = current_state.board.boxes
+            current_state = current_node.state
+            if current_state in visited:
+                continue
 
-            possible_moves = current_state.get_possible_moves(player_pos)
-            for move in possible_moves:
-                new_state = current_state.move(player_pos, move)
-                if (
-                    new_state.board.player,
-                    frozenset(new_state.board.boxes),
-                ) not in visited:
-                    visited.add((player_pos, frozenset(box_positions)))
-                    stack.append(new_state)
+            visited.add(current_state)
+
+            current_player_position = current_node.state.board.player
+            for move in current_node.state.get_possible_moves(current_player_position):
+                new_state = current_node.state.move(current_player_position, move)
+
+                if new_state not in visited:
+                    stack.append(Node(new_state, current_node.path + [new_state]))
 
             self.step()
 
