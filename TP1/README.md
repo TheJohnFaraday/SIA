@@ -20,7 +20,7 @@
      "random": {
         "isRandom": bool,
         "seed": int,
-        "level": level
+        "level": int
      },
      "times": int
  }
@@ -43,7 +43,8 @@
  Notar que solamente el atributo `times` es un atributo común, que
  indica la cantidad de veces que se ejecutará cada algoritmo,
  mejorando la precisión de algunas métricas (como el tiempo
- de ejecución).
+ de ejecución). Posee un valor por defecto también así que no es
+ obligatorio.
  De haber un archivo con el siguiente layout:
  ```json
  {
