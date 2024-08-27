@@ -7,13 +7,13 @@ from .Board import Board, Coordinates
 @dataclass(frozen=True, eq=True)
 class State:
     player_pos: Coordinates
-    box_positions: set[Coordinates]
+    box_positions: frozenset[Coordinates]
 
     def as_tuple(self):
         return self.player_pos, self.box_positions
 
     @staticmethod
-    def from_tuple(t: tuple[Coordinates, set[Coordinates]]):
+    def from_tuple(t: tuple[Coordinates, frozenset[Coordinates]]):
         return State(player_pos=t[0], box_positions=t[1])
 
     def __iter__(self):
@@ -29,13 +29,17 @@ class Directions(Enum):
 
 class SearchSolver:
     def __init__(
-        self, board: Board, max_states_repeated: int = 20, states: list = None, steps: int = 0, frontier_nodes: int = 0
+            self,
+            board: Board,
+            max_states_repeated: int = 20,
+            states: list = None,
+            steps: int = 0,
     ):
         self.board = board
         self.max_states_repeated = max_states_repeated
         self.states = states if states else []
         self._steps = steps
-        self._frontier_nodes = frontier_nodes
+        self._latest_node = None
 
     def __eq__(self, other: "SearchSolver"):
         return (
@@ -43,19 +47,15 @@ class SearchSolver:
             and self.board.boxes == other.board.boxes
         )
 
+    def __hash__(self):
+        return hash((self.board.player, self.board.boxes.__hash__))
+
     @property
     def steps(self):
         return self._steps
 
     def step(self):
         self._steps += 1
-
-    @property
-    def frontier_nodes(self):
-        return self._frontier_nodes
-
-    def increment_frontier_nodes(self):
-        self._frontier_nodes += 1
 
     def is_solved(self):
         return self.board.boxes == self.board.goals
