@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 
 from .Levels import simple
-from .SearchSolver import SearchSolver, State
+from .SearchSolver import SearchSolver, State, Node
 from .SearchSolverResult import SearchSolverResult
 
 from .utils import measure_exec_time
@@ -30,20 +30,12 @@ from .utils import measure_exec_time
 # we must check if it is possible to move the box
 
 
-@dataclass(frozen=True, eq=True)
-class Node:
-    state: SearchSolver
-    path: list[SearchSolver]
-
-
 class Dfs(SearchSolver):
     def reconstruct_path(self):
         return self._latest_node.path
 
     @measure_exec_time
     def solve(self):
-        self.states: list[SearchSolver] = []
-
         initial_state = self
 
         stack: list[Node] = [Node(initial_state, [])]
@@ -62,7 +54,10 @@ class Dfs(SearchSolver):
                     border_nodes=len(stack),
                 )
 
-            current_state = current_node.state
+            current_state = State(
+                current_node.state.board.player,
+                frozenset(current_node.state.board.boxes),
+            )
             if current_state in visited:
                 continue
 
@@ -72,7 +67,10 @@ class Dfs(SearchSolver):
             for move in current_node.state.get_possible_moves(current_player_position):
                 new_state = current_node.state.move(current_player_position, move)
 
-                if new_state not in visited:
+                if (
+                    State(new_state.board.player, frozenset(new_state.board.boxes))
+                    not in visited
+                ):
                     stack.append(Node(new_state, current_node.path + [new_state]))
 
             self.step()
