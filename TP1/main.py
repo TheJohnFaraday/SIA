@@ -1,20 +1,37 @@
 import altair as alt
 import pandas as pd
 import time
+import sys
+import json
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Callable
+from pandas import DataFrame
 
 import src.Levels as Levels
 
+from src.Board import Coordinates, Board
+
 from src.AStar import AStar
 from src.Bfs import Bfs
-from src.Board import Board
 from src.Dfs import Dfs
 from src.Greedy import Greedy
 from src.Iddfs import Iddfs
 from src.SearchSolverResult import SearchSolverResult
 import src.Heuristics as heuristics
+
+is_random: bool = False
+levels: int = 1
+seed: int = 9
+times: int = 5
+
+is_custom: bool = False
+player: Coordinates | None = None
+boxes: set[Coordinates] | None = None
+goals: set[Coordinates] | None = None
+n_rows: int = 0
+n_cols: int = 0
+blocks: set[Coordinates] | None = None
 
 
 def solve_dfs(level: Callable[[], Board]):
@@ -201,7 +218,6 @@ def graph_visited_nodes(df):
     chart.show()
 
 
-
 def graph_exec_time(df):
     df_to_graph = df[["method", "heuristic", "execution_time_ns"]].copy()
     df_to_graph['heuristic'].fillna('No aplica')
@@ -240,8 +256,76 @@ def graph_path(df):
     chart.show()
 
 
+def custom_level():
+    if is_random:
+        return Levels.random(seed, level)
+    elif is_custom:
+        return Board(player=player,
+                     boxes=boxes,
+                     goals=goals,
+                     blocks=blocks,
+                     n_rows=n_rows,
+                     n_cols=n_cols)
+    else:
+        return Levels.level53()
+
+
 if __name__ == "__main__":
-    df = solve(Levels.level53, times=10)
+    df: DataFrame | None = None
+    if len(sys.argv) < 2:
+        df = solve(Levels.level53, times=times)
+    else:
+        with open(f"{sys.argv[1]}", "r") as f:
+            config = json.load(f)
+            try:
+                times = config["times"]
+            except KeyError:
+                times = 10
+            if times is not int or times < 1:
+                times = 10
+            try:
+                is_random = config["random"]["isRandom"]
+            except KeyError:
+                is_random = False
+            try:
+                is_custom = config["custom"]["isCustom"]
+            except KeyError:
+                is_custom = False
+            if is_random:
+                try:
+                    seed = config["random"]["seed"]
+                except KeyError:
+                    seed = 9
+                if seed is not int or seed < 0:
+                    seed = 9
+                try:
+                    level = config["random"]["level"]
+                except KeyError:
+                    level = 1
+                if level is not int or level < 1:
+                    level = 1
+                print(f'Random!: Seed: {seed}, Level: {level}')
+                df = solve(custom_level, times=times)
+            elif is_custom:
+                try:
+                    player = Coordinates(y=config["custom"]["player"].y,
+                                         x=config["custom"]["player"].x)
+                    for box in config["custom"]["boxes"]:
+                        boxes.add(Coordinates(y=box.y,
+                                              x=box.x))
+                    for goal in config["custom"]["goals"]:
+                        goals.add(Coordinates(y=goal.y,
+                                              x=goal.x))
+                    for block in config["custom"]["blocks"]:
+                        block.add(Coordinates(y=block.y,
+                                              x=block.x))
+                    n_rows = config["custom"]["n_rows"]
+                    n_cols = config["custom"]["n_cols"]
+                    df = solve(custom_level, times=times)
+                except KeyError:
+                    df = solve(Levels.level53, times=times)
+            else:
+                df = solve(Levels.level53, times=times)
 
     alt.renderers.enable("browser")
 
