@@ -301,7 +301,7 @@ def graph_greedy_heuristics(df, optimal_steps = None):
         chart = base_chart + optimal_line
     else:
         chart = base_chart
-    
+
     chart.show()
 
 

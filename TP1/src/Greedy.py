@@ -84,6 +84,7 @@ class Greedy(SearchSolver):
 
         previous_state: StatePriority | None = None
         repeated_states = 0
+        border_nodes = 0
 
         while queue:
             # Next movement
@@ -94,7 +95,7 @@ class Greedy(SearchSolver):
                     has_solution=True,
                     nodes_visited=len(visited),
                     path_len=len(path),
-                    border_nodes=len(queue),
+                    border_nodes=border_nodes,
                 )
 
             # Avoid loop
@@ -108,7 +109,7 @@ class Greedy(SearchSolver):
                     has_solution=False,
                     nodes_visited=len(visited),
                     path_len=0,
-                    border_nodes=len(queue),
+                    border_nodes=border_nodes,
                 )
 
             previous_state = current_state
@@ -132,6 +133,7 @@ class Greedy(SearchSolver):
                     possible_states.append(
                         StatePriority(heuristic(possible_move), possible_move)
                     )
+                    border_nodes += 1
 
             final_state: StatePriority | None = None
             for current_state in possible_states:
@@ -148,13 +150,14 @@ class Greedy(SearchSolver):
                     return SearchSolverResult(
                         has_solution=False,
                         nodes_visited=len(visited),
-                        border_nodes=len(queue),
+                        border_nodes=border_nodes,
                         path_len=0
                     )
                 else:
                     final_state = path.pop()
             else:
                 path.append(final_state)
+                border_nodes -= 1
 
             # print(f'NEXT STATE: \n{final_state.state.board}\n')
             # print(f"### PASOS: {len(path)}")
@@ -166,7 +169,7 @@ class Greedy(SearchSolver):
             has_solution=False,
             nodes_visited=len(visited),
             path_len=0,
-            border_nodes=len(queue),
+            border_nodes=border_nodes,
         )
 
 
