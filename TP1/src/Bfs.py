@@ -2,7 +2,7 @@
 from collections import deque
 
 from .Levels import simple, narrow
-from .SearchSolver import SearchSolver, Coordinates, Board
+from .SearchSolver import SearchSolver, State, Node
 from .SearchSolverResult import SearchSolverResult
 from .utils import measure_exec_time
 
@@ -29,44 +29,47 @@ from .utils import measure_exec_time
 
 
 class Bfs(SearchSolver):
+    def reconstruct_path(self):
+        return self._latest_node.path
+
     @measure_exec_time
     def solve(self):
-        self.states = []
-
         initial_state = self
 
-        queue: deque[SearchSolver] = deque([self])
+        queue: deque[Node] = deque([Node(initial_state, [])])
         visited = {(initial_state.board.player, frozenset(initial_state.board.boxes))}
 
         while queue:
-            current_state = queue.popleft()
+            current_node = queue.popleft()
 
-            self.states.append(current_state)
-
-            if current_state.is_solved():
+            if current_node.state.is_solved():
+                self._latest_node = current_node
                 return SearchSolverResult(
                     has_solution=True,
                     nodes_visited=len(visited),
-                    path_len=len(queue),
+                    path_len=len(current_node.path),
                     border_nodes=len(queue),
                 )
 
-            player_pos = current_state.board.player
-            box_positions = current_state.board.boxes
+            current_state = State(
+                current_node.state.board.player,
+                frozenset(current_node.state.board.boxes),
+            )
+            if current_state in visited:
+                continue
 
-            possible_moves = current_state.get_possible_moves(player_pos)
-            for move in possible_moves:
-                new_state = current_state.move(player_pos, move)
+            visited.add(current_state)
+
+            current_player_position = current_node.state.board.player
+            for move in current_node.state.get_possible_moves(current_player_position):
+                new_state = current_node.state.move(current_player_position, move)
+
                 if (
-                    new_state.board.player,
-                    frozenset(new_state.board.boxes),
-                ) not in visited:
-                    visited.add(
-                        # TODO: Revisar cuál es correcto
-                        # (new_state.board.player, frozenset(new_state.board.boxes))
-                        (player_pos, frozenset(box_positions))
-                    )
-                    queue.append(new_state)
+                        State(new_state.board.player, frozenset(new_state.board.boxes))
+                        not in visited
+                ):
+                    queue.append(Node(new_state, current_node.path + [new_state]))
+
             self.step()
 
         return SearchSolverResult(
@@ -89,8 +92,5 @@ if __name__ == "__main__":
     else:
         print("No se encontró solución.")
     print(f"Steps: {game.steps}")
-
-    for state in game.states:
-        print(state.board)
 
     print(f"Took: {exec_time} ns")
