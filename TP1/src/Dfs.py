@@ -35,7 +35,7 @@ class Dfs(SearchSolver):
         return self._latest_node.path
 
     @measure_exec_time
-    def solve(self):
+    def solve(self, max_depth: int | None = None):
         initial_state = self
 
         stack: list[Node] = [Node(initial_state, [])]
@@ -45,12 +45,17 @@ class Dfs(SearchSolver):
             # Next movement
             current_node = stack.pop()
 
+            depth = len(current_node.path)
+
+            if max_depth is not None and depth > max_depth:
+                continue
+
             if current_node.state.is_solved():
                 self._latest_node = current_node
                 return SearchSolverResult(
                     has_solution=True,
                     nodes_visited=len(visited),
-                    path_len=len(current_node.path),
+                    path_len=depth,
                     border_nodes=len(stack),
                 )
 
@@ -87,10 +92,10 @@ if __name__ == "__main__":
     board = simple()
 
     game = Dfs(board)
-    solution, exec_time = game.solve()
-    if solution:
+    solution = game.solve()
+    if solution.has_solution:
         print("¡Solución encontrada!")
     else:
         print("No se encontró solución.")
 
-    print(f"Took: {exec_time} ns")
+    print(f"Took: {solution.execution_time_ns} ns")
