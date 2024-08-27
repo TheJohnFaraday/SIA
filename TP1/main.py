@@ -264,22 +264,51 @@ def graph_exec_time(df):
     chart.show()
 
 
-def graph_path(df):
+def graph_path(df, optimal_steps=None):
     df_to_graph = df[["method", 'heuristic', "path_len"]].copy()
-    df_to_graph['heuristic'].fillna('No aplica')
-    df_to_graph['method_heuristic'] = (df_to_graph['method']
-                                       + ' (' + df_to_graph['heuristic'] + ')')
+    df_to_graph['method_heuristic'] = df_to_graph.apply(
+        lambda row: f"{row['method']}" if row['heuristic'] == '' else f"{row['method']} ({row['heuristic']})",
+        axis=1
+    )
 
-    chart = alt.Chart(df_to_graph).mark_bar().encode(
+    base_chart = alt.Chart(df_to_graph).mark_bar().encode(
             x=alt.X("method_heuristic:N", title="Algoritmo", sort="x"),
             y=alt.Y("mean(path_len):Q", title="Cantidad de pasos"),
             color=alt.Color("heuristic:N", title="Heurística"),
             tooltip=['method', 'heuristic', 'path_len']
-        ).properties(width=800, height=400).resolve_scale(y="independent")
-    chart.mark_bar()
-    chart.mark_text(align="center", baseline="bottom", dx=2)
+        ).properties(width=800, height=400)
+
+    if optimal_steps is not None:
+        optimal_line = alt.Chart(pd.DataFrame({'optimal': [optimal_steps]})).mark_rule(color='white', strokeDash=[5, 5]).encode(
+            y=alt.Y('optimal:Q'))
+        chart = base_chart + optimal_line
+    else:
+        chart = base_chart
 
     chart.show()
+
+def graph_greedy_heuristics(df, optimal_steps = None):
+    df_greedy = df[df['method'] == 'Greedy'].copy()
+    df_greedy = df_greedy[df_greedy['heuristic'] != 'No aplica']
+    base_chart = alt.Chart(df_greedy).mark_bar().encode(
+       x=alt.X("heuristic:N", title="Heurística", sort="x"),
+       y=alt.Y("path_len:Q", title="Cantidad de pasos"),
+       color=alt.Color("heuristic:N", title="Heurística"),
+       tooltip=['heuristic', 'path_len']).properties(width=800, height=400)
+    if optimal_steps is not None:
+        optimal_line = alt.Chart(pd.DataFrame({'optimal': [optimal_steps]})).mark_rule(color='white', strokeDash=[5, 5]).encode(
+            y=alt.Y('optimal:Q'))
+        chart = base_chart + optimal_line
+    else:
+        chart = base_chart
+    
+    chart.show()
+
+
+def create_nodes_table(df):
+    df_table = df[["method", 'heuristic', "nodes_visited", "border_nodes"]].copy()
+    df_table.sort_values(by=['method', 'heuristic'])
+    return df_table
 
 
 def custom_level():
@@ -355,7 +384,8 @@ if __name__ == "__main__":
 
     alt.renderers.enable("browser")
 
-    graph_expanded_nodes(df)
+    print(create_nodes_table(df))
+    graph_border_nodes(df)
     graph_visited_nodes(df)
     graph_exec_time(df)
     graph_path(df)
