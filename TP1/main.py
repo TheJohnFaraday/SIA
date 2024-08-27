@@ -33,6 +33,30 @@ n_rows: int = 0
 n_cols: int = 0
 blocks: set[Coordinates] | None = None
 
+def graph_theme():
+    return {
+        'config': {
+            'background': '#1b1b1b',  # Color de fondo
+            'title': {
+                'color': '#FFFFFF'  # Color del título
+            },
+            'axis': {
+                'labelColor': '#FFFFFF',  # Color de las etiquetas del eje
+                'titleColor': '#FFFFFF'  # Color del título del eje
+            },
+            'text': {
+                'color': '#FFFFFF'  # Color del texto
+            },
+            'legend': {
+                'labelColor': '#FFFFFF',  # Color de las etiquetas de la leyenda
+                'titleColor': '#FFFFFF'  # Color del título de la leyenda
+            }
+        }
+    }
+
+alt.themes.register('custom_theme', graph_theme)
+alt.themes.enable('custom_theme')
+
 
 def solve_dfs(level: Callable[[], Board]):
     dfs = Dfs(level())
@@ -176,18 +200,16 @@ def solve(level: Callable[[], Board], times: int):
     return df
 
 
-def graph_expanded_nodes(df):
+def graph_border_nodes(df):
     df_to_graph = df[["method", 'heuristic', "border_nodes"]].copy()
-    df_to_graph['heuristic'].fillna('No aplica')
-    df_to_graph['method_heuristic'] = (df_to_graph['method']
-                                       + ' (' + df_to_graph['heuristic'] + ')')
-
-    # print(df_to_graph)
+    df_to_graph['method_heuristic'] = df_to_graph.apply(
+        lambda row: f"{row['method']}" if row['heuristic'] == '' else f"{row['method']} ({row['heuristic']})",
+        axis=1
+    )
 
     chart = alt.Chart(df_to_graph).mark_bar().encode(
             x=alt.X("method_heuristic:N", title="Algoritmo", sort="x"),
-            y=alt.Y("mean(border_nodes):Q",
-                    title="Cantidad de nodos expandidos"),
+            y=alt.Y("mean(border_nodes):Q", title="Cantidad de nodos frontera"),
             color=alt.Color("heuristic:N", title="Heurística"),
             tooltip=['method', 'heuristic', 'border_nodes']
         ).properties(width=800, height=400).resolve_scale(y="independent")
@@ -199,16 +221,18 @@ def graph_expanded_nodes(df):
 
 def graph_visited_nodes(df):
     df_to_graph = df[["method", 'heuristic', "nodes_visited"]].copy()
-    df_to_graph['heuristic'].fillna('No aplica')
-    df_to_graph['method_heuristic'] = (df_to_graph['method']
-                                       + ' (' + df_to_graph['heuristic'] + ')')
+    df_to_graph['method_heuristic'] = df_to_graph.apply(
+        lambda row: f"{row['method']}" if row['heuristic'] == '' else f"{row['method']} ({row['heuristic']})",
+        axis=1
+    )
+
 
     # print(df_to_graph)
 
     chart = alt.Chart(df_to_graph).mark_bar().encode(
             x=alt.X("method_heuristic:N", title="Algoritmo", sort="x"),
             y=alt.Y("mean(nodes_visited):Q",
-                    title="Cantidad de nodos visitados"),
+                    title="Cantidad de nodos expandidos"),
             color=alt.Color("heuristic:N", title="Heurística"),
             tooltip=['method', 'heuristic', 'nodes_visited']
         ).properties(width=800, height=400).resolve_scale(y="independent")
@@ -220,9 +244,11 @@ def graph_visited_nodes(df):
 
 def graph_exec_time(df):
     df_to_graph = df[["method", "heuristic", "execution_time_ns"]].copy()
-    df_to_graph['heuristic'].fillna('No aplica')
-    df_to_graph['method_heuristic'] = (df_to_graph['method']
-                                       + ' (' + df_to_graph['heuristic'] + ')')
+    df_to_graph['method_heuristic'] = df_to_graph.apply(
+        lambda row: f"{row['method']}" if row['heuristic'] == '' else f"{row['method']} ({row['heuristic']})",
+        axis=1
+    )
+
 
     base = alt.Chart(df_to_graph).mark_point().encode(
         x=alt.X("method_heuristic:N", title="Algoritmo", sort="x"),
@@ -230,7 +256,7 @@ def graph_exec_time(df):
         color=alt.Color("method_heuristic:N", title="Heurística"),
     )
 
-    errorbars = alt.Chart(df_to_graph).mark_errorbar(extent="ci").encode(
+    errorbars = alt.Chart(df_to_graph).mark_errorbar(color='white', extent="ci").encode(
         x='method_heuristic',
         y=alt.Y("execution_time_ns", title=''),
     )
