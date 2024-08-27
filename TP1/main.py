@@ -42,7 +42,8 @@ def graph_theme():
             },
             'axis': {
                 'labelColor': '#FFFFFF',  # Color de las etiquetas del eje
-                'titleColor': '#FFFFFF'  # Color del título del eje
+                'titleColor': '#FFFFFF',  # Color del título del eje
+                "labelFontSize": 14,
             },
             'text': {
                 'color': '#FFFFFF'  # Color del texto
@@ -207,16 +208,29 @@ def graph_border_nodes(df):
         axis=1
     )
 
-    chart = alt.Chart(df_to_graph).mark_bar().encode(
-            x=alt.X("method_heuristic:N", title="Algoritmo", sort="x"),
+    def chart(chart_df):
+        chart = alt.Chart(chart_df).mark_bar().encode(
+            x=alt.X("method_heuristic:N", title="Algoritmo", sort="x", axis=alt.Axis(labelAngle=45)),
             y=alt.Y("mean(border_nodes):Q", title="Cantidad de nodos frontera"),
             color=alt.Color("heuristic:N", title="Heurística"),
             tooltip=['method', 'heuristic', 'border_nodes']
         ).properties(width=800, height=400).resolve_scale(y="independent")
-    chart.mark_bar()
-    chart.mark_text(align="center", baseline="bottom", dx=2)
+        chart.mark_bar()
+        chart.mark_text(align="center", baseline="bottom", dx=2)
 
-    chart.show()
+        chart.show()
+
+    # DataFrame for "A*"
+    df_a_star = df_to_graph[df_to_graph['method'] == 'A*']
+    # DataFrame for "Greedy"
+    df_greedy = df_to_graph[df_to_graph['method'] == 'Greedy']
+    # DataFrame for all remaining methods
+    df_remaining = df_to_graph[~df_to_graph['method'].isin(['A*', 'Greedy'])]
+    chart(df_a_star)
+    chart(df_greedy)
+    chart(df_remaining)
+    chart(df_to_graph)
+
 
 
 def graph_visited_nodes(df):
