@@ -281,7 +281,7 @@ def graph_visited_nodes(df):
     # print(df_to_graph)
 
     chart = alt.Chart(df_to_graph).mark_bar().encode(
-            x=alt.X("method_heuristic:N", title="Algoritmo", sort="x"),
+            x=alt.X("method_heuristic:N", title="Algoritmo", sort="x", axis=alt.Axis(labelAngle=45)),
             y=alt.Y("mean(nodes_visited):Q",
                     title="Cantidad de nodos expandidos"),
             color=alt.Color("heuristic:N", title="Heurística"),
@@ -302,10 +302,10 @@ def graph_exec_time(df):
 
 
     base = alt.Chart(df_to_graph).mark_point().encode(
-        x=alt.X("method_heuristic:N", title="Algoritmo", sort="x"),
+        x=alt.X("method_heuristic:N", title="Algoritmo", sort="x", axis=alt.Axis(labelAngle=45)),
         y=alt.Y("mean(execution_time_ns):Q", title="Tiempo de ejecución (ns)"),
         color=alt.Color("method_heuristic:N", title="Heurística"),
-    )
+    ).properties(width=800, height=400)
 
     errorbars = alt.Chart(df_to_graph).mark_errorbar(color='white', extent="ci").encode(
         x='method_heuristic',
@@ -323,7 +323,7 @@ def graph_path(df, optimal_steps=None):
     )
 
     base_chart = alt.Chart(df_to_graph).mark_bar().encode(
-            x=alt.X("method_heuristic:N", title="Algoritmo", sort="x"),
+            x=alt.X("method_heuristic:N", title="Algoritmo", sort="x", axis=alt.Axis(labelAngle=45)),
             y=alt.Y("mean(path_len):Q", title="Cantidad de pasos"),
             color=alt.Color("heuristic:N", title="Heurística"),
             tooltip=['method', 'heuristic', 'path_len']
