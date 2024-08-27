@@ -64,8 +64,6 @@ class AStar(SearchSolver):
             path.append(node)
 
         path.reverse()
-        for node in path:
-            print(node.state.board)
         return path
 
     @staticmethod
