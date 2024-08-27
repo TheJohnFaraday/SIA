@@ -362,3 +362,47 @@ def level67():
    )
 
 
+def level3x3():
+   return Board(
+      player = Coordinates(y=1, x=1),
+      boxes = {Coordinates(y=2, x=2), Coordinates(y=2, x=3)},
+      goals = {Coordinates(y=1, x=3), Coordinates(y=3, x=2)},
+      board=[
+         [Board.Cell.WALL, Board.Cell.WALL, Board.Cell.WALL, Board.Cell.WALL, Board.Cell.WALL],
+         [Board.Cell.WALL, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.WALL],
+         [Board.Cell.WALL, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.WALL],
+         [Board.Cell.WALL, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.WALL],
+         [Board.Cell.WALL, Board.Cell.WALL, Board.Cell.WALL, Board.Cell.WALL, Board.Cell.WALL]
+        ]
+    )
+
+def level4x4():
+    return Board(
+       player = Coordinates(y=2, x=1),
+       boxes = {Coordinates(y=2, x=2), Coordinates(y=2, x=3)},
+       goals = {Coordinates(y=2, x=4), Coordinates(y=1, x=4)},
+       board= [
+          [Board.Cell.WALL, Board.Cell.WALL, Board.Cell.WALL, Board.Cell.WALL, Board.Cell.WALL, Board.Cell.WALL],
+          [Board.Cell.WALL, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.WALL],
+          [Board.Cell.WALL, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.WALL],
+          [Board.Cell.WALL, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.WALL],
+          [Board.Cell.WALL, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.WALL],
+          [Board.Cell.WALL, Board.Cell.WALL, Board.Cell.WALL, Board.Cell.WALL, Board.Cell.WALL, Board.Cell.WALL]
+        ]
+    )
+
+def level5x5():
+    return Board(
+       player = Coordinates(y=5, x=3),
+       boxes = {Coordinates(y=4, x=4), Coordinates(y=5, x=4)},
+       goals = {Coordinates(y=1, x=1), Coordinates(y=5, x=2)},
+       board= [
+          [Board.Cell.WALL, Board.Cell.WALL, Board.Cell.WALL, Board.Cell.WALL, Board.Cell.WALL, Board.Cell.WALL, Board.Cell.WALL],
+          [Board.Cell.WALL, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.WALL],
+          [Board.Cell.WALL, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.WALL],
+          [Board.Cell.WALL, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.WALL],
+          [Board.Cell.WALL, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.WALL],
+          [Board.Cell.WALL, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.EMPTY, Board.Cell.WALL],
+          [Board.Cell.WALL, Board.Cell.WALL, Board.Cell.WALL, Board.Cell.WALL, Board.Cell.WALL, Board.Cell.WALL, Board.Cell.WALL]
+          ]
+    )
