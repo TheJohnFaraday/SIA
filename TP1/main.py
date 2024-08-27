@@ -123,7 +123,7 @@ def solve(level: Callable[[], Board], times: int):
     print(f"Total execution time: {total_execution_time}")
     average_times_by_method_heuristic = df.groupby(['method', 'heuristic',
                                                     'has_solution', 'border_nodes'
-                                                    , 'path_len'])['execution_time_ns'].mean().reset_index()
+                                                    , 'path_len']).agg({'execution_time_ns': ['mean', 'std']}).reset_index()
     print(average_times_by_method_heuristic)
 
 
