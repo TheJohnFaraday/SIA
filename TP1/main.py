@@ -121,11 +121,37 @@ def solve(level: Callable[[], Board], times: int):
 
     print(df)
     print(f"Total execution time: {total_execution_time}")
-    average_times_by_method_heuristic = df.groupby(['method', 'heuristic',
-                                                    'has_solution', 'border_nodes'
-                                                    , 'path_len']).agg({'execution_time_ns': ['mean', 'std']}).reset_index()
+    average_times_by_method_heuristic = (
+        df.groupby(["method", "heuristic", "has_solution", "border_nodes", "path_len"])
+        .agg({"execution_time_ns": ["mean", "std"]})
+        .reset_index()
+    )
     print(average_times_by_method_heuristic)
+    return df
+
+
+def graph_nodes(df):
+    df_to_graph = df[["method", 'heuristic', "border_nodes"]].copy()
+    df_to_graph['heuristic'].fillna('No aplica')
+    df_to_graph['method_heuristic'] = df_to_graph['method'] + ' (' + df_to_graph['heuristic'] + ')'
+
+    print(df_to_graph)
+
+    chart = alt.Chart(df_to_graph).mark_bar().encode(
+            x=alt.X("method_heuristic:N", title="Algoritmo", sort="x"),
+            y=alt.Y("border_nodes:Q", title="Cantidad de nodos expandidos"),
+            color=alt.Color("heuristic:N", title="Heurística"),
+            tooltip=['method', 'heuristic', 'border_nodes']
+        ).properties(width=800, height=400).resolve_scale(y="independent")
+    chart.mark_bar()
+    chart.mark_text(align="center", baseline="bottom", dx=2)
+
+    chart.show()
 
 
 if __name__ == "__main__":
-    solve(Levels.level53, times=10)
+    df = solve(Levels.level53, times=10)
+
+    alt.renderers.enable("browser")
+
+    graph_nodes(df)
