@@ -200,6 +200,43 @@ def solve(level: Callable[[], Board], times: int):
     '''
     return df
 
+def solve_grid_levels():
+    df3 = solve(Levels.level3x3, times=1)
+    df4 = solve(Levels.level4x4, times=1)
+    df5 = solve(Levels.level5x5, times=1)
+    df3['size'] = '3x3'
+    df4['size'] = '4x4'
+    df5['size'] = '5x5'
+    combined_df = pd.concat([df3, df4, df5], ignore_index=True)
+    return combined_df
+
+def graph_nodes_md(df):
+    df_melted = df.melt(id_vars=['method', 'size'], 
+                        value_vars=['nodes_visited'], 
+                        var_name='metric', 
+                        value_name='value')
+
+
+    points_chart = alt.Chart(df_melted).mark_point(filled=True, size=100).encode(
+        x=alt.X('size:O', title='Tamaño del Grid', sort='ascending'),
+        y=alt.Y('mean(value):Q', title='Cantidad de Nodos Expandidos'),
+        color=alt.Color('method:N', title='Método'),
+        shape=alt.Shape('method:N', title='Método'),
+        tooltip=['method', 'size', 'mean(value)']
+    )
+
+    line_chart = alt.Chart(df_melted).mark_line().encode(
+        x=alt.X('size:O'),
+        y=alt.Y('mean(value):Q'),
+        color=alt.Color('method:N'),
+        detail='method:N'
+    )
+
+    final_chart = points_chart + line_chart
+
+    final_chart = final_chart.resolve_scale(color='shared')
+
+    final_chart.properties(width=600, height=400).show()
 
 def graph_border_nodes(df):
     df_to_graph = df[["method", 'heuristic', "border_nodes"]].copy()
