@@ -81,10 +81,33 @@ class SelectionMethods:
 
         return selected_population
 
+    @staticmethod
+    def ranking(population: list[float], K: int) -> list[float]:
+        """
+        Ranking selection: selects individuals from the population based on their rank.
+        """
+        sorted_indices = np.argsort(population)[::-1]
+        ranks = np.zeros_like(sorted_indices, dtype=float)
+
+        # Assign ranks based on sorted fitness
+        for rank, index in enumerate(sorted_indices):
+            ranks[index] = rank + 1
+
+        N = len(population)
+        pseudo_population = [(N-rank)/N for rank in ranks]
+
+        pseudo_relative_fitness, pseudo_cumulative_fitness = SelectionMethods._calculate_fitness(pseudo_population)
+        random_numbers = np.random.uniform(0, 1, K)
+
+        selected_population = SelectionMethods._select_by_random_numbers(pseudo_cumulative_fitness, random_numbers,
+                                                                         population)
+
+        return selected_population
+
 
 if __name__ == '__main__':
     population1 = [0.81, 0.56, 0.77, 0.63, 0.42, 0.99, 0.65, 0.28, 0.47, 0.84, 0.59, 0.73, 0.36, 0.92, 0.21, 0.69, 0.58, 0.33, 0.97, 0.48]
     population2 = [81, 56, 77, 63, 42, 99, 65, 28, 47, 84, 59, 73, 36, 92, 21, 69, 58, 33, 97, 48]
     population3 = [3, 6, 11, 14, 1]
     #print(SelectionMethods.elite(population, 30))
-    print(SelectionMethods.universal(population3, 4))
+    print(SelectionMethods.ranking(population3, 3))
