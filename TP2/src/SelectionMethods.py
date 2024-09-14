@@ -104,10 +104,33 @@ class SelectionMethods:
 
         return selected_population
 
+    @staticmethod
+    def boltzmann(population: list[float], K: int, T: float) -> list[float]:
+        """
+        Boltzmann selection: selects individuals from the population based on a probability
+        distribution that depends on their fitness and the current temperature. Higher fitness
+        individuals are more likely to be selected as the temperature decreases, allowing for
+        an initial phase of exploration followed by exploitation as the algorithm progresses.
+        """
+        relative_fitness = np.array(
+            np.exp([score / T for score in population]))
+
+        average_fitness = np.average(relative_fitness)
+
+        pseudo_population = np.array([fitness/average_fitness for fitness in relative_fitness])
+
+        pseudo_relative_fitness, pseudo_cumulative_fitness = SelectionMethods._calculate_fitness(pseudo_population)
+        random_numbers = np.random.uniform(0, 1, K)
+
+        selected_population = SelectionMethods._select_by_random_numbers(pseudo_cumulative_fitness, random_numbers,
+                                                                         population)
+
+        return selected_population
+
 
 if __name__ == '__main__':
     population1 = [0.81, 0.56, 0.77, 0.63, 0.42, 0.99, 0.65, 0.28, 0.47, 0.84, 0.59, 0.73, 0.36, 0.92, 0.21, 0.69, 0.58, 0.33, 0.97, 0.48]
     population2 = [81, 56, 77, 63, 42, 99, 65, 28, 47, 84, 59, 73, 36, 92, 21, 69, 58, 33, 97, 48]
     population3 = [3, 6, 11, 14, 1]
     #print(SelectionMethods.elite(population, 30))
-    print(SelectionMethods.ranking(population3, 3))
+    print(SelectionMethods.boltzmann(population3, 3, 3))
