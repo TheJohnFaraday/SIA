@@ -1,16 +1,74 @@
-role = "Fighter"
-crossover = "TwoPoint"
-selections = ["Elite", "Ranking", "Elite", "Ranking"]
-mutation = "Complete"
-pm = 0.5
-A = 0.1
-B = 0.3
-max_iterations = 500
-max_iterations_without_change = 100
-K = 200
-seed = 0
-N = 100
+# Show / Hide plots
 plot = false
-boltzmann_temperature = 10
-deterministic_tournament_m = 5
-probabilistic_tournament_threshold = 0.75
+
+[general]
+# One of: ["warrior", "archer", "guardian", "wizard"]
+character = "warrior"
+# Distribution points, must be in range [100; 200]
+points = 150
+# Population
+# N
+initial_population = 100
+# K
+population_sample = 200
+
+[genetic]
+# Crossover strategy. One of: ["one_point", "two_point", "uniform", "annular"]
+crossover = "two_point"
+# Mutation strategy.
+# Gen must be one of: ["single", "limited_multi", "uniform_multi", "complete"]
+mutation = "single"
+
+[genetic.parameters.mutation]
+pm = 0.5
+[genetic.parameters.mutation.limited_multi]
+# Picks any amount of genes between [1; max_genes] for mutation
+max_genes = 2
+
+[selection]
+# Selection method
+# One of: ["elite", "roulette", "universal", "boltzmann", "deterministic_tournament",
+#          "probabilistic_tournament", "ranking"]
+method = ["elite"]
+# Weight of each selection method in range (0.0, 1.0]. The sum of all weights must be 1.0.
+weight = [1.0]
+
+[selection.parameters]
+# Parameters depend on the selection method. Only those of the chosen selection method will be read.
+[selection.parameters.deterministic_tournament]
+individuals_to_select = 5
+
+[selection.parameters.probabilistic_tournament]
+# Threshold in range [0.5; 1]
+threshold = 0.75
+
+[selection.parameters.boltzmann]
+temperature = 10
+
+[replacement]
+# Replacement method
+# List with one or more of: ["fill_all", "fill_parent", "generational_gap"]
+method = ["fill_all"]
+# Weight of each replacement method in range (0.0, 1.0]. The sum of all weights must be 1.0.
+weight = [1.0]
+
+[finish]
+# Finish methods.
+# List with one or more of: ["time", "max_generations", "structure", "content", "acceptable_fitness"]
+method = ["time", "max_generations"]
+
+[finish.time]
+# Time limit in seconds, must be in range [10; 120]
+limit = 10
+
+[finish.max_generations]
+generations = 10
+
+[finish.structure]
+structure = { } # TODO
+
+[finish.content]
+generations = 10
+
+[finish.acceptable_fitness]
+fitness = 150
