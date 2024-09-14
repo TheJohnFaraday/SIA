@@ -18,12 +18,13 @@ class SelectionMethods(Enum):
 @dataclass(frozen=True)
 class Configuration:
     method: list[SelectionMethods]
+    weight: list[Decimal]
     deterministic_tournament_individuals_to_select: int = 0
     probabilistic_tournament_threshold: Decimal = 0
     boltzmann_temperature: int = 0
 
 
-class SelectionMethods:
+class Selection:
     def __init__(self, configuration: Configuration):
         self.__configuration = configuration
 
@@ -87,13 +88,13 @@ class SelectionMethods:
         """
         Roulette selection: selects individuals from the population based on their scores in a stochastic manner.
         """
-        relative_fitness, cumulative_fitness = SelectionMethods._calculate_fitness(
+        relative_fitness, cumulative_fitness = Selection._calculate_fitness(
             population
         )
 
         random_numbers = np.random.uniform(0, 1, K)
 
-        selected_population = SelectionMethods._select_by_random_numbers(
+        selected_population = Selection._select_by_random_numbers(
             cumulative_fitness, random_numbers, population
         )
 
@@ -104,7 +105,7 @@ class SelectionMethods:
         """
         Universal stochastic selection: selects individuals from the population based on their scores with more uniformity.
         """
-        relative_fitness, cumulative_fitness = SelectionMethods._calculate_fitness(
+        relative_fitness, cumulative_fitness = Selection._calculate_fitness(
             population
         )
 
@@ -112,7 +113,7 @@ class SelectionMethods:
         j_values = np.arange(0, K)
         random_numbers = (r_value + j_values) / K
 
-        selected_population = SelectionMethods._select_by_random_numbers(
+        selected_population = Selection._select_by_random_numbers(
             cumulative_fitness, random_numbers, population
         )
 
@@ -134,11 +135,11 @@ class SelectionMethods:
         pseudo_population = [(N - rank) / N for rank in ranks]
 
         pseudo_relative_fitness, pseudo_cumulative_fitness = (
-            SelectionMethods._calculate_fitness(pseudo_population)
+            Selection._calculate_fitness(pseudo_population)
         )
         random_numbers = np.random.uniform(0, 1, K)
 
-        selected_population = SelectionMethods._select_by_random_numbers(
+        selected_population = Selection._select_by_random_numbers(
             pseudo_cumulative_fitness, random_numbers, population
         )
 
@@ -161,11 +162,11 @@ class SelectionMethods:
         )
 
         pseudo_relative_fitness, pseudo_cumulative_fitness = (
-            SelectionMethods._calculate_fitness(pseudo_population)
+            Selection._calculate_fitness(pseudo_population)
         )
         random_numbers = np.random.uniform(0, 1, K)
 
-        selected_population = SelectionMethods._select_by_random_numbers(
+        selected_population = Selection._select_by_random_numbers(
             pseudo_cumulative_fitness, random_numbers, population
         )
 
@@ -219,4 +220,4 @@ if __name__ == "__main__":
     ]
     population3 = [3, 6, 11, 14, 1]
     # print(SelectionMethods.elite(population, 30))
-    print(SelectionMethods.boltzmann(population3, 3, 3))
+    print(Selection.boltzmann(population3, 3, 3))

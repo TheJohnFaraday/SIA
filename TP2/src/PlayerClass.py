@@ -2,7 +2,7 @@ from enum import Enum, auto
 
 
 class PlayerClass(Enum):
-    WARRIOR = auto()
-    ARCHER = auto()
-    GUARDIAN = auto()
-    WIZARD = auto()
+    WARRIOR = "warrior"
+    ARCHER = "archer"
+    GUARDIAN = "guardian"
+    WIZARD = "wizard"
