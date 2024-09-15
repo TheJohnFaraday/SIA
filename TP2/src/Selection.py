@@ -66,12 +66,12 @@ class Selection:
                         self.__population_sample,
                         self.__configuration.deterministic_tournament_individuals_to_select,
                     )
-                # case SelectionMethods.PROBABILISTIC_TOURNAMENT:
-                #     selected_population = Selection.probabilistic_tournament(
-                #         population,
-                #         self.__population_sample,
-                #         self.__configuration.probabilistic_tournament_threshold,
-                #     )
+                case SelectionMethods.PROBABILISTIC_TOURNAMENT:
+                    selected_population = Selection.probabilistic_tournament(
+                        population,
+                        self.__population_sample,
+                        self.__configuration.probabilistic_tournament_threshold,
+                    )
                 case SelectionMethods.RANKING:
                     selected_population = Selection.ranking(
                         population, self.__population_sample
@@ -306,6 +306,44 @@ class Selection:
 
         return selected_population
 
+    @staticmethod
+    def probabilistic_tournament(
+        population: list[Player],
+        population_sample_length: int,
+        threshold: Decimal,
+    ) -> list[Player]:
+        """
+        Probabilistic tournament selection: randomly selects two individuals from the population
+        and chooses the more fit individual with a probability determined by the threshold value.
+        If the random value exceeds the threshold, the less fit individual is chosen. This process
+        is repeated until the desired number of individuals is selected.
+        """
+        selected_population = []
+
+        # Repeat the selection process until we have selected the desired number of individuals
+        for i in range(population_sample_length):
+            participants = np.random.choice(population, 2, replace=False)
+
+            print(
+                f"Tournament {i + 1}: Participants: {[player.fitness for player in participants]}"
+            )
+
+            r = np.random.uniform(0, 1)
+
+            # Compare the random value to the threshold to determine the winner
+            if r < threshold:
+                # Select the more fit individual
+                winner = max(participants, key=lambda player: player.fitness)
+            else:
+                # Select the less fit individual
+                winner = min(participants, key=lambda player: player.fitness)
+
+            print(f"Winner of tournament {i + 1}: {winner.fitness}\n")
+
+            selected_population.append(winner)
+
+        return selected_population
+
 
 if __name__ == "__main__":
     default_attributes = PlayerAttributes(
@@ -380,7 +418,7 @@ if __name__ == "__main__":
         )
         for fit in [3, 6, 11, 14, 1]
     ]
-    result = Selection.deterministic_tournament(population2, 5, 5)
+    result = Selection.probabilistic_tournament(population2, 5, Decimal(0.5))
 
     for player in result:
         print(player.fitness)
