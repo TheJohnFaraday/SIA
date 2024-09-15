@@ -104,7 +104,6 @@ class Selection:
             cumulative_sum += fitness
             cumulative_fitness.append(cumulative_sum)
 
-        print(cumulative_fitness)
         return relative_fitness, cumulative_fitness
 
     @staticmethod
@@ -117,9 +116,25 @@ class Selection:
         Selects individuals from the population based on a list of random numbers.
         """
         selected_population = []
-        for random_number in random_numbers:
-            for i in range(1, len(cumulative_fitness) + 1):
+        for idx, random_number in enumerate(random_numbers):
+            print(f"Random number {idx + 1}: {random_number}\n")
+
+            # Handle case where random_number is between 0 and the first cumulative_fitness value
+            if random_number <= cumulative_fitness[0]:
+                selected_population.append(population[0])
+                print(
+                    f"The random number {random_number} falls into the interval [0, {cumulative_fitness[0]}], "
+                    f"so the selected individual is {population[0]}\n"
+                )
+                continue
+
+            # Iterate over the rest of the intervals
+            for i in range(1, len(cumulative_fitness)):
                 if cumulative_fitness[i - 1] < random_number <= cumulative_fitness[i]:
+                    print(
+                        f"The random number {random_number} falls into the interval [{cumulative_fitness[i - 1]}, "
+                        f"{cumulative_fitness[i]}], so the selected individual is {population[i]}\n"
+                    )
                     selected_population.append(population[i])
                     break
 
@@ -191,26 +206,33 @@ class Selection:
         Ranking selection: selects individuals from the population based on their rank.
         """
         population_len = len(population)
-        sorted_indices = np.argsort([float(player.fitness) for player in population])[
-            ::-1
-        ].tolist()
-        sorted_players = [population[index] for index in sorted_indices]
+        # Create a copy of the population and sort it by fitness in descending order
+        sorted_population = sorted(
+            population, key=lambda player: player.fitness, reverse=True
+        )
 
-        # Assign ranks based on sorted fitness
-        pseudo_population: list[Player] = []
-        for rank, index in enumerate(sorted_indices):
-            # ranks[index] = rank + 1
-            player = sorted_players[index]
-            player.fitness = (population_len - (1 + rank)) / population_len
-            pseudo_population.append(player)
+        # Calculate pseudo fitness based on ranks
+        pseudo_population = [
+            Player(
+                height=player.height,
+                p_class=player.p_class,
+                p_attr=player.p_attr,
+                fitness=(Decimal(population_len) - i)
+                / Decimal(population_len),  # Normalized rank-based fitness
+            )
+            for i, player in enumerate(sorted_population)
+        ]
 
         pseudo_relative_fitness, pseudo_cumulative_fitness = (
             Selection._calculate_fitness(pseudo_population)
         )
-        random_numbers = list(map(np.random.uniform(0, 1, population_sample_length)))
+
+        random_numbers = list(
+            map(Decimal, np.random.uniform(0, 1, population_sample_length))
+        )
 
         selected_population = Selection._select_by_random_numbers(
-            pseudo_cumulative_fitness, random_numbers, population
+            pseudo_cumulative_fitness, random_numbers, sorted_population
         )
 
         return selected_population
@@ -329,7 +351,7 @@ if __name__ == "__main__":
         )
         for fit in [3, 6, 11, 14, 1]
     ]
-    result = Selection.boltzmann(population3, 3, Decimal(3))
+    result = Selection.ranking(population3, 3)
 
     for player in result:
         print(player.fitness)
