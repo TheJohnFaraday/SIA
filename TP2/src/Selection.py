@@ -60,12 +60,12 @@ class Selection:
                         self.__population_sample,
                         self.__configuration.boltzmann_temperature,
                     )
-                # case SelectionMethods.DETERMINISTIC_TOURNAMENT:
-                #     selected_population = Selection.deterministic_tournament(
-                #         population,
-                #         self.__population_sample,
-                #         self.__configuration.deterministic_tournament_individuals_to_select,
-                #     )
+                case SelectionMethods.DETERMINISTIC_TOURNAMENT:
+                    selected_population = Selection.deterministic_tournament(
+                        population,
+                        self.__population_sample,
+                        self.__configuration.deterministic_tournament_individuals_to_select,
+                    )
                 # case SelectionMethods.PROBABILISTIC_TOURNAMENT:
                 #     selected_population = Selection.probabilistic_tournament(
                 #         population,
@@ -277,6 +277,35 @@ class Selection:
 
         return selected_population
 
+    @staticmethod
+    def deterministic_tournament(
+        population: list[Player],
+        population_sample_length: int,
+        tournament_participants: int,
+    ) -> list[Player]:
+        """
+        Deterministic tournament selection: randomly selects a group of individuals from the population,
+        then selects the best individual based on fitness from that group. Repeats until the desired
+        population size is achieved.
+        """
+        selected_population = []
+        for i in range(population_sample_length):
+            # Randomly select participants for the tournament
+            tournament = np.random.choice(
+                population, tournament_participants, replace=False
+            )
+            print(
+                f"Tournament {i + 1}: Participants: {[player.fitness for player in tournament]}"
+            )
+
+            # Find the winner (individual with the highest fitness)
+            winner = max(tournament, key=lambda player: player.fitness)
+            print(f"Winner of tournament {i + 1}: {winner.fitness}\n")
+
+            selected_population.append(winner)
+
+        return selected_population
+
 
 if __name__ == "__main__":
     default_attributes = PlayerAttributes(
@@ -351,7 +380,7 @@ if __name__ == "__main__":
         )
         for fit in [3, 6, 11, 14, 1]
     ]
-    result = Selection.ranking(population3, 3)
+    result = Selection.deterministic_tournament(population2, 5, 5)
 
     for player in result:
         print(player.fitness)
