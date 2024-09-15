@@ -18,8 +18,8 @@ class Configuration:
     time_limit: int = 0
     max_generations: int = 0
     structure: Any = None  # TODO
-    content_generations: int = 0
-    acceptable_fitness: int = 0
+    content_generations: Decimal = Decimal('0')
+    acceptable_fitness: Decimal = Decimal('0')
 
 
 class Finish:
