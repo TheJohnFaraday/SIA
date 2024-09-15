@@ -34,7 +34,7 @@ class Cross:
                 Player.p_class.WARRIOR,
                 PlayerAttributes(100, 1, 1, 1, 1),
                 Decimal(0),
-            ).attributes_as_list()[:-1]
+            ).attributes_as_list()
         )
 
     def perform(self, father: Player, mother: Player):
@@ -68,8 +68,8 @@ class Cross:
                 return self.annular(father, mother, crossover_locus, segment_len)
 
     def single_point(self, player1: Player, player2: Player, p: int) -> [Player]:
-        attributes_player1 = player1.attributes_as_list()[:-1]
-        attributes_player2 = player2.attributes_as_list()[:-1]
+        attributes_player1 = player1.attributes_as_list()
+        attributes_player2 = player2.attributes_as_list()
 
         if p >= len(attributes_player1):
             raise InvalidCrossoverPoint
@@ -111,8 +111,8 @@ class Cross:
     def double_point(
         self, player1: Player, player2: Player, locus_1: int, locus_2: int
     ) -> [Player]:
-        attributes_player1 = player1.attributes_as_list()[:-1]
-        attributes_player2 = player2.attributes_as_list()[:-1]
+        attributes_player1 = player1.attributes_as_list()
+        attributes_player2 = player2.attributes_as_list()
 
         if locus_1 >= len(attributes_player1) or locus_2 >= len(attributes_player2):
             raise InvalidCrossoverPoint
@@ -166,8 +166,8 @@ class Cross:
     def annular(
         self, player1: Player, player2: Player, locus: int, segment_length: int
     ) -> [Player]:
-        attributes_player1 = player1.attributes_as_list()[:-1]
-        attributes_player2 = player2.attributes_as_list()[:-1]
+        attributes_player1 = player1.attributes_as_list()
+        attributes_player2 = player2.attributes_as_list()
         if locus >= len(attributes_player1) or segment_length > int(
             len(attributes_player1) / 2
         ):
@@ -220,8 +220,8 @@ class Cross:
         ]
 
     def uniform(self, player1: Player, player2: Player, pm: float) -> [Player]:
-        attributes_player1 = player1.attributes_as_list()[:-1]
-        attributes_player2 = player2.attributes_as_list()[:-1]
+        attributes_player1 = player1.attributes_as_list()
+        attributes_player2 = player2.attributes_as_list()
         if pm > 1:
             raise InvalidCrossoverPoint
 

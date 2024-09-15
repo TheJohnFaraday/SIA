@@ -100,7 +100,7 @@ class Mutation:
                         ),
                     )
                 case _:
-                    attributes_player = player.attributes_as_list()[:-1]
+                    attributes_player = player.attributes_as_list()
                     match gen_mut:
                         case GenMutation.STRENGTH:
                             attributes_player[1] = int(
@@ -152,7 +152,7 @@ class Mutation:
         if pm > 1 or interval[0] > interval[1] or self.max_genes > len(gen_list):
             raise InvalidGenProbabilityValue
 
-        attributes_player = player.attributes_as_list()[:-1]
+        attributes_player = player.attributes_as_list()
         gens_mutated = set()
         for i in range(self.max_genes - 1):
             if rnd.random() > pm:
