@@ -39,14 +39,18 @@ class EVE:
                         * self.physique * self.dem)
         match p_class:
             case PlayerClass.WARRIOR:
-                self.performance = (Decimal('0.6') * self.attack
+                self._performance = (Decimal('0.6') * self.attack
                                     + Decimal('0.4') * self.defense)
             case PlayerClass.ARCHER:
-                self.performance = (Decimal('0.9') * self.attack
+                self._performance = (Decimal('0.9') * self.attack
                                     + Decimal('0.1') * self.defense)
             case PlayerClass.GUARDIAN:
-                self.performance = (Decimal('0.1') * self.attack
+                self._performance = (Decimal('0.1') * self.attack
                                     + Decimal('0.9') * self.defense)
             case PlayerClass.WIZARD:
-                self.performance = (Decimal('0.8') * self.attack
+                self._performance = (Decimal('0.8') * self.attack
                                     + Decimal('0.3') * self.defense)
+
+    @property
+    def performance(self):
+        return self._performance

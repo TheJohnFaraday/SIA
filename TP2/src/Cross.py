@@ -6,6 +6,12 @@ import random as rnd
 
 
 class Cross:
+    def __init__(self, configuration):
+        self.configuration = configuration
+
+    def perform(self, parent, mother) -> list[Player]:
+        pass
+
     @staticmethod
     def single_point(self, player1: Player, player2: Player,
                      p: int, total_points: int) -> (Player, Player):
@@ -36,13 +42,13 @@ class Cross:
                        p_attr=p1_attr,
                        fitness=EVE(normalized_child1[0],
                                    p_class,
-                                   p1_attr).performace),
+                                   p1_attr).performance),
                 Player(height=normalized_child2[0],
                        p_class=p_class,
                        p_attr=p2_attr,
                        fitness=EVE(normalized_child2[0],
                                    p_class,
-                                   p2_attr).performace))
+                                   p2_attr).performance))
 
     @staticmethod
     def double_point(self, player1: Player, player2: Player,
@@ -78,13 +84,13 @@ class Cross:
                        p_attr=p1_attr,
                        fitness=EVE(normalized_child1[0],
                                    p_class,
-                                   p1_attr).performace),
+                                   p1_attr).performance),
                 Player(height=normalized_child2[0],
                        p_class=p_class,
                        p_attr=p2_attr,
                        fitness=EVE(normalized_child2[0],
                                    p_class,
-                                   p2_attr).performace))
+                                   p2_attr).performance))
 
     @staticmethod
     def anular(self, player1: Player, player2: Player,
@@ -118,13 +124,13 @@ class Cross:
                        p_attr=p1_attr,
                        fitness=EVE(normalized_child1[0],
                                    p_class,
-                                   p1_attr).performace),
+                                   p1_attr).performance),
                 Player(height=normalized_child2[0],
                        p_class=p_class,
                        p_attr=p2_attr,
                        fitness=EVE(normalized_child2[0],
                                    p_class,
-                                   p2_attr).performace))
+                                   p2_attr).performance))
 
     @staticmethod
     def uniform(self, player1: Player, player2: Player,
@@ -163,13 +169,13 @@ class Cross:
                        p_attr=p1_attr,
                        fitness=EVE(normalized_child1[0],
                                    p_class,
-                                   p1_attr).performace),
+                                   p1_attr).performance),
                 Player(height=normalized_child2[0],
                        p_class=p_class,
                        p_attr=p2_attr,
                        fitness=EVE(normalized_child2[0],
                                    p_class,
-                                   p2_attr).performace))
+                                   p2_attr).performance))
 
     '''
     get_player_attr_list: Returns a list containing the attributes of a
