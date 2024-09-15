@@ -31,7 +31,9 @@ if __name__ == "__main__":
         # Crossover
         shuffle(population)
         for index, player in enumerate(population):
-            crossed = crossover.perform(population[index], population[(index+1) % len(population)])
+            crossed = crossover.perform(
+                population[index], population[(index + 1) % len(population)]
+            )
             new_population += crossed
 
         # Mutation

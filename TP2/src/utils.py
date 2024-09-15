@@ -2,9 +2,7 @@ from enum import Enum
 from typing import Type, Any, Optional
 
 
-def key_from_enum_value(
-        enum: Type[Enum], value: Any
-) -> Optional[Enum]:
+def key_from_enum_value(enum: Type[Enum], value: Any) -> Optional[Enum]:
     """
     Returns the first key in `enum` that has `value` as its value. If no key is found, returns `fallback`.
     """
@@ -12,7 +10,7 @@ def key_from_enum_value(
 
 
 def key_from_enum_value_with_fallback(
-        enum: Type[Enum], value: Any, fallback: Enum
+    enum: Type[Enum], value: Any, fallback: Enum
 ) -> Enum:
     """
     Returns the first key in `enum` that has `value` as its value. If no key is found, returns `fallback`.
