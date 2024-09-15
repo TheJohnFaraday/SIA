@@ -33,6 +33,13 @@ class Selection:
         self.__configuration = configuration
         self.__population_sample = population_sample
 
+        if len(configuration.method) != len(configuration.weight):
+            raise ValueError("'method' and 'weight' length must be the same.")
+
+        weight_sum = sum(configuration.weight)
+        if not (weight_sum == Decimal(1)):
+            raise ValueError(f"the sum of the weights must be 1. Current sum: {weight_sum}")
+
     def select(self, current_population: list[Player], new_population: list[Player]):
         population = current_population + new_population
 

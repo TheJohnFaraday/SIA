@@ -1,4 +1,4 @@
-from decimal import Decimal
+from decimal import Decimal, getcontext, Context
 from random import shuffle, random, randint
 
 from src.configuration import read_configuration
@@ -8,6 +8,10 @@ from src.Mutation import Mutation
 from src.Player import Player, PlayerClass, PlayerAttributes
 from src.Selection import Selection
 from src.utils import random_numbers_that_sum_n
+
+
+context = Context(prec=10)
+getcontext().prec = 10
 
 
 def initial_population(player_class: PlayerClass, size: int) -> list[Player]:
