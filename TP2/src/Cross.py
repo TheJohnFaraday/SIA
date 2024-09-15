@@ -1,10 +1,13 @@
+import math
+import random as rnd
 from enum import Enum
+from dataclasses import dataclass
+from decimal import Decimal
+
 from .Player import Player
 from .PlayerAttributes import PlayerAttributes
 from .InvalidCrossoverPoint import InvalidCrossoverPoint
-from .configuration import GeneticConfiguration
 from .EVE import EVE
-import random as rnd
 
 
 class CrossoverMethod(Enum):
@@ -14,38 +17,60 @@ class CrossoverMethod(Enum):
     ANNULAR = "annular"
 
 
+@dataclass(frozen=True)
+class Configuration:
+    method: CrossoverMethod
+    pc: Decimal
+
+
 class Cross:
-    def __init__(self, configuration: GeneticConfiguration, max_points: int):
-        self.config = configuration
-        self.max_points = max_points
+    def __init__(self, configuration: Configuration):
+        self.configuration = configuration
+
+        # Number of PlayerAttributes plus Height. Must be calculated
+        self.total_points = len(Player(Decimal(0), Player.p_class.WARRIOR, PlayerAttributes(100, 1, 1, 1, 1),
+                                       Decimal(0)).attributes_as_list())
 
     def perform(self, father: Player, mother: Player):
-        match self.config.crossover:
+        # Crossover happens with a probability of Pc
+        if (self.configuration.pc < 1 and
+                self.configuration.pc < Decimal(rnd.uniform(0.0, float(self.configuration.pc)))):
+            return [father, mother]
+
+        crossover_locus = rnd.randint(0, self.total_points)
+
+        match self.configuration.method:
             case CrossoverMethod.ONE_POINT:
-                return Cross.one_point(father, mother, self.config.p, self.total_points)
+                return self.single_point(father, mother, crossover_locus)
             case CrossoverMethod.TWO_POINT:
-                return Cross.one_point(
-                    father, mother, self.config.p, self.config.p_2, self.total_points
+                crossover_locus_2 = rnd.randint(0, self.total_points)
+                return self.double_point(
+                    father, mother, min(crossover_locus, crossover_locus_2), max(crossover_locus, crossover_locus_2)
                 )
             case CrossoverMethod.UNIFORM:
-                return Cross.one_point(
-                    father, mother, self.config.pm, self.total_points
+                return self.uniform(
+                    father, mother, crossover_locus
                 )
             case CrossoverMethod.ANNULAR:
-                return Cross.one_point(
-                    father, mother, self.config.p, self.config.len, self.total_points
+                # Annular requires crossover_locus = [0; total_points - 1]
+                if crossover_locus == self.total_points:
+                    crossover_locus -= 1
+
+                segment_len = rnd.randint(0, math.ceil(self.total_points / 2))
+                return self.annular(
+                    father, mother, crossover_locus, segment_len
                 )
 
-    @staticmethod
     def single_point(
-        self, player1: Player, player2: Player, p: int, total_points: int
+        self, player1: Player, player2: Player, p: int
     ) -> [Player]:
-        player1_list = self.__get_player_attr_list(player1)
-        player2_list = self.__get_player_attr_list(player2)
-        if p >= len(player1_list):
+        attributes_player1 = player1.attributes_as_list()
+        attributes_player2 = player2.attributes_as_list()
+
+        if p >= len(attributes_player1):
             raise InvalidCrossoverPoint
-        child1 = player1_list[:p] + player2_list[p:]
-        child2 = player1_list[p:] + player2_list[:p]
+        child1 = attributes_player1[:p] + attributes_player2[p:]
+        child2 = attributes_player1[p:] + attributes_player2[:p]
         normalized_child1 = self.__normalize_attr(child1)
         normalized_child2 = self.__normalize_attr(child2)
 
@@ -79,20 +104,20 @@ class Cross:
             ),
         ]
 
-    @staticmethod
     def double_point(
-        self, player1: Player, player2: Player, p1: int, p2: int, total_points: int
+        self, player1: Player, player2: Player, locus_1: int, locus_2: int
     ) -> [Player]:
-        player1_list = self.__get_player_attr_list(player1)
-        player2_list = self.__get_player_attr_list(player2)
-        if p1 >= len(player1_list) or p2 >= len(player1_list):
+        attributes_player1 = player1.attributes_as_list()
+        attributes_player2 = player2.attributes_as_list()
+
+        if locus_1 >= len(attributes_player1) or locus_2 >= len(attributes_player2):
             raise InvalidCrossoverPoint
-        if p1 > p2:
-            aux = p1
-            p1 = p2
-            p2 = aux
-        child1 = player1_list[:p1] + player2_list[p1:p2] + player1_list[p2:]
-        child2 = player2_list[:p1] + player1_list[p1:p2] + player2_list[p2:]
+
+        if locus_1 > locus_2:
+            locus_1, locus_2 = locus_2, locus_1
+
+        child1 = attributes_player1[:locus_1] + attributes_player2[locus_1:locus_2] + attributes_player1[locus_2:]
+        child2 = attributes_player2[:locus_1] + attributes_player1[locus_1:locus_2] + attributes_player2[locus_2:]
         normalized_child1 = self.__normalize_attr(child1)
         normalized_child2 = self.__normalize_attr(child2)
 
@@ -126,18 +151,19 @@ class Cross:
             ),
         ]
 
-    @staticmethod
     def annular(
-        self, player1: Player, player2: Player, p: int, len: int, total_points: int
+        self, player1: Player, player2: Player, locus: int, segment_length: int
     ) -> [Player]:
-        player1_list = self.__get_player_attr_list(player1)
-        player2_list = self.__get_player_attr_list(player2)
-        if p >= len(player1_list) or len > int(len(player1_list) / 2):
+        attributes_player1 = player1.attributes_as_list()
+        attributes_player2 = player2.attributes_as_list()
+        if locus >= len(attributes_player1) or segment_length > int(len(attributes_player1) / 2):
             raise InvalidCrossoverPoint
-        if (p + len) >= len(player1_list):
-            len = len(player1_list) - 1
-        child1 = player1_list[:p] + player2_list[p : p + len] + player1_list[p + len :]
-        child2 = player2_list[:p] + player1_list[p : p + len] + player2_list[p + len :]
+
+        if (locus + segment_length) >= len(attributes_player1):
+            segment_length = len(attributes_player1) - 1
+
+        child1 = attributes_player1[:locus] + attributes_player2[locus: locus + segment_length] + attributes_player1[locus + segment_length:]
+        child2 = attributes_player2[:locus] + attributes_player1[locus: locus + segment_length] + attributes_player2[locus + segment_length:]
         normalized_child1 = self.__normalize_attr(child1)
         normalized_child2 = self.__normalize_attr(child2)
 
@@ -171,23 +197,23 @@ class Cross:
             ),
         ]
 
-    @staticmethod
     def uniform(
-        self, player1: Player, player2: Player, pm: float, total_points: int
+        self, player1: Player, player2: Player, pm: float
     ) -> [Player]:
-        player1_list = self.__get_player_attr_list(player1)
-        player2_list = self.__get_player_attr_list(player2)
+        attributes_player1 = player1.attributes_as_list()
+        attributes_player2 = player2.attributes_as_list()
         if pm > 1:
             raise InvalidCrossoverPoint
+
         child1 = []
         child2 = []
-        for i in range(len(player1_list)):
+        for i in range(len(attributes_player1)):
             if rnd.random() > pm:
-                child1[i] = player1_list[i]
-                child2[i] = player2_list[i]
+                child1[i] = attributes_player1[i]
+                child2[i] = attributes_player2[i]
             else:
-                child1[i] = player2_list[i]
-                child2[i] = player1_list[i]
+                child1[i] = attributes_player2[i]
+                child2[i] = attributes_player1[i]
         normalized_child1 = self.__normalize_attr(child1)
         normalized_child2 = self.__normalize_attr(child2)
 
@@ -221,30 +247,15 @@ class Cross:
             ),
         ]
 
-    """
-    get_player_attr_list: Returns a list containing the attributes of a
-                         player in the following order:
-        [Height, Strength, Dexterity, Intelligence, Endurance, Physique]
-    """
-
-    def __get_player_attr_list(player: Player) -> []:
-        return [
-            player.height,
-            player.p_attr.strength,
-            player.p_attr.dexterity,
-            player.p_attr.intelligence,
-            player.p_attr.endurance,
-            player.p_attr.physique,
-        ]
-
-    def __normalize_attr(player_attr: [], max_points: int) -> []:
+    @staticmethod
+    def __normalize_attr(player_attr: list) -> []:
         player_attr_isolated = player_attr[1:]
         current_total = sum(player_attr_isolated)
-        factor = max_points / current_total
+        factor = PlayerAttributes.TOTAL_POINTS_MAX / current_total
         normalized_attrs = [int(factor * x) for x in player_attr_isolated]
 
         adjusted_total = sum(normalized_attrs)
-        difference = max_points - adjusted_total
+        difference = PlayerAttributes.TOTAL_POINTS_MAX - adjusted_total
         for i in range(abs(difference)):
             if difference < 0:
                 normalized_attrs[i % len(normalized_attrs)] -= 1

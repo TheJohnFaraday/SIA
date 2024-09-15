@@ -2,7 +2,7 @@ import tomllib
 from dataclasses import dataclass
 from decimal import Decimal
 
-from .CrossoverMethod import CrossoverMethod
+from .Cross import CrossoverMethod, Configuration as CrossoverConfiguration
 from .Finish import FinishMethod, Configuration as FinishConfiguration
 from .Mutation import MutationMethod, Configuration as MutationConfiguration
 from .PlayerClass import PlayerClass
@@ -16,7 +16,7 @@ from .utils import key_from_enum_value, key_from_enum_value_with_fallback
 
 @dataclass(frozen=True)
 class GeneticConfiguration:
-    crossover: CrossoverMethod
+    crossover: CrossoverConfiguration
     mutation: MutationConfiguration
 
 
@@ -55,10 +55,15 @@ def read_configuration():
             ),
         )
 
-        genetic_configuration = GeneticConfiguration(
-            crossover=key_from_enum_value_with_fallback(
+        crossover_configuration = CrossoverConfiguration(
+            method=key_from_enum_value_with_fallback(
                 CrossoverMethod, data["genetic"]["crossover"], CrossoverMethod.ONE_POINT
             ),
+            pc=data["genetic"]["parameters"]["crossover"]["pc"]
+        )
+
+        genetic_configuration = GeneticConfiguration(
+            crossover=crossover_configuration,
             mutation=mutation_configuration,
         )
 

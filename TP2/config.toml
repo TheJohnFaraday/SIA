@@ -19,6 +19,10 @@ crossover = "two_point"
 # Gen must be one of: ["single", "limited_multi", "uniform_multi", "complete"]
 mutation = "single"
 
+[genetic.parameters.crossover]
+# Probability of cross over in range [0; 1]
+pc = 0.75
+
 [genetic.parameters.mutation]
 pm = 0.5
 [genetic.parameters.mutation.limited_multi]

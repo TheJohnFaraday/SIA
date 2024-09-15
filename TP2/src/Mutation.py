@@ -36,9 +36,8 @@ class Configuration:
 
 
 class Mutation:
-    def __init__(self, configuration: Configuration, max_points: int):
+    def __init__(self, configuration: Configuration):
         self.config = configuration
-        self.max_points = max_points
         self.pm = configuration.pm
 
     def mutate(self, generation: int, population: list[Player]):
@@ -93,29 +92,29 @@ class Mutation:
                         ),
                     )
                 case _:
-                    player_list = self.__get_player_attr_list(player)
+                    attributes_player = player.attributes_as_list()
                     match gen_mut:
                         case GenMutation.STRENGTH:
-                            player_list[1] = int(
+                            attributes_player[1] = int(
                                 player.p_attr.strength * (1 + mutation)
                             )
                         case GenMutation.DEXTERITY:
-                            player_list[2] = int(
+                            attributes_player[2] = int(
                                 player.p_attr.dexterity * (1 + mutation)
                             )
                         case GenMutation.INTELLIGENCE:
-                            player_list[3] = int(
+                            attributes_player[3] = int(
                                 player.p_attr.intelligence * (1 + mutation)
                             )
                         case GenMutation.ENDURANCE:
-                            player_list[4] = int(
+                            attributes_player[4] = int(
                                 player.p_attr.endurance * (1 + mutation)
                             )
                         case GenMutation.PHYSIQUE:
-                            player_list[5] = int(
+                            attributes_player[5] = int(
                                 player.p_attr.physique * (1 + mutation)
                             )
-                    normalized_p = self.__normalize_attr(player_list, self.max_points)
+                    normalized_p = self.__normalize_attr(attributes_player)
                     normalized_p_attr = PlayerAttributes(
                         strength=normalized_p[1],
                         dexterity=normalized_p[2],
@@ -144,7 +143,8 @@ class Mutation:
         gen_list = list(GenMutation)
         if pm > 1 or interval[0] > interval[1] or max_genes > len(gen_list):
             raise InvalidGenProbabilityValue
-        player_list = Mutation.__get_player_attr_list(player)
+
+        attributes_player = player.attributes_as_list()
         gens_mutated = set()
         for i in range(max_genes - 1):
             if rnd.random() > pm:
@@ -155,22 +155,22 @@ class Mutation:
                 match mut:
                     case GenMutation.HEIGHT:
                         new_height = Decimal(player.height * Decimal(1 + mutation))
-                        player_list[0] = max(Player.MIN_HEIGHT, min(Player.MAX_HEIGHT, new_height))
+                        attributes_player[0] = max(Player.MIN_HEIGHT, min(Player.MAX_HEIGHT, new_height))
                     case GenMutation.STRENGTH:
-                        player_list[1] = int(player.p_attr.strength * (1 + mutation))
+                        attributes_player[1] = int(player.p_attr.strength * (1 + mutation))
                     case GenMutation.DEXTERITY:
-                        player_list[2] = int(player.p_attr.dexterity * (1 + mutation))
+                        attributes_player[2] = int(player.p_attr.dexterity * (1 + mutation))
                     case GenMutation.INTELLIGENCE:
-                        player_list[3] = int(
+                        attributes_player[3] = int(
                             player.p_attr.intelligence * (1 + mutation)
                         )
                     case GenMutation.ENDURANCE:
-                        player_list[4] = int(player.p_attr.endurance * (1 + mutation))
+                        attributes_player[4] = int(player.p_attr.endurance * (1 + mutation))
                     case GenMutation.PHYSIQUE:
-                        player_list[5] = int(player.p_attr.physique * (1 + mutation))
+                        attributes_player[5] = int(player.p_attr.physique * (1 + mutation))
                 gens_mutated.add(mut)
 
-        normalized_p = self.__normalize_attr(player_list, self.max_points)
+        normalized_p = self.__normalize_attr(attributes_player)
         normalized_p_attr = PlayerAttributes(
             strength=normalized_p[1],
             dexterity=normalized_p[2],
@@ -191,32 +191,15 @@ class Mutation:
             ),
         )
 
-    """
-    get_player_attr_list: Returns a list containing the attributes of a
-                         player in the following order:
-        [Height, Strength, Dexterity, Intelligence, Endurance, Physique]
-    """
-
     @staticmethod
-    def __get_player_attr_list(player: Player) -> []:
-        return [
-            player.height,
-            player.p_attr.strength,
-            player.p_attr.dexterity,
-            player.p_attr.intelligence,
-            player.p_attr.endurance,
-            player.p_attr.physique,
-        ]
-
-    @staticmethod
-    def __normalize_attr(player_attr: [], max_points: int) -> []:
+    def __normalize_attr(player_attr: list) -> []:
         player_attr_isolated = player_attr[1:]
         current_total = sum(player_attr_isolated)
-        factor = max_points / current_total
+        factor = PlayerAttributes.TOTAL_POINTS_MAX / current_total
         normalized_attrs = [int(factor * x) for x in player_attr_isolated]
 
         adjusted_total = sum(normalized_attrs)
-        difference = max_points - adjusted_total
+        difference = PlayerAttributes.TOTAL_POINTS_MAX - adjusted_total
         for i in range(abs(difference)):
             if difference < 0:
                 normalized_attrs[i % len(normalized_attrs)] -= 1

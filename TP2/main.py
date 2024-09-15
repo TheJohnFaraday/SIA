@@ -21,7 +21,13 @@ def initial_population(player_class: PlayerClass, size: int) -> list[Player]:
             ),
             p_class=player_class,
             p_attr=PlayerAttributes(
-                *random_numbers_that_sum_n(5, PlayerAttributes.TOTAL_POINTS)
+                *random_numbers_that_sum_n(
+                    PlayerAttributes.NUMBER_OF_ATTRIBUTES,
+                    randint(
+                        PlayerAttributes.TOTAL_POINTS_MIN,
+                        PlayerAttributes.TOTAL_POINTS_MAX,
+                    ),
+                )
             ),
             fitness=Decimal(0),
         )
@@ -40,7 +46,9 @@ if __name__ == "__main__":
     finish = Finish(configuration.finish)
 
     generation = 0
-    population = initial_population(configuration.player, configuration.initial_population)
+    population = initial_population(
+        configuration.player, configuration.initial_population
+    )
     while not finish.done():
         new_population = []
         generation += 1
