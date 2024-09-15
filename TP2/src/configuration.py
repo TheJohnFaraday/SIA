@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from .CrossoverMethod import CrossoverMethod
 from .Finish import FinishMethod, Configuration as FinishConfiguration
-from .Mutation import MutationMethod
+from .Mutation import MutationMethod, Configuration as MutationConfiguration
 from .PlayerClass import PlayerClass
 from .Replacement import ReplacementMethod, Configuration as ReplacementConfiguration
 from .Selection import (
@@ -17,9 +17,7 @@ from .utils import key_from_enum_value, key_from_enum_value_with_fallback
 @dataclass(frozen=True)
 class GeneticConfiguration:
     crossover: CrossoverMethod
-    mutation: MutationMethod
-    pm: Decimal
-    max_genes: int = 0  # For limited_multi mutation method
+    mutation: MutationConfiguration
 
 
 @dataclass(frozen=True)
@@ -42,17 +40,26 @@ def read_configuration():
         genetic_mutation = key_from_enum_value_with_fallback(
             MutationMethod, data["genetic"]["mutation"], MutationMethod.SINGLE
         )
-        genetic_configuration = GeneticConfiguration(
-            crossover=key_from_enum_value_with_fallback(
-                CrossoverMethod, data["genetic"]["crossover"], CrossoverMethod.ONE_POINT
-            ),
+        mutation_configuration = MutationConfiguration(
             mutation=genetic_mutation,
             pm=data["genetic"]["parameters"]["mutation"]["pm"],
             max_genes=(
                 data["genetic"]["parameters"]["mutation"]["limited_multi"]
                 if genetic_mutation == MutationMethod.LIMITED_MULTI
-                else 0
+                else 1
             ),
+            generational_increment=(
+                data["genetic"]["parameters"]["mutation"]["generational_increment"]
+                if genetic_mutation == MutationMethod.UNIFORM_MULTI
+                else Decimal(0)
+            ),
+        )
+
+        genetic_configuration = GeneticConfiguration(
+            crossover=key_from_enum_value_with_fallback(
+                CrossoverMethod, data["genetic"]["crossover"], CrossoverMethod.ONE_POINT
+            ),
+            mutation=mutation_configuration,
         )
 
         selection_methods = [
@@ -137,4 +144,3 @@ def read_configuration():
         )
 
         return configuration
-

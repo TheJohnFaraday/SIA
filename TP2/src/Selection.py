@@ -23,12 +23,67 @@ class Configuration:
     weight: list[Decimal]
     deterministic_tournament_individuals_to_select: int = 0
     probabilistic_tournament_threshold: Decimal = 0
-    boltzmann_temperature: int = 0
+    boltzmann_temperature: Decimal = 0
 
 
 class Selection:
     def __init__(self, population_sample: int, configuration: Configuration):
         self.__configuration = configuration
+        self.__population_sample = population_sample
+
+    def select(self, current_population: list[Player], new_population: list[Player]):
+        population = current_population + new_population
+
+        final_population = []
+
+        for index, method in enumerate(self.__configuration.method):
+            method_weight = self.__configuration.weight[index]
+            selected_population = []
+            match method:
+                case SelectionMethods.ELITE:
+                    selected_population = Selection.elite(
+                        population, self.__population_sample
+                    )
+                case SelectionMethods.ROULETTE:
+                    selected_population = Selection.roulette(
+                        population, self.__population_sample
+                    )
+                case SelectionMethods.UNIVERSAL:
+                    selected_population = Selection.universal(
+                        population, self.__population_sample
+                    )
+                case SelectionMethods.BOLTZMANN:
+                    selected_population = Selection.boltzmann(
+                        population,
+                        self.__population_sample,
+                        self.__configuration.boltzmann_temperature,
+                    )
+                # case SelectionMethods.DETERMINISTIC_TOURNAMENT:
+                #     selected_population = Selection.deterministic_tournament(
+                #         population,
+                #         self.__population_sample,
+                #         self.__configuration.deterministic_tournament_individuals_to_select,
+                #     )
+                # case SelectionMethods.PROBABILISTIC_TOURNAMENT:
+                #     selected_population = Selection.probabilistic_tournament(
+                #         population,
+                #         self.__population_sample,
+                #         self.__configuration.probabilistic_tournament_threshold,
+                #     )
+                case SelectionMethods.RANKING:
+                    selected_population = Selection.ranking(
+                        population, self.__population_sample
+                    )
+                case _:
+                    raise RuntimeError("Invalid selection method!")
+
+            if method_weight == Decimal(1):
+                return selected_population
+
+            players_to_select = int(round(method_weight * len(selected_population)))
+            final_population += selected_population[:players_to_select]
+
+        return final_population
 
     @staticmethod
     def _calculate_fitness(
@@ -134,7 +189,9 @@ class Selection:
         Ranking selection: selects individuals from the population based on their rank.
         """
         population_len = len(population)
-        sorted_indices = np.argsort([float(player.fitness) for player in population])[::-1].tolist()
+        sorted_indices = np.argsort([float(player.fitness) for player in population])[
+            ::-1
+        ].tolist()
         sorted_players = [population[index] for index in sorted_indices]
 
         # Assign ranks based on sorted fitness
@@ -166,23 +223,29 @@ class Selection:
         individuals are more likely to be selected as the temperature decreases, allowing for
         an initial phase of exploration followed by exploitation as the algorithm progresses.
         """
-        relative_fitness = np.exp([player.fitness / temperature for player in population])
+        relative_fitness = np.exp(
+            [player.fitness / temperature for player in population]
+        )
 
         average_fitness = np.average(relative_fitness)
 
         pseudo_population = []
         for index, player in enumerate(population):
-            pseudo_population.append(Player(
-                height=player.height,
-                p_class=player.p_class,
-                p_attr=player.p_attr,
-                fitness=relative_fitness[index] / average_fitness
-            ))
+            pseudo_population.append(
+                Player(
+                    height=player.height,
+                    p_class=player.p_class,
+                    p_attr=player.p_attr,
+                    fitness=relative_fitness[index] / average_fitness,
+                )
+            )
 
         pseudo_relative_fitness, pseudo_cumulative_fitness = (
             Selection._calculate_fitness(pseudo_population)
         )
-        random_numbers = list(map(Decimal, np.random.uniform(0, 1, population_sample_length)))
+        random_numbers = list(
+            map(Decimal, np.random.uniform(0, 1, population_sample_length))
+        )
 
         selected_population = Selection._select_by_random_numbers(
             pseudo_cumulative_fitness, random_numbers, population
