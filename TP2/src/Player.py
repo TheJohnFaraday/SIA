@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from typing import Decimal
+from decimal import Decimal
+
 from .PlayerClass import PlayerClass
 from .PlayerAttributes import PlayerAttributes
 
@@ -10,3 +11,6 @@ class Player:
     p_class: PlayerClass
     p_attr: PlayerAttributes
     fitness: Decimal
+
+    def __lt__(self, other: "Player"):
+        return self.fitness < other.fitness

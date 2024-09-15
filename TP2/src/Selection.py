@@ -4,6 +4,8 @@ from decimal import Decimal
 
 import numpy as np
 
+from .Player import Player
+
 
 class SelectionMethods(Enum):
     ELITE = "elite"
@@ -29,16 +31,18 @@ class Selection:
         self.__configuration = configuration
 
     @staticmethod
-    def _calculate_fitness(population: list[float]) -> tuple[list[float], list[float]]:
+    def _calculate_fitness(
+        population: list[Player],
+    ) -> tuple[list[Decimal], list[Decimal]]:
         """
         Calculates the relative and cumulative fitness for the population.
         Returns a tuple (relative_fitness, cumulative_fitness).
         """
-        total_fitness = sum(population)
-        relative_fitness = [score / total_fitness for score in population]
+        total_fitness = sum([player.fitness for player in population])
+        relative_fitness = [player.fitness / total_fitness for player in population]
 
         cumulative_fitness = []
-        cumulative_sum = 0.0
+        cumulative_sum = Decimal(0.0)
         for fitness in relative_fitness:
             cumulative_sum += fitness
             cumulative_fitness.append(cumulative_sum)
@@ -48,10 +52,10 @@ class Selection:
 
     @staticmethod
     def _select_by_random_numbers(
-        cumulative_fitness: list[float],
-        random_numbers: list[float],
-        population: list[float],
-    ) -> list[float]:
+        cumulative_fitness: list[Decimal],
+        random_numbers: list[Decimal],
+        population: list[Player],
+    ) -> list[Player]:
         """
         Selects individuals from the population based on a list of random numbers.
         """
@@ -62,11 +66,10 @@ class Selection:
                     selected_population.append(population[i])
                     break
 
-        print(random_numbers)
         return selected_population
 
     @staticmethod
-    def elite(population: list[float], population_sample_length: int) -> list[float]:
+    def elite(population: list[Player], population_sample_length: int) -> list[Player]:
         """
         Selects the individuals from the population based on their scores
         """
@@ -84,13 +87,17 @@ class Selection:
         return population_with_repetition
 
     @staticmethod
-    def roulette(population: list[float], population_sample_length: int) -> list[float]:
+    def roulette(
+        population: list[Player], population_sample_length: int
+    ) -> list[Player]:
         """
         Roulette selection: selects individuals from the population based on their scores in a stochastic manner.
         """
         relative_fitness, cumulative_fitness = Selection._calculate_fitness(population)
 
-        random_numbers = np.random.uniform(0, 1, population_sample_length)
+        random_numbers = list(
+            map(Decimal, np.random.uniform(0, 1, population_sample_length))
+        )
 
         selected_population = Selection._select_by_random_numbers(
             cumulative_fitness, random_numbers, population
@@ -100,8 +107,8 @@ class Selection:
 
     @staticmethod
     def universal(
-        population: list[float], population_sample_length: int
-    ) -> list[float]:
+        population: list[Player], population_sample_length: int
+    ) -> list[Player]:
         """
         Universal stochastic selection: selects individuals from the population based on their scores with more uniformity.
         """
@@ -109,7 +116,9 @@ class Selection:
 
         r_value = np.random.uniform(0, 1)
         j_values = np.arange(0, population_sample_length)
-        random_numbers = (r_value + j_values) / population_sample_length
+        random_numbers = list(
+            map(Decimal, (r_value + j_values) / population_sample_length)
+        )
 
         selected_population = Selection._select_by_random_numbers(
             cumulative_fitness, random_numbers, population
@@ -118,24 +127,28 @@ class Selection:
         return selected_population
 
     @staticmethod
-    def ranking(population: list[float], population_sample_length: int) -> list[float]:
+    def ranking(
+        population: list[Player], population_sample_length: int
+    ) -> list[Player]:
         """
         Ranking selection: selects individuals from the population based on their rank.
         """
-        sorted_indices = np.argsort(population)[::-1]
-        ranks = np.zeros_like(sorted_indices, dtype=float)
+        population_len = len(population)
+        sorted_indices = np.argsort([float(player.fitness) for player in population])[::-1].tolist()
+        sorted_players = [population[index] for index in sorted_indices]
 
         # Assign ranks based on sorted fitness
+        pseudo_population: list[Player] = []
         for rank, index in enumerate(sorted_indices):
-            ranks[index] = rank + 1
-
-        N = len(population)
-        pseudo_population = [(N - rank) / N for rank in ranks]
+            # ranks[index] = rank + 1
+            player = sorted_players[index]
+            player.fitness = (population_len - (1 + rank)) / population_len
+            pseudo_population.append(player)
 
         pseudo_relative_fitness, pseudo_cumulative_fitness = (
             Selection._calculate_fitness(pseudo_population)
         )
-        random_numbers = np.random.uniform(0, 1, population_sample_length)
+        random_numbers = list(map(np.random.uniform(0, 1, population_sample_length)))
 
         selected_population = Selection._select_by_random_numbers(
             pseudo_cumulative_fitness, random_numbers, population
@@ -145,28 +158,31 @@ class Selection:
 
     @staticmethod
     def boltzmann(
-        population: list[float], population_sample_length: int, temperature: float
-    ) -> list[float]:
+        population: list[Player], population_sample_length: int, temperature: Decimal
+    ) -> list[Player]:
         """
         Boltzmann's selection: selects individuals from the population based on a probability
         distribution that depends on their fitness and the current temperature. Higher fitness
         individuals are more likely to be selected as the temperature decreases, allowing for
         an initial phase of exploration followed by exploitation as the algorithm progresses.
         """
-        relative_fitness = np.array(
-            np.exp([score / temperature for score in population])
-        )
+        relative_fitness = np.exp([player.fitness / temperature for player in population])
 
         average_fitness = np.average(relative_fitness)
 
-        pseudo_population = np.array(
-            [fitness / average_fitness for fitness in relative_fitness]
-        )
+        pseudo_population = []
+        for index, player in enumerate(population):
+            pseudo_population.append(Player(
+                height=player.height,
+                p_class=player.p_class,
+                p_attr=player.p_attr,
+                fitness=relative_fitness[index] / average_fitness
+            ))
 
         pseudo_relative_fitness, pseudo_cumulative_fitness = (
             Selection._calculate_fitness(pseudo_population)
         )
-        random_numbers = np.random.uniform(0, 1, population_sample_length)
+        random_numbers = list(map(Decimal, np.random.uniform(0, 1, population_sample_length)))
 
         selected_population = Selection._select_by_random_numbers(
             pseudo_cumulative_fitness, random_numbers, population
