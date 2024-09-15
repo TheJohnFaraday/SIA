@@ -1,15 +1,32 @@
-from random import shuffle
+from decimal import Decimal
+from random import shuffle, random, randint
 
 from src.configuration import read_configuration
 from src.Cross import Cross
 from src.Finish import Finish
 from src.Mutation import Mutation
-from src.Player import Player
+from src.Player import Player, PlayerClass, PlayerAttributes
 from src.Selection import Selection
+from src.utils import random_numbers_that_sum_n
 
 
-def initial_population() -> list[Player]:
-    pass
+def initial_population(player_class: PlayerClass, size: int) -> list[Player]:
+    return [
+        Player(
+            height=Decimal(
+                min(
+                    Player.MAX_HEIGHT,
+                    randint(Player.MIN_HEIGHT, Player.MAX_HEIGHT) + random(),
+                )
+            ),
+            p_class=player_class,
+            p_attr=PlayerAttributes(
+                *random_numbers_that_sum_n(5, PlayerAttributes.TOTAL_POINTS)
+            ),
+            fitness=Decimal(0),
+        )
+        for _ in range(size)
+    ]
 
 
 if __name__ == "__main__":
@@ -23,7 +40,7 @@ if __name__ == "__main__":
     finish = Finish(configuration.finish)
 
     generation = 0
-    population = initial_population()
+    population = initial_population(configuration.player, configuration.initial_population)
     while not finish.done():
         new_population = []
         generation += 1

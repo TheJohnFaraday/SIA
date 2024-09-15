@@ -8,9 +8,6 @@ from .InvalidGenProbabilityValue import InvalidGenProbabilityValue
 from .Player import Player
 from .PlayerAttributes import PlayerAttributes
 
-min_height = Decimal("1.3")
-max_height = Decimal("2.0")
-
 
 class MutationMethod(Enum):
     SINGLE = "single"
@@ -82,7 +79,7 @@ class Mutation:
             match gen_mut:
                 case GenMutation.HEIGHT:
                     new_height = Decimal(player.height * Decimal(1 + mutation))
-                    new_height = max(min_height, min(max_height, new_height))
+                    new_height = max(Player.MIN_HEIGHT, min(Player.MAX_HEIGHT, new_height))
                     return Player(
                         height=new_height,
                         p_class=player.p_class,
@@ -158,7 +155,7 @@ class Mutation:
                 match mut:
                     case GenMutation.HEIGHT:
                         new_height = Decimal(player.height * Decimal(1 + mutation))
-                        player_list[0] = max(min_height, min(max_height, new_height))
+                        player_list[0] = max(Player.MIN_HEIGHT, min(Player.MAX_HEIGHT, new_height))
                     case GenMutation.STRENGTH:
                         player_list[1] = int(player.p_attr.strength * (1 + mutation))
                     case GenMutation.DEXTERITY:

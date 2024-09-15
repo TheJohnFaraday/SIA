@@ -2,6 +2,8 @@ from .InvalidTotalPoints import InvalidTotalPoints
 
 
 class PlayerAttributes:
+    TOTAL_POINTS = 100
+
     def __init__(
         self,
         strength: int,
@@ -11,8 +13,9 @@ class PlayerAttributes:
         physique: int,
     ):
         total = strength + dexterity + intelligence + endurance + physique
-        if total < 100 or total > 100:
+        if total != PlayerAttributes.TOTAL_POINTS:
             raise InvalidTotalPoints
+
         self.strength = strength
         self.dexterity = dexterity
         self.intelligence = intelligence
