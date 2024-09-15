@@ -1,14 +1,48 @@
+from enum import Enum
 from .Player import Player
 from .PlayerAttributes import PlayerAttributes
 from .InvalidCrossoverPoint import InvalidCrossoverPoint
+from .configuration import GeneticConfiguration
 from .EVE import EVE
 import random as rnd
 
 
+class CrossoverMethod(Enum):
+    ONE_POINT = "one_point"
+    TWO_POINT = "two_point"
+    UNIFORM = "uniform"
+    ANNULAR = "annular"
+
+
 class Cross:
+    def __init__(self, configuration: GeneticConfiguration, max_points: int):
+        self.config = configuration
+        self.max_points = max_points
+
+    def perform(self, father: Player, mother: Player):
+        match self.config.crossover:
+            case CrossoverMethod.ONE_POINT:
+                return Cross.one_point(father, mother,
+                                       self.config.p,
+                                       self.total_points)
+            case CrossoverMethod.TWO_POINT:
+                return Cross.one_point(father, mother,
+                                       self.config.p,
+                                       self.config.p_2,
+                                       self.total_points)
+            case CrossoverMethod.UNIFORM:
+                return Cross.one_point(father, mother,
+                                       self.config.pm,
+                                       self.total_points)
+            case CrossoverMethod.ANNULAR:
+                return Cross.one_point(father, mother,
+                                       self.config.p,
+                                       self.config.len,
+                                       self.total_points)
+
     @staticmethod
     def single_point(self, player1: Player, player2: Player,
-                     p: int, total_points: int) -> (Player, Player):
+                     p: int, total_points: int) -> [Player]:
         player1_list = self.__get_player_attr_list(player1)
         player2_list = self.__get_player_attr_list(player2)
         if p >= len(player1_list):
@@ -31,7 +65,7 @@ class Cross:
                         intelligence=normalized_child2[3],
                         endurance=normalized_child2[4],
                         physique=normalized_child2[5])
-        return (Player(height=normalized_child1[0],
+        return [Player(height=normalized_child1[0],
                        p_class=p_class,
                        p_attr=p1_attr,
                        fitness=EVE(normalized_child1[0],
@@ -42,11 +76,11 @@ class Cross:
                        p_attr=p2_attr,
                        fitness=EVE(normalized_child2[0],
                                    p_class,
-                                   p2_attr).performace))
+                                   p2_attr).performace)]
 
     @staticmethod
     def double_point(self, player1: Player, player2: Player,
-                     p1: int, p2: int, total_points: int) -> (Player, Player):
+                     p1: int, p2: int, total_points: int) -> [Player]:
         player1_list = self.__get_player_attr_list(player1)
         player2_list = self.__get_player_attr_list(player2)
         if p1 >= len(player1_list) or p2 >= len(player1_list):
@@ -73,7 +107,7 @@ class Cross:
                         intelligence=normalized_child2[3],
                         endurance=normalized_child2[4],
                         physique=normalized_child2[5])
-        return (Player(height=normalized_child1[0],
+        return [Player(height=normalized_child1[0],
                        p_class=p_class,
                        p_attr=p1_attr,
                        fitness=EVE(normalized_child1[0],
@@ -84,11 +118,11 @@ class Cross:
                        p_attr=p2_attr,
                        fitness=EVE(normalized_child2[0],
                                    p_class,
-                                   p2_attr).performace))
+                                   p2_attr).performace)]
 
     @staticmethod
-    def anular(self, player1: Player, player2: Player,
-               p: int, len: int, total_points: int) -> (Player, Player):
+    def annular(self, player1: Player, player2: Player,
+                p: int, len: int, total_points: int) -> [Player]:
         player1_list = self.__get_player_attr_list(player1)
         player2_list = self.__get_player_attr_list(player2)
         if p >= len(player1_list) or len > int(len(player1_list)/2):
@@ -113,7 +147,7 @@ class Cross:
                         intelligence=normalized_child2[3],
                         endurance=normalized_child2[4],
                         physique=normalized_child2[5])
-        return (Player(height=normalized_child1[0],
+        return [Player(height=normalized_child1[0],
                        p_class=p_class,
                        p_attr=p1_attr,
                        fitness=EVE(normalized_child1[0],
@@ -124,19 +158,19 @@ class Cross:
                        p_attr=p2_attr,
                        fitness=EVE(normalized_child2[0],
                                    p_class,
-                                   p2_attr).performace))
+                                   p2_attr).performace)]
 
     @staticmethod
     def uniform(self, player1: Player, player2: Player,
-                p: float, total_points: int) -> (Player, Player):
+                pm: float, total_points: int) -> [Player]:
         player1_list = self.__get_player_attr_list(player1)
         player2_list = self.__get_player_attr_list(player2)
-        if p > 1:
+        if pm > 1:
             raise InvalidCrossoverPoint
         child1 = []
         child2 = []
         for i in range(len(player1_list)):
-            if rnd.random() > p:
+            if rnd.random() > pm:
                 child1[i] = player1_list[i]
                 child2[i] = player2_list[i]
             else:
@@ -158,7 +192,7 @@ class Cross:
                         intelligence=normalized_child2[3],
                         endurance=normalized_child2[4],
                         physique=normalized_child2[5])
-        return (Player(height=normalized_child1[0],
+        return [Player(height=normalized_child1[0],
                        p_class=p_class,
                        p_attr=p1_attr,
                        fitness=EVE(normalized_child1[0],
@@ -169,7 +203,7 @@ class Cross:
                        p_attr=p2_attr,
                        fitness=EVE(normalized_child2[0],
                                    p_class,
-                                   p2_attr).performace))
+                                   p2_attr).performace)]
 
     '''
     get_player_attr_list: Returns a list containing the attributes of a
