@@ -1,2 +1,2 @@
 class InvalidCrossoverPoint(Exception):
-    "Invalid point selected for crossover"
+    """Invalid point selected for crossover"""

@@ -1,2 +1,2 @@
-class InvalidCrossoverProbabilityValue(Exception):
-    "Invalid probability choosed for mutation"
+class InvalidGenProbabilityValue(Exception):
+    """Invalid probability chosen for mutation"""

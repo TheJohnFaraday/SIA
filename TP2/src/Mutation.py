@@ -1,12 +1,12 @@
 import random as rnd
-import math
 from enum import Enum
-from typing import Decimal
+from decimal import Decimal
 from dataclasses import dataclass
-from .Player import Player
+
 from .EVE import EVE
-from .PlayerAttributes import PlayerAttributes
 from .InvalidGenProbabilityValue import InvalidGenProbabilityValue
+from .Player import Player
+from .PlayerAttributes import PlayerAttributes
 
 min_height = Decimal('1.3')
 max_height = Decimal('2.0')
@@ -19,7 +19,7 @@ class MutationMethod(Enum):
 
 class GenMutation(Enum):
     HEIGHT = "height"
-    STRENGHT = "strength"
+    STRENGTH = "strength"
     DEXTERITY = "dexterity"
     INTELLIGENCE = "intelligence"
     ENDURANCE = "endurance"
@@ -33,6 +33,9 @@ class Configuration:
     is_uniform: bool
     generational_increment: Decimal = Decimal(0)  # For not-uniform mutation method
     max_genes: int = 1  # For limited_multi mutation method
+    gen_mutation: GenMutation = GenMutation.HEIGHT
+    lower_bound: Decimal = Decimal(0)
+    higher_bound: Decimal = Decimal(0.6)
 
 
 class Mutation:
@@ -50,32 +53,31 @@ class Mutation:
             self.pm += self.config.generational_increment
 
     def perform(self, player: Player):
-        match self.config.mutation_method:
+        match self.config.mutation:
             case MutationMethod.SINGLE:
-                return Mutation.gen(player,
-                                    self.config.gen_mut,
+                return self.gen(player,
+                                    self.config.gen_mutation,
                                     self.pm,
-                                    (self.config.lower_bound,
-                                     self.config.higher_bound))
+                                (self.config.lower_bound,
+                                 self.config.higher_bound))
             case MutationMethod.MULTI:
-                return Mutation.multigen(player,
+                return self.multigen(player,
                                          self.config.max_genes,
                                          self.pm,
-                                         (self.config.lower_bound,
-                                          self.config.higher_bound))
+                                     (self.config.lower_bound,
+                                      self.config.higher_bound))
 
-    @staticmethod
     def gen(self, player: Player, gen_mut: GenMutation,
-            p: float, interval: (float, float)) -> Player:
-        if p > 1 or interval[0] > interval[1]:
+            pm: Decimal, interval: (Decimal, Decimal)) -> Player:
+        if pm > 1 or interval[0] > interval[1]:
             raise InvalidGenProbabilityValue
-        if rnd.random() > p:
+        if rnd.random() > pm:
             mutation = rnd.uniform(interval[0], interval[1])
             match gen_mut:
                 case GenMutation.HEIGHT:
-                    new_height = Decimal(player.height*(Decimal('1')+mutation))
-                    new_height = math.max(min_height,
-                                          math.min(max_height, new_height))
+                    new_height = Decimal(player.height * Decimal(1+mutation))
+                    new_height = max(min_height,
+                                     min(max_height, new_height))
                     return Player(height=new_height,
                                   p_class=player.p_class,
                                   p_attr=player.p_attr,
@@ -86,7 +88,7 @@ class Mutation:
                 case _:
                     player_list = self.__get_player_attr_list(player)
                     match gen_mut:
-                        case GenMutation.STRENGHT:
+                        case GenMutation.STRENGTH:
                             player_list[1] = int(player
                                                  .p_attr.strength*(1+mutation))
                         case GenMutation.DEXTERITY:
@@ -119,18 +121,18 @@ class Mutation:
                                                p_class=player.p_class,
                                                attributes=normalized_p_attr)
                                            .performance))
-            return player
 
-    @staticmethod
+        return player
+
     def multigen(self, player: Player, max_genes: int,
-                 p: float, interval: (float, float)) -> Player:
+                 pm: Decimal, interval: (Decimal, Decimal)) -> Player:
         gen_list = list(GenMutation)
-        if p > 1 or interval[0] > interval[1] or max_genes > len(gen_list):
+        if pm > 1 or interval[0] > interval[1] or max_genes > len(gen_list):
             raise InvalidGenProbabilityValue
-        player_list = self.__get_player_attr_list(player)
+        player_list = Mutation.__get_player_attr_list(player)
         gens_mutated = set()
         for i in range(max_genes-1):
-            if rnd.random() > p:
+            if rnd.random() > pm:
                 mutation = rnd.uniform(interval[0], interval[1])
                 mut = gen_list[rnd.randint(0, len(gen_list) - 1)]
                 while mut not in gens_mutated:
@@ -138,11 +140,11 @@ class Mutation:
                 match mut:
                     case GenMutation.HEIGHT:
                         new_height = Decimal(player
-                                             .height*(Decimal('1')+mutation))
-                        player_list[0] = math.max(min_height,
-                                                  math.min(max_height,
-                                                           new_height))
-                    case GenMutation.STRENGHT:
+                                             .height * Decimal(1 + mutation))
+                        player_list[0] = max(min_height,
+                                             min(max_height,
+                                                 new_height))
+                    case GenMutation.STRENGTH:
                         player_list[1] = int(player
                                              .p_attr.strength*(1+mutation))
                     case GenMutation.DEXTERITY:
@@ -182,11 +184,13 @@ class Mutation:
                          player in the following order:
         [Height, Strength, Dexterity, Intelligence, Endurance, Physique]
     '''
+    @staticmethod
     def __get_player_attr_list(player: Player) -> []:
         return [player.height, player.p_attr.strength, player.p_attr.dexterity,
                 player.p_attr.intelligence, player.p_attr.endurance,
                 player.p_attr.physique]
 
+    @staticmethod
     def __normalize_attr(player_attr: [], max_points: int) -> []:
         player_attr_isolated = player_attr[1:]
         current_total = sum(player_attr_isolated)
