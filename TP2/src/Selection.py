@@ -4,7 +4,9 @@ from decimal import Decimal
 
 import numpy as np
 
+from .PlayerAttributes import PlayerAttributes
 from .Player import Player
+from .PlayerClass import PlayerClass
 
 
 class SelectionMethods(Enum):
@@ -255,50 +257,79 @@ class Selection:
 
 
 if __name__ == "__main__":
+    default_attributes = PlayerAttributes(
+        strength=25, dexterity=25, intelligence=20, endurance=15, physique=15
+    )
     population1 = [
-        0.81,
-        0.56,
-        0.77,
-        0.63,
-        0.42,
-        0.99,
-        0.65,
-        0.28,
-        0.47,
-        0.84,
-        0.59,
-        0.73,
-        0.36,
-        0.92,
-        0.21,
-        0.69,
-        0.58,
-        0.33,
-        0.97,
-        0.48,
+        Player(
+            height=Decimal(1.75),
+            p_class=PlayerClass.WARRIOR,
+            p_attr=default_attributes,
+            fitness=Decimal(fit),
+        )
+        for fit in [
+            0.81,
+            0.56,
+            0.77,
+            0.63,
+            0.42,
+            0.99,
+            0.65,
+            0.28,
+            0.47,
+            0.84,
+            0.59,
+            0.73,
+            0.36,
+            0.92,
+            0.21,
+            0.69,
+            0.58,
+            0.33,
+            0.97,
+            0.48,
+        ]
     ]
     population2 = [
-        81,
-        56,
-        77,
-        63,
-        42,
-        99,
-        65,
-        28,
-        47,
-        84,
-        59,
-        73,
-        36,
-        92,
-        21,
-        69,
-        58,
-        33,
-        97,
-        48,
+        Player(
+            height=Decimal(1.75),
+            p_class=PlayerClass.WARRIOR,
+            p_attr=default_attributes,
+            fitness=Decimal(fit),
+        )
+        for fit in [
+            81,
+            56,
+            77,
+            63,
+            42,
+            99,
+            65,
+            28,
+            47,
+            84,
+            59,
+            73,
+            36,
+            92,
+            21,
+            69,
+            58,
+            33,
+            97,
+            48,
+        ]
     ]
-    population3 = [3, 6, 11, 14, 1]
-    # print(SelectionMethods.elite(population, 30))
-    print(Selection.boltzmann(population3, 3, 3))
+    population3 = [
+        Player(
+            height=Decimal(1.75),
+            p_class=PlayerClass.WARRIOR,
+            p_attr=default_attributes,
+            fitness=Decimal(fit),
+        )
+        for fit in [3, 6, 11, 14, 1]
+    ]
+    result = Selection.boltzmann(population3, 3, Decimal(3))
+
+    for player in result:
+        print(player.fitness)
