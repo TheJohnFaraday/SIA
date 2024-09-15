@@ -104,7 +104,8 @@ class Mutation:
                         case GenMutation.PHYSIQUE:
                             player_list[5] = int(player
                                                  .p_attr.physique*(1+mutation))
-                    normalized_p = self.__normalize_attr(player_list)
+                    normalized_p = self.__normalize_attr(player_list,
+                                                         self.max_points)
                     normalized_p_attr = PlayerAttributes(
                         strength=normalized_p[1],
                         dexterity=normalized_p[2],
@@ -161,7 +162,7 @@ class Mutation:
                                              .p_attr.physique*(1+mutation))
                 gens_mutated.add(mut)
 
-        normalized_p = self.__normalize_attr(player_list)
+        normalized_p = self.__normalize_attr(player_list, self.max_points)
         normalized_p_attr = PlayerAttributes(
                                 strength=normalized_p[1],
                                 dexterity=normalized_p[2],
