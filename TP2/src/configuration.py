@@ -40,18 +40,29 @@ def read_configuration():
         genetic_mutation = key_from_enum_value_with_fallback(
             MutationMethod, data["genetic"]["mutation"], MutationMethod.SINGLE
         )
+        is_uniform = key_from_enum_value_with_fallback(
+            data["genetic"]["parameters"]["mutation"]["is_uniform"], False
+        )
         mutation_configuration = MutationConfiguration(
             mutation=genetic_mutation,
             pm=data["genetic"]["parameters"]["mutation"]["pm"],
             max_genes=(
                 data["genetic"]["parameters"]["mutation"]["limited_multi"]
-                if genetic_mutation == MutationMethod.LIMITED_MULTI
+                if genetic_mutation == MutationMethod.MULTI
                 else 1
             ),
             generational_increment=(
                 data["genetic"]["parameters"]["mutation"]["generational_increment"]
-                if genetic_mutation == MutationMethod.UNIFORM_MULTI
+                if not is_uniform
                 else Decimal(0)
+            ),
+            lower_bound=key_from_enum_value_with_fallback(
+                data["genetic"]["parameters"]["mutation"]["higher_bound"],
+                Decimal("-0.2"),
+            ),
+            higher_bound=key_from_enum_value_with_fallback(
+                data["genetic"]["parameters"]["mutation"]["higher_bound"],
+                Decimal("0.2"),
             ),
         )
 
@@ -59,7 +70,7 @@ def read_configuration():
             method=key_from_enum_value_with_fallback(
                 CrossoverMethod, data["genetic"]["crossover"], CrossoverMethod.ONE_POINT
             ),
-            pc=data["genetic"]["parameters"]["crossover"]["pc"]
+            pc=data["genetic"]["parameters"]["crossover"]["pc"],
         )
 
         genetic_configuration = GeneticConfiguration(

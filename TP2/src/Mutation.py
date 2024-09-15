@@ -31,8 +31,8 @@ class Configuration:
     generational_increment: Decimal = Decimal(0)  # For not-uniform mutation method
     max_genes: int = 1  # For limited_multi mutation method
     gen_mutation: GenMutation = GenMutation.HEIGHT
-    lower_bound: Decimal = Decimal(0)
-    higher_bound: Decimal = Decimal(0.6)
+    lower_bound: Decimal = Decimal('-0.2')
+    higher_bound: Decimal = Decimal('0.2')
 
 
 class Mutation:
