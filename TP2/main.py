@@ -1,5 +1,5 @@
 from decimal import Decimal, getcontext, Context
-from random import shuffle, random, randint, uniform
+import random
 
 from src.configuration import read_configuration
 from src.Cross import Cross
@@ -18,29 +18,31 @@ getcontext().prec = 10
 def initial_population(
     player_class: PlayerClass, size: int, max_points: int
 ) -> list[Player]:
-    return [
-        Player(
-            height=Decimal(uniform(Player.MIN_HEIGHT, Player.MAX_HEIGHT)),
+    def player_generator():
+        attributes = random_numbers_that_sum_n(
+            PlayerAttributes.NUMBER_OF_ATTRIBUTES,
+            max_points,
+        )
+        return Player(
+            height=Decimal(random.uniform(float(Player.MIN_HEIGHT), float(Player.MAX_HEIGHT))),
             p_class=player_class,
-            p_attr=PlayerAttributes(
-                *random_numbers_that_sum_n(
-                    PlayerAttributes.NUMBER_OF_ATTRIBUTES,
-                    max_points,
-                )
-            ),
+            p_attr=PlayerAttributes(*attributes),
             fitness=Decimal(0),
         )
-        for _ in range(size)
-    ]
+
+    return [player_generator() for _ in range(size)]
 
 
 if __name__ == "__main__":
     configuration = read_configuration()
+
+    random.seed(configuration.random_seed)
+
     selection = Selection(
         population_sample=configuration.population_sample,
         configuration=configuration.selection,
     )
-    crossover = Cross(configuration.genetic.crossover, configuration.points)
+    crossover = Cross(configuration.genetic.crossover)
     mutation = Mutation(configuration.genetic.mutation, configuration.points)
     replacement = Replacement(configuration.genetic.replacement)
     finish = Finish(configuration.finish)
@@ -54,7 +56,7 @@ if __name__ == "__main__":
         generation += 1
 
         # Crossover
-        shuffle(population)
+        random.shuffle(population)
         for index, player in enumerate(population):
             crossed = crossover.perform(
                 population[index], population[(index + 1) % len(population)]
@@ -65,9 +67,9 @@ if __name__ == "__main__":
         mutation.mutate(new_population)
 
         # Selection
-        population = selection.select(population, new_population)
+        selected_population = selection.select(population)
 
         # Replacement
-        replacement = replacement.replace(population, new_population)
+        population = replacement.replace(selected_population, new_population)
 
         # TODO: History and metrics

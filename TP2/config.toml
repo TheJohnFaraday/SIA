@@ -1,6 +1,9 @@
 # Show / Hide plots
 plot = false
 
+# [Optional] Seed for RNG
+seed = 202409176
+
 [general]
 # One of: ["warrior", "archer", "guardian", "wizard"]
 character = "warrior"
@@ -20,8 +23,11 @@ crossover = "two_point"
 mutation = "single"
 
 [genetic.parameters.crossover]
-# Probability of cross over in range [0; 1]
+# Probability of crossover in range [0; 1]
 pc = 0.75
+# Probability of crossover for each allele in uniform crossover.
+# Must be in range [0; 1]
+p = 0.5
 
 [genetic.parameters.mutation]
 pm = 0.5
@@ -38,7 +44,7 @@ max_genes = 2
 # Selection method
 # One of: ["elite", "roulette", "universal", "boltzmann", "deterministic_tournament",
 #          "probabilistic_tournament", "ranking"]
-method = ["elite"]
+method = ["roulette"]
 # Weight of each selection method in range (0.0, 1.0]. The sum of all weights must be 1.0.
 weight = [1.0]
 

@@ -1,2 +1,2 @@
-class InvalidTotalPoints:
-    "Total Points should be between 100 and 200"
+class InvalidTotalPoints(Exception):
+    """Total Points should be between 100 and 200"""

@@ -5,7 +5,7 @@ from typing import Type, Any, Optional
 
 def random_numbers_that_sum_n(numbers_count: int, n: int) -> list[int]:
     """Returns a list of random numbers and `numbers_count` length whose elements sum `n`"""
-    points = [0] + sorted(random.sample(range(1, n), numbers_count)) + [n]
+    points = [0] + sorted(random.sample(range(1, n), numbers_count - 1)) + [n]
     return [points[i + 1] - points[i] for i in range(len(points) - 1)]
 
 

@@ -15,12 +15,9 @@ class PlayerAttributes:
         physique: int,
     ):
         total = strength + dexterity + intelligence + endurance + physique
-        if not (
-            PlayerAttributes.TOTAL_POINTS_MIN
-            <= total
-            <= PlayerAttributes.TOTAL_POINTS_MAX
-        ):
-            raise InvalidTotalPoints
+        cond = PlayerAttributes.TOTAL_POINTS_MIN <= total <= PlayerAttributes.TOTAL_POINTS_MAX
+        if not cond:
+            raise InvalidTotalPoints(f"Failed because total points is {total}")
 
         self.strength = strength
         self.dexterity = dexterity

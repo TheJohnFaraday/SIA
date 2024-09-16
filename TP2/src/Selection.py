@@ -40,9 +40,7 @@ class Selection:
         if not (weight_sum == Decimal(1)):
             raise ValueError(f"the sum of the weights must be 1. Current sum: {weight_sum}")
 
-    def select(self, current_population: list[Player], new_population: list[Player]):
-        population = current_population + new_population
-
+    def select(self, population: list[Player]):
         final_population = []
 
         for index, method in enumerate(self.__configuration.method):

@@ -80,7 +80,7 @@ class Mutation:
         if pm > 1 or interval[0] > interval[1]:
             raise InvalidGenProbabilityValue
         if rnd.random() > pm:
-            mutation = rnd.uniform(interval[0], interval[1])
+            mutation = rnd.uniform(float(interval[0]), float(interval[1]))
             match gen_mut:
                 case GenMutation.HEIGHT:
                     new_height = Decimal(player.height * Decimal(1 + mutation))

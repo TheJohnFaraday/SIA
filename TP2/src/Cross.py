@@ -1,10 +1,14 @@
+import random
+
 import math
 import random as rnd
 from enum import Enum
 from dataclasses import dataclass
 from decimal import Decimal
 
-from .Player import Player
+import numpy as np
+
+from .Player import Player, PlayerClass
 from .PlayerAttributes import PlayerAttributes
 from .InvalidCrossoverPoint import InvalidCrossoverPoint
 from .EVE import EVE
@@ -21,14 +25,22 @@ class CrossoverMethod(Enum):
 class Configuration:
     method: CrossoverMethod
     pc: Decimal
+    uniform_crossover_probability: Decimal
 
 
 class Cross:
-    def __init__(self, configuration: Configuration, total_points: int):
+    def __init__(self, configuration: Configuration):
         self.configuration = configuration
 
         # Number of PlayerAttributes plus Height. Must be calculated
-        self.total_points = total_points
+        self.total_points = len(
+            Player(
+                Decimal(0),
+                PlayerClass.WARRIOR,
+                PlayerAttributes(100, 1, 1, 1, 1),
+                Decimal(0),
+            ).attributes_as_list()
+        )
 
     def perform(self, father: Player, mother: Player):
         # Crossover happens with a probability of Pc
@@ -37,13 +49,13 @@ class Cross:
         ):
             return [father, mother]
 
-        crossover_locus = rnd.randint(0, self.total_points)
+        crossover_locus = rnd.randint(0, self.total_points - 1)
 
         match self.configuration.method:
             case CrossoverMethod.ONE_POINT:
                 return self.single_point(father, mother, crossover_locus)
             case CrossoverMethod.TWO_POINT:
-                crossover_locus_2 = rnd.randint(0, self.total_points)
+                crossover_locus_2 = rnd.randint(0, self.total_points - 1)
                 return self.double_point(
                     father,
                     mother,
@@ -51,7 +63,7 @@ class Cross:
                     max(crossover_locus, crossover_locus_2),
                 )
             case CrossoverMethod.UNIFORM:
-                return self.uniform(father, mother, crossover_locus)
+                return self.uniform(father, mother, self.configuration.uniform_crossover_probability)
             case CrossoverMethod.ANNULAR:
                 # Annular requires crossover_locus = [0; total_points - 1]
                 if crossover_locus == self.total_points:
@@ -66,10 +78,11 @@ class Cross:
 
         if p >= len(attributes_player1):
             raise InvalidCrossoverPoint
+
         child1 = attributes_player1[:p] + attributes_player2[p:]
         child2 = attributes_player1[p:] + attributes_player2[:p]
-        normalized_child1 = self.__normalize_attr(child1, self.total_points)
-        normalized_child2 = self.__normalize_attr(child2, self.total_points)
+        normalized_child1 = self.__normalize_attr(child1)
+        normalized_child2 = self.__normalize_attr(child2)
 
         p_class = player1.p_class
         p1_attr = PlayerAttributes(
@@ -107,6 +120,7 @@ class Cross:
         attributes_player1 = player1.attributes_as_list()
         attributes_player2 = player2.attributes_as_list()
 
+
         if locus_1 >= len(attributes_player1) or locus_2 >= len(attributes_player2):
             raise InvalidCrossoverPoint
 
@@ -123,8 +137,8 @@ class Cross:
             + attributes_player1[locus_1:locus_2]
             + attributes_player2[locus_2:]
         )
-        normalized_child1 = self.__normalize_attr(child1, self.total_points)
-        normalized_child2 = self.__normalize_attr(child2, self.total_points)
+        normalized_child1 = self.__normalize_attr(child1)
+        normalized_child2 = self.__normalize_attr(child2)
 
         p_class = player1.p_class
         p1_attr = PlayerAttributes(
@@ -212,23 +226,24 @@ class Cross:
             ),
         ]
 
-    def uniform(self, player1: Player, player2: Player, pm: float) -> [Player]:
+    def uniform(self, player1: Player, player2: Player, allele_interchange_probability: Decimal) -> [Player]:
         attributes_player1 = player1.attributes_as_list()
         attributes_player2 = player2.attributes_as_list()
-        if pm > 1:
+        
+        if allele_interchange_probability > 1:
             raise InvalidCrossoverPoint
 
         child1 = []
         child2 = []
         for i in range(len(attributes_player1)):
-            if rnd.random() > pm:
+            if rnd.random() > allele_interchange_probability:
                 child1[i] = attributes_player1[i]
                 child2[i] = attributes_player2[i]
             else:
                 child1[i] = attributes_player2[i]
                 child2[i] = attributes_player1[i]
-        normalized_child1 = self.__normalize_attr(child1, self.total_points)
-        normalized_child2 = self.__normalize_attr(child2, self.total_points)
+        normalized_child1 = self.__normalize_attr(child1)
+        normalized_child2 = self.__normalize_attr(child2)
 
         p_class = player1.p_class
         p1_attr = PlayerAttributes(
@@ -247,28 +262,32 @@ class Cross:
         )
         return [
             Player(
-                height=normalized_child1[0],
+                height=Decimal(normalized_child1[0]),
                 p_class=p_class,
                 p_attr=p1_attr,
-                fitness=EVE(normalized_child1[0], p_class, p1_attr).performance,
+                fitness=EVE(Decimal(normalized_child1[0]), p_class, p1_attr).performance,
             ),
             Player(
-                height=normalized_child2[0],
+                height=Decimal(normalized_child2[0]),
                 p_class=p_class,
                 p_attr=p2_attr,
-                fitness=EVE(normalized_child2[0], p_class, p2_attr).performance,
+                fitness=EVE(Decimal(normalized_child2[0]), p_class, p2_attr).performance,
             ),
         ]
 
     @staticmethod
-    def __normalize_attr(player_attr: list, total_points: int) -> []:
-        player_attr_isolated = player_attr[1:]
+    # def __normalize_attr(player_attr: list, total_points: int) -> []:
+    def __normalize_attr(player_attr: list[int]) -> list[int]:
+        player_attr_isolated = player_attr[1:]  # Remove Height
         current_total = sum(player_attr_isolated)
-        factor = total_points / current_total
+
+        target = random.randint(PlayerAttributes.TOTAL_POINTS_MIN, PlayerAttributes.TOTAL_POINTS_MAX)
+
+        factor = target / current_total
         normalized_attrs = [int(factor * x) for x in player_attr_isolated]
 
         adjusted_total = sum(normalized_attrs)
-        difference = total_points - adjusted_total
+        difference = target - adjusted_total
         for i in range(abs(difference)):
             if difference < 0:
                 normalized_attrs[i % len(normalized_attrs)] -= 1

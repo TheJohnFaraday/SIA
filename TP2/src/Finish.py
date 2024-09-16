@@ -60,19 +60,19 @@ class Finish:
 
     def __eval(self, population: list[Player]):
         ts = int(time()) - self.ts_start
-        if ts >= self.configuration.time_limit:
+        if ts >= self.__configuration.time_limit:
             self.threshold += self.THRESHOLD
             return True
-        for method in self.configuration.methods:
+        for method in self.__configuration.methods:
             match method:
                 case FinishMethod.MAX_GENERATIONS:
-                    if self.generation >= self.configuration.max_generations:
+                    if self.generation >= self.__configuration.max_generations:
                         self.threshold += self.THRESHOLD
                         return True
                 case FinishMethod.ACCEPTABLE_FITNESS:
                     if (
                         self.compute_population_content(population)
-                        >= self.configuration.acceptable_fitness
+                        >= self.__configuration.acceptable_fitness
                     ):
                         self.threshold += self.THRESHOLD
                         return True

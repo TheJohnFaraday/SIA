@@ -23,17 +23,13 @@ class EVE:
             - (Decimal(3) * height - Decimal(5)) ** 2
             - height / Decimal(2)
         )
-        self.strength = Decimal("100") * np.tanh(
-            Decimal("0.01") * Decimal(attributes.strength)
-        )
-        self.dexterity = np.tanh(Decimal("0.01") * Decimal(attributes.dexterity))
-        self.intelligence = Decimal("0.6") * np.tanh(
-            Decimal("0.01") * Decimal(attributes.intelligence)
-        )
-        self.endurance = np.tanh(Decimal("0.01") * Decimal(attributes.endurance))
-        self.physique = Decimal("100") * np.tanh(
-            Decimal("0.01") * Decimal(attributes.physique)
-        )
+        self.strength = Decimal(100 * np.tanh(
+            0.01 * attributes.strength
+        ))
+        self.dexterity = Decimal(np.tanh(0.01 * attributes.dexterity))
+        self.intelligence = Decimal(0.6 * np.tanh(0.01 * attributes.intelligence))
+        self.endurance = Decimal(np.tanh(0.01 * attributes.endurance))
+        self.physique = Decimal(100 * np.tanh(0.01 * attributes.physique))
         self.attack = (self.dexterity + self.intelligence) * self.strength * self.atm
         self.defense = (self.endurance + self.intelligence) * self.physique * self.dem
         match p_class:

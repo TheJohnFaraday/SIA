@@ -32,6 +32,7 @@ class Configuration:
     selection: SelectionConfiguration
     replacement: ReplacementConfiguration
     finish: FinishConfiguration
+    random_seed: int | None
 
 
 def read_configuration():
@@ -44,7 +45,7 @@ def read_configuration():
         is_uniform = data["genetic"]["parameters"]["mutation"].get("is_uniform", False)
 
         mutation_configuration = MutationConfiguration(
-            mutation= genetic_mutation,
+            mutation=genetic_mutation,
             pm=data["genetic"]["parameters"]["mutation"]["pm"],
             is_uniform=is_uniform,
             max_genes=(
@@ -57,8 +58,12 @@ def read_configuration():
                 if not is_uniform
                 else Decimal(0)
             ),
-            lower_bound=data["genetic"]["parameters"]["mutation"].get("lower_bound", Decimal("-0.2")),
-            higher_bound=data["genetic"]["parameters"]["mutation"].get("higher_bound", Decimal("0.2")),
+            lower_bound=data["genetic"]["parameters"]["mutation"].get(
+                "lower_bound", Decimal("-0.2")
+            ),
+            higher_bound=data["genetic"]["parameters"]["mutation"].get(
+                "higher_bound", Decimal("0.2")
+            ),
         )
 
         crossover_configuration = CrossoverConfiguration(
@@ -66,6 +71,9 @@ def read_configuration():
                 CrossoverMethod, data["genetic"]["crossover"], CrossoverMethod.ONE_POINT
             ),
             pc=data["genetic"]["parameters"]["crossover"]["pc"],
+            uniform_crossover_probability=data["genetic"]["parameters"][
+                "crossover"
+            ].get("p", Decimal(0.5)),
         )
 
         selection_methods = [
@@ -113,17 +121,17 @@ def read_configuration():
         ]
         finish_configuration = FinishConfiguration(
             methods=finish_methods,
-            time_limit= (data["finish"]["time"].get("limit", 10)),
+            time_limit=(data["finish"]["time"].get("limit", 10)),
             max_generations=(
                 data["finish"]["max_generations"]["generations"]
                 if FinishMethod.MAX_GENERATIONS in finish_methods
                 else 0
             ),
-            #structure=(
+            # structure=(
             #    data["finish"]["structure"]["structure"]
             #    if FinishMethod.STRUCTURE in finish_methods
             #    else None
-            #),
+            # ),
             content_generations=(
                 data["finish"]["content"]["generations"]
                 if FinishMethod.CONTENT in finish_methods
@@ -154,6 +162,7 @@ def read_configuration():
             selection=selection_configuration,
             replacement=replacement_configuration,
             finish=finish_configuration,
+            random_seed=data.get("seed", None),
         )
 
         return configuration
