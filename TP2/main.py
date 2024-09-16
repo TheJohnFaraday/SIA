@@ -24,7 +24,9 @@ def initial_population(
             max_points,
         )
         return Player(
-            height=Decimal(random.uniform(float(Player.MIN_HEIGHT), float(Player.MAX_HEIGHT))),
+            height=Decimal(
+                random.uniform(float(Player.MIN_HEIGHT), float(Player.MAX_HEIGHT))
+            ),
             p_class=player_class,
             p_attr=PlayerAttributes(*attributes),
             fitness=Decimal(0),
@@ -42,7 +44,7 @@ if __name__ == "__main__":
         population_sample=configuration.population_sample,
         configuration=configuration.selection,
     )
-    crossover = Cross(configuration.genetic.crossover)
+    crossover = Cross(configuration.genetic.crossover, configuration.points)
     mutation = Mutation(configuration.genetic.mutation, configuration.points)
     replacement = Replacement(configuration.genetic.replacement)
     finish = Finish(configuration.finish)
@@ -62,7 +64,8 @@ if __name__ == "__main__":
         random.shuffle(selected_population)
         for index, player in enumerate(selected_population):
             crossed = crossover.perform(
-                selected_population[index], selected_population[(index + 1) % len(selected_population)]
+                selected_population[index],
+                selected_population[(index + 1) % len(selected_population)],
             )
             new_population += crossed
 
