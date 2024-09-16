@@ -101,35 +101,24 @@ class Finish:
         self, struct1: PopulationStructure, struct2: PopulationStructure
     ) -> int:
         delta = 0
-        if struct1.height > struct2.height:
-            delta += struct2.height / struct1.height
-        else:
-            delta += Decimal(struct1.height) / Decimal(struct2.height)
-
-        if struct1.strength > struct2.strength:
-            delta += Decimal(struct2.strength) / Decimal(struct1.strength)
-        else:
-            delta += Decimal(struct1.strength) / Decimal(struct2.strength)
-
-        if struct1.endurance > struct2.endurance:
-            delta += Decimal(struct2.endurance) / Decimal(struct1.endurance)
-        else:
-            delta += Decimal(struct1.endurance) / Decimal(struct2.endurance)
-
-        if struct1.intelligence > struct2.intelligence:
-            delta += Decimal(struct2.intelligence) / Decimal(struct1.intelligence)
-        else:
-            delta += Decimal(struct1.intelligence) / Decimal(struct2.intelligence)
-
-        if struct1.dexterity > struct2.dexterity:
-            delta += Decimal(struct2.dexterity) / Decimal(struct1.dexterity)
-        else:
-            delta += Decimal(struct1.dexterity) / Decimal(struct2.dexterity)
-
-        if struct1.physique > struct2.physique:
-            delta += Decimal(struct2.physique) / Decimal(struct1.physique)
-        else:
-            delta += Decimal(struct1.physique) / Decimal(struct2.physique)
+        delta += min(struct2.height, struct1.height) / max(
+            struct2.height, struct1.height
+        )
+        delta += Decimal(min(struct2.strength, struct1.strength)) / Decimal(
+            max(struct2.strength, struct1.strength)
+        )
+        delta += Decimal(min(struct2.endurance, struct1.endurance)) / Decimal(
+            max(struct2.endurance, struct1.endurance)
+        )
+        delta += Decimal(min(struct2.intelligence, struct1.intelligence)) / Decimal(
+            max(struct2.intelligence, struct1.intelligence)
+        )
+        delta += Decimal(min(struct2.dexterity, struct1.dexterity)) / Decimal(
+            max(struct2.dexterity, struct1.dexterity)
+        )
+        delta += Decimal(min(struct2.physique, struct1.physique)) / Decimal(
+            max(struct2.physique, struct1.physique)
+        )
 
         return delta / 6
 
