@@ -45,6 +45,29 @@ class Replacement:
 
         return new_population
 
+    @staticmethod
+    def fill_parent(
+            current_population: list[Player], next_population: list[Player]
+    ) -> list[Player]:
+        K = len(next_population)
+        N = len(current_population)
+
+        if K > N:
+            # If there are more children than current population, select N out of K
+            new_population = sample(next_population, N)
+        else:
+            # If there are fewer or equal children than current population,
+            # combine K children with (N - K) individuals from the current population
+            new_population = next_population.copy()
+            if N > K:
+                remaining_spots = N - K
+                additional_individuals = sample(current_population, remaining_spots)
+                new_population.extend(additional_individuals)
+            # Ensure we return only N individuals
+            new_population = sample(new_population, N)
+
+        return new_population
+
 
 if __name__ == "__main__":
     default_attributes = PlayerAttributes(
@@ -120,7 +143,7 @@ if __name__ == "__main__":
         )
         for fit in [3, 6, 11, 14, 1]
     ]
-    result = Replacement.fill_all(population1, population2)
+    result = Replacement.fill_parent(population2, population3)
 
     for player in result:
         print(player.fitness)
