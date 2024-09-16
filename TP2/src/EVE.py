@@ -1,12 +1,12 @@
 from .PlayerClass import PlayerClass
-from .Attributes import Attributes
+from .PlayerAttributes import PlayerAttributes
 from .InvalidHeight import InvalidHeight
 from decimal import Decimal
 import numpy as np
 
 
 class EVE:
-    def __init__(self, height: Decimal, p_class: PlayerClass, attributes: Attributes):
+    def __init__(self, height: Decimal, p_class: PlayerClass, attributes: PlayerAttributes):
         if height < Decimal("1.3") or height > Decimal("2"):
             raise InvalidHeight
         self.height = height
