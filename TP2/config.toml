@@ -56,6 +56,11 @@ method = ["fill_all"]
 # Weight of each replacement method in range (0.0, 1.0]. The sum of all weights must be 1.0.
 weight = [1.0]
 
+[replacement.parameters]
+# Parameters depend on the replacement method. Only those of the chosen selection method will be read.
+[replacement.parameters.generational_gap]
+gap = 0.5
+
 [finish]
 # Finish methods.
 # List with one or more of: ["time", "max_generations", "structure", "content", "acceptable_fitness"]

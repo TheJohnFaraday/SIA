@@ -110,6 +110,11 @@ def read_configuration():
                 for method in data["replacement"]["method"]
             ],
             weight=[weight for weight in data["selection"]["weight"]],
+            gap=(
+                data["selection"]["parameters"]["generational_gap"]["gap"]
+                if ReplacementMethod.GENERATIONAL_GAP in selection_methods
+                else 0
+            ),
         )
 
         finish_methods = [
