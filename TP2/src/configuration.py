@@ -119,9 +119,7 @@ def read_configuration():
         finish_configuration = FinishConfiguration(
             methods=finish_methods,
             time_limit=(
-                data["finish"]["time"]["limit"]
-                if FinishMethod.TIME in finish_methods
-                else 0
+                key_from_enum_value_with_fallback(data["finish"]["time"]["limit"], 10)
             ),
             max_generations=(
                 data["finish"]["max_generations"]["generations"]

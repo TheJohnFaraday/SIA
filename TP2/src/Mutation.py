@@ -44,7 +44,7 @@ class Mutation:
             max_genes = 1
         self.max_genes = max_genes
 
-    def mutate(self, generation: int, population: list[Player]):
+    def mutate(self, population: list[Player]):
         res = map(lambda pl: self.perform(pl), population)
         if not self.config.is_uniform:
             self.update()

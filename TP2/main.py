@@ -47,7 +47,7 @@ if __name__ == "__main__":
     population = initial_population(
         configuration.player, configuration.initial_population, configuration.points
     )
-    while not finish.done():
+    while not finish.done(population):
         new_population = []
         generation += 1
 
@@ -60,7 +60,7 @@ if __name__ == "__main__":
             new_population += crossed
 
         # Mutation
-        mutation.mutate(generation, new_population)
+        mutation.mutate(new_population)
 
         # Selection
         population = selection.select(population, new_population)
