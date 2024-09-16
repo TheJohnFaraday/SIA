@@ -29,7 +29,7 @@ def initial_population(
             ),
             p_class=player_class,
             p_attr=PlayerAttributes(*attributes),
-            fitness=Decimal(0),
+            fitness=Decimal(1),
         )
 
     return [player_generator() for _ in range(size)]
@@ -49,6 +49,7 @@ if __name__ == "__main__":
     replacement = Replacement(configuration.genetic.replacement)
     finish = Finish(configuration.finish)
 
+    history = []
     generation = 0
     population = initial_population(
         configuration.player, configuration.initial_population, configuration.points
