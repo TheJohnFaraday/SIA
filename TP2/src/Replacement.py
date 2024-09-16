@@ -68,6 +68,27 @@ class Replacement:
 
         return new_population
 
+    @staticmethod
+    def generational_gap(
+            current_population: list[Player], next_population: list[Player], gap: Decimal
+    ) -> list[Player]:
+        N = len(current_population)
+        num_to_retain = int((1 - gap) * N)
+        num_to_replace = N - num_to_retain
+
+        # Ensure num_to_replace does not exceed the size of next_population
+        num_to_replace = min(num_to_replace, len(next_population))
+
+        # Select individuals to retain from the current population
+        retained_individuals = sample(current_population, num_to_retain)
+        # Select individuals to replace from the new population
+        new_individuals = sample(next_population, num_to_replace)
+
+        # Combine both to form the new population
+        new_population = retained_individuals + new_individuals
+
+        return new_population
+
 
 if __name__ == "__main__":
     default_attributes = PlayerAttributes(
@@ -143,7 +164,7 @@ if __name__ == "__main__":
         )
         for fit in [3, 6, 11, 14, 1]
     ]
-    result = Replacement.fill_parent(population2, population3)
+    result = Replacement.generational_gap(population2, population3, Decimal(0.3))
 
     for player in result:
         print(player.fitness)
