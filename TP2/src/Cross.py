@@ -68,8 +68,8 @@ class Cross:
             raise InvalidCrossoverPoint
         child1 = attributes_player1[:p] + attributes_player2[p:]
         child2 = attributes_player1[p:] + attributes_player2[:p]
-        normalized_child1 = self.__normalize_attr(child1)
-        normalized_child2 = self.__normalize_attr(child2)
+        normalized_child1 = self.__normalize_attr(child1, self.total_points)
+        normalized_child2 = self.__normalize_attr(child2, self.total_points)
 
         p_class = player1.p_class
         p1_attr = PlayerAttributes(
@@ -123,8 +123,8 @@ class Cross:
             + attributes_player1[locus_1:locus_2]
             + attributes_player2[locus_2:]
         )
-        normalized_child1 = self.__normalize_attr(child1)
-        normalized_child2 = self.__normalize_attr(child2)
+        normalized_child1 = self.__normalize_attr(child1, self.total_points)
+        normalized_child2 = self.__normalize_attr(child2, self.total_points)
 
         p_class = player1.p_class
         p1_attr = PlayerAttributes(
@@ -179,8 +179,8 @@ class Cross:
             + attributes_player1[locus:locus + segment_length]
             + attributes_player2[locus + segment_length:]
         )
-        normalized_child1 = self.__normalize_attr(child1)
-        normalized_child2 = self.__normalize_attr(child2)
+        normalized_child1 = self.__normalize_attr(child1, self.total_points)
+        normalized_child2 = self.__normalize_attr(child2, self.total_points)
 
         p_class = player1.p_class
         p1_attr = PlayerAttributes(
@@ -227,8 +227,8 @@ class Cross:
             else:
                 child1[i] = attributes_player2[i]
                 child2[i] = attributes_player1[i]
-        normalized_child1 = self.__normalize_attr(child1)
-        normalized_child2 = self.__normalize_attr(child2)
+        normalized_child1 = self.__normalize_attr(child1, self.total_points)
+        normalized_child2 = self.__normalize_attr(child2, self.total_points)
 
         p_class = player1.p_class
         p1_attr = PlayerAttributes(
@@ -261,14 +261,14 @@ class Cross:
         ]
 
     @staticmethod
-    def __normalize_attr(player_attr: list) -> []:
+    def __normalize_attr(player_attr: list, total_points: int) -> []:
         player_attr_isolated = player_attr[1:]
         current_total = sum(player_attr_isolated)
-        factor = PlayerAttributes.TOTAL_POINTS_MAX / current_total
+        factor = total_points / current_total
         normalized_attrs = [int(factor * x) for x in player_attr_isolated]
 
         adjusted_total = sum(normalized_attrs)
-        difference = PlayerAttributes.TOTAL_POINTS_MAX - adjusted_total
+        difference = total_points - adjusted_total
         for i in range(abs(difference)):
             if difference < 0:
                 normalized_attrs[i % len(normalized_attrs)] -= 1

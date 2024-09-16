@@ -28,7 +28,7 @@ class Configuration:
     mutation: MutationMethod
     pm: Decimal
     is_uniform: bool
-    generational_increment: Decimal = Decimal('0')  # For not-uniform mutation method
+    generational_increment: Decimal = Decimal("0")  # For not-uniform mutation method
     max_genes: int = 1  # For limited_multi mutation method
     gen_mutation: GenMutation = GenMutation.HEIGHT
     lower_bound: Decimal = Decimal("-0.2")
@@ -122,7 +122,9 @@ class Mutation:
                             attributes_player[5] = int(
                                 player.p_attr.physique * (1 + mutation)
                             )
-                    normalized_p = self.__normalize_attr(attributes_player)
+                    normalized_p = self.__normalize_attr(
+                        attributes_player, self.max_points
+                    )
                     normalized_p_attr = PlayerAttributes(
                         strength=normalized_p[1],
                         dexterity=normalized_p[2],
@@ -188,7 +190,7 @@ class Mutation:
                         )
                 gens_mutated.add(mut)
 
-        normalized_p = self.__normalize_attr(attributes_player)
+        normalized_p = self.__normalize_attr(attributes_player, self.max_points)
         normalized_p_attr = PlayerAttributes(
             strength=normalized_p[1],
             dexterity=normalized_p[2],
@@ -210,14 +212,14 @@ class Mutation:
         )
 
     @staticmethod
-    def __normalize_attr(player_attr: list) -> []:
+    def __normalize_attr(player_attr: list, total_points: int) -> []:
         player_attr_isolated = player_attr[1:]
         current_total = sum(player_attr_isolated)
-        factor = PlayerAttributes.TOTAL_POINTS_MAX / current_total
+        factor = total_points / current_total
         normalized_attrs = [int(factor * x) for x in player_attr_isolated]
 
         adjusted_total = sum(normalized_attrs)
-        difference = PlayerAttributes.TOTAL_POINTS_MAX - adjusted_total
+        difference = total_points - adjusted_total
         for i in range(abs(difference)):
             if difference < 0:
                 normalized_attrs[i % len(normalized_attrs)] -= 1
