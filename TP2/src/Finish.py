@@ -34,8 +34,8 @@ class PopulationStructure:
 
 class Finish:
     THRESHOLD = 5
-    STRUCTURE_DELTA = Decimal("0.15")
-    FITNESS_DELTA = Decimal("0.10")
+    STRUCTURE_DELTA = Decimal("0.90")
+    FITNESS_DELTA = Decimal("0.90")
     HEIGHT_MULTI = 20
 
     def __init__(self, configuration: Configuration):
@@ -80,7 +80,7 @@ class Finish:
                     structure = self.compute_population_structure(population)
                     if (
                         self.compute_structure_delta(structure, self.prior_p_structure)
-                        < self.STRUCTURE_DELTA
+                        > self.STRUCTURE_DELTA
                     ):
                         self.threshold += 1
                         return True
@@ -91,15 +91,15 @@ class Finish:
                         delta = content / self.prior_p_content
                     else:
                         delta = self.prior_p_content / content
-                    if delta < self.FITNESS_DELTA:
+                    if delta > self.FITNESS_DELTA:
                         self.threshold += 1
                         return True
         return False
 
     @staticmethod
     def compute_structure_delta(
-        self, struct1: PopulationStructure, struct2: PopulationStructure
-    ) -> int:
+        struct1: PopulationStructure, struct2: PopulationStructure
+    ):
         delta = 0
         delta += min(struct2.height, struct1.height) / max(
             struct2.height, struct1.height
@@ -120,10 +120,10 @@ class Finish:
             max(struct2.physique, struct1.physique)
         )
 
-        return delta / 6
+        return Decimal(delta / 6)
 
     @staticmethod
-    def compute_population_structure(population: list[Player]) -> Decimal:
+    def compute_population_structure(population: list[Player]):
         struct = [Decimal("0"), 0, 0, 0, 0, 0]
         for elem in population:
             struct[0] = elem.height
