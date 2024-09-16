@@ -55,19 +55,19 @@ if __name__ == "__main__":
         new_population = []
         generation += 1
 
+        # Selection
+        selected_population = selection.select(population)
+
         # Crossover
-        random.shuffle(population)
-        for index, player in enumerate(population):
+        random.shuffle(selected_population)
+        for index, player in enumerate(selected_population):
             crossed = crossover.perform(
-                population[index], population[(index + 1) % len(population)]
+                selected_population[index], selected_population[(index + 1) % len(selected_population)]
             )
             new_population += crossed
 
         # Mutation
         mutation.mutate(new_population)
-
-        # Selection
-        selected_population = selection.select(population)
 
         # Replacement
         population = replacement.replace(selected_population, new_population)
