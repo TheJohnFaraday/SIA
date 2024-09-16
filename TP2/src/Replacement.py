@@ -18,6 +18,7 @@ class ReplacementMethod(Enum):
 class Configuration:
     method: list[ReplacementMethod]
     weight: list[Decimal]
+    gap: Decimal = 0
 
 
 class Replacement:
@@ -33,9 +34,39 @@ class Replacement:
                 f"the sum of the weights must be 1. Current sum: {weight_sum}"
             )
 
+    def replace(
+            self, current_population: list[Player], next_population: list[Player]
+    ) -> list[Player]:
+        final_population = []
+        for index, method in enumerate(self.configuration.method):
+            method_weight = self.configuration.weight[index]
+            match method:
+                case ReplacementMethod.FILL_ALL:
+                    new_population = Replacement.fill_all(
+                        current_population, next_population
+                    )
+                case ReplacementMethod.FILL_PARENT:
+                    new_population = Replacement.fill_parent(
+                        current_population, next_population
+                    )
+                case ReplacementMethod.GENERATIONAL_GAP:
+                    new_population = Replacement.generational_gap(
+                        current_population, next_population, self.configuration.gap
+                    )
+                case _:
+                    raise RuntimeError("Invalid replacement method!")
+
+            if method_weight == Decimal(1):
+                return new_population
+
+            players_to_select = int(round(method_weight * len(new_population)))
+            final_population += new_population[:players_to_select]
+
+        return final_population
+
     @staticmethod
     def fill_all(
-        current_population: list[Player], next_population: list[Player]
+            current_population: list[Player], next_population: list[Player]
     ) -> list[Player]:
         # Combine the current and next population
         combined_population = current_population + next_population
