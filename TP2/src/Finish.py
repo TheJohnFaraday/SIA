@@ -34,8 +34,8 @@ class PopulationStructure:
 
 class Finish:
     THRESHOLD = 5
-    STRUCTURE_DELTA = 40
-    FITNESS_DELTA = Decimal('1.5')
+    STRUCTURE_DELTA = Decimal("0.15")
+    FITNESS_DELTA = Decimal("0.10")
     HEIGHT_MULTI = 20
 
     def __init__(self, configuration: Configuration):
@@ -86,24 +86,52 @@ class Finish:
                         return True
                 case FinishMethod.CONTENT:
                     content = self.compute_population_content(population)
-                    if content - self.prior_p_content < self.FITNESS_DELTA:
+                    delta = 0
+                    if content < self.prior_p_content:
+                        delta = content / self.prior_p_content
+                    else:
+                        delta = self.prior_p_content / content
+                    if delta < self.FITNESS_DELTA:
                         self.threshold += 1
                         return True
         return False
 
     @staticmethod
     def compute_structure_delta(
-        self,
-        struct1: PopulationStructure, struct2: PopulationStructure
+        self, struct1: PopulationStructure, struct2: PopulationStructure
     ) -> int:
         delta = 0
-        delta += abs(int(struct1.height-struct2.height)*self.HEIGHT_MULTI)
-        delta += abs(struct1.strength - struct2.strength)
-        delta += abs(struct1.endurance - struct2.endurance)
-        delta += abs(struct1.intelligence - struct2.intelligence)
-        delta += abs(struct1.dexterity - struct2.dexterity)
-        delta += abs(struct1.physique - struct2.physique)
-        return delta
+        if struct1.height > struct2.height:
+            delta += struct2.height / struct1.height
+        else:
+            delta += Decimal(struct1.height) / Decimal(struct2.height)
+
+        if struct1.strength > struct2.strength:
+            delta += Decimal(struct2.strength) / Decimal(struct1.strength)
+        else:
+            delta += Decimal(struct1.strength) / Decimal(struct2.strength)
+
+        if struct1.endurance > struct2.endurance:
+            delta += Decimal(struct2.endurance) / Decimal(struct1.endurance)
+        else:
+            delta += Decimal(struct1.endurance) / Decimal(struct2.endurance)
+
+        if struct1.intelligence > struct2.intelligence:
+            delta += Decimal(struct2.intelligence) / Decimal(struct1.intelligence)
+        else:
+            delta += Decimal(struct1.intelligence) / Decimal(struct2.intelligence)
+
+        if struct1.dexterity > struct2.dexterity:
+            delta += Decimal(struct2.dexterity) / Decimal(struct1.dexterity)
+        else:
+            delta += Decimal(struct1.dexterity) / Decimal(struct2.dexterity)
+
+        if struct1.physique > struct2.physique:
+            delta += Decimal(struct2.physique) / Decimal(struct1.physique)
+        else:
+            delta += Decimal(struct1.physique) / Decimal(struct2.physique)
+
+        return delta / 6
 
     @staticmethod
     def compute_population_structure(population: list[Player]) -> Decimal:
