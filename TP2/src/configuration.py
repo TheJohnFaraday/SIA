@@ -40,12 +40,12 @@ def read_configuration():
         genetic_mutation = key_from_enum_value_with_fallback(
             MutationMethod, data["genetic"]["mutation"], MutationMethod.SINGLE
         )
-        is_uniform = key_from_enum_value_with_fallback(
-            data["genetic"]["parameters"]["mutation"]["is_uniform"], False
-        )
+        is_uniform = data["genetic"]["parameters"]["mutation"].get("is_uniform", False)
+
         mutation_configuration = MutationConfiguration(
-            mutation=genetic_mutation,
+            mutation= genetic_mutation,
             pm=data["genetic"]["parameters"]["mutation"]["pm"],
+            is_uniform=is_uniform,
             max_genes=(
                 data["genetic"]["parameters"]["mutation"]["limited_multi"]
                 if genetic_mutation == MutationMethod.MULTI
@@ -56,14 +56,8 @@ def read_configuration():
                 if not is_uniform
                 else Decimal(0)
             ),
-            lower_bound=key_from_enum_value_with_fallback(
-                data["genetic"]["parameters"]["mutation"]["higher_bound"],
-                Decimal("-0.2"),
-            ),
-            higher_bound=key_from_enum_value_with_fallback(
-                data["genetic"]["parameters"]["mutation"]["higher_bound"],
-                Decimal("0.2"),
-            ),
+            lower_bound=data["genetic"]["parameters"]["mutation"].get("lower_bound", Decimal("-0.2")),
+            higher_bound=data["genetic"]["parameters"]["mutation"].get("higher_bound", Decimal("0.2")),
         )
 
         crossover_configuration = CrossoverConfiguration(
@@ -123,9 +117,7 @@ def read_configuration():
         ]
         finish_configuration = FinishConfiguration(
             methods=finish_methods,
-            time_limit=(
-                key_from_enum_value_with_fallback(data["finish"]["time"]["limit"], 10)
-            ),
+            time_limit= (data["finish"]["time"].get("limit", 10)),
             max_generations=(
                 data["finish"]["max_generations"]["generations"]
                 if FinishMethod.MAX_GENERATIONS in finish_methods

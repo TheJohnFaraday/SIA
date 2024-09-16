@@ -25,6 +25,11 @@ pc = 0.75
 
 [genetic.parameters.mutation]
 pm = 0.5
+is_uniform = false
+generational_increment = 0.01
+lower_bound = -0.2
+higher_bound = 0.2
+
 [genetic.parameters.mutation.limited_multi]
 # Picks any amount of genes between [1; max_genes] for mutation
 max_genes = 2
