@@ -2,13 +2,11 @@ from time import time
 from dataclasses import dataclass
 from decimal import Decimal
 from enum import Enum
-from typing import Any
 from functools import reduce
 from .Player import Player
 
 
 class FinishMethod(Enum):
-    TIME = "time"
     MAX_GENERATIONS = "max_generations"
     STRUCTURE = "structure"
     CONTENT = "content"
