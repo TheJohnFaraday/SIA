@@ -8,6 +8,7 @@ from src.Mutation import Mutation
 from src.Player import Player, PlayerClass, PlayerAttributes
 from src.Selection import Selection
 from src.utils import random_numbers_that_sum_n
+from src.Replacement import Replacement
 
 
 context = Context(prec=10)
@@ -41,6 +42,7 @@ if __name__ == "__main__":
     )
     crossover = Cross(configuration.genetic.crossover, configuration.points)
     mutation = Mutation(configuration.genetic.mutation, configuration.points)
+    replacement = Replacement(configuration.genetic.replacement, configuration.points)
     finish = Finish(configuration.finish)
 
     generation = 0
@@ -64,5 +66,8 @@ if __name__ == "__main__":
 
         # Selection
         population = selection.select(population, new_population)
+
+        # Replacement
+        replacement = replacement.replace(population, new_population)
 
         # TODO: History and metrics
