@@ -42,7 +42,7 @@ if __name__ == "__main__":
     )
     crossover = Cross(configuration.genetic.crossover, configuration.points)
     mutation = Mutation(configuration.genetic.mutation, configuration.points)
-    replacement = Replacement(configuration.genetic.replacement, configuration.points)
+    replacement = Replacement(configuration.genetic.replacement)
     finish = Finish(configuration.finish)
 
     generation = 0

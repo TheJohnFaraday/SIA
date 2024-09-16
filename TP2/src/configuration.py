@@ -18,6 +18,7 @@ from .utils import key_from_enum_value, key_from_enum_value_with_fallback
 class GeneticConfiguration:
     crossover: CrossoverConfiguration
     mutation: MutationConfiguration
+    replacement: ReplacementConfiguration
 
 
 @dataclass(frozen=True)
@@ -65,11 +66,6 @@ def read_configuration():
                 CrossoverMethod, data["genetic"]["crossover"], CrossoverMethod.ONE_POINT
             ),
             pc=data["genetic"]["parameters"]["crossover"]["pc"],
-        )
-
-        genetic_configuration = GeneticConfiguration(
-            crossover=crossover_configuration,
-            mutation=mutation_configuration,
         )
 
         selection_methods = [
@@ -123,11 +119,11 @@ def read_configuration():
                 if FinishMethod.MAX_GENERATIONS in finish_methods
                 else 0
             ),
-            structure=(
-                data["finish"]["structure"]["structure"]
-                if FinishMethod.STRUCTURE in finish_methods
-                else None
-            ),
+            #structure=(
+            #    data["finish"]["structure"]["structure"]
+            #    if FinishMethod.STRUCTURE in finish_methods
+            #    else None
+            #),
             content_generations=(
                 data["finish"]["content"]["generations"]
                 if FinishMethod.CONTENT in finish_methods
@@ -138,6 +134,12 @@ def read_configuration():
                 if FinishMethod.ACCEPTABLE_FITNESS in finish_methods
                 else None
             ),
+        )
+
+        genetic_configuration = GeneticConfiguration(
+            crossover=crossover_configuration,
+            mutation=mutation_configuration,
+            replacement=replacement_configuration,
         )
 
         configuration = Configuration(

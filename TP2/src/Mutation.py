@@ -36,7 +36,7 @@ class Configuration:
 
 
 class Mutation:
-    def __init__(self, configuration: Configuration):
+    def __init__(self, configuration: Configuration, total_points: int):
         self.config = configuration
         self.pm = configuration.pm
         max_genes = configuration.max_genes

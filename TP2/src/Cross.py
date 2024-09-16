@@ -24,18 +24,11 @@ class Configuration:
 
 
 class Cross:
-    def __init__(self, configuration: Configuration):
+    def __init__(self, configuration: Configuration, total_points: int):
         self.configuration = configuration
 
         # Number of PlayerAttributes plus Height. Must be calculated
-        self.total_points = len(
-            Player(
-                Decimal(0),
-                Player.p_class.WARRIOR,
-                PlayerAttributes(100, 1, 1, 1, 1),
-                Decimal(0),
-            ).attributes_as_list()
-        )
+        self.total_points = total_points
 
     def perform(self, father: Player, mother: Player):
         # Crossover happens with a probability of Pc
