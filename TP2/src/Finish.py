@@ -42,8 +42,11 @@ class Finish:
         self.prior_p_content = Decimal("0")
 
     def done(self, population: list[Player]) -> bool:
-        if self.__eval(population) and self.threshold >= 5:
-            return True
+        if self.__eval(population):
+            if self.threshold >= 5:
+                return True
+        else:
+            self.threshold = 0
 
         self.generation += 1
         self.prior_p_structure = self.compute_population_structure(population)
