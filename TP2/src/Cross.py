@@ -81,7 +81,7 @@ class Cross:
             raise InvalidCrossoverPoint
 
         child1 = attributes_player1[:p] + attributes_player2[p:]
-        child2 = attributes_player1[p:] + attributes_player2[:p]
+        child2 = attributes_player2[:p] + attributes_player1[p:]
         normalized_child1 = PlayerAttributes.normalize_attr(
             child1, self.player_total_points
         )
@@ -263,11 +263,11 @@ class Cross:
         child2 = []
         for i in range(len(attributes_player1)):
             if rnd.random() > allele_interchange_probability:
-                child1[i] = attributes_player1[i]
-                child2[i] = attributes_player2[i]
+                child1.append(attributes_player1[i])
+                child2.append(attributes_player2[i])
             else:
-                child1[i] = attributes_player2[i]
-                child2[i] = attributes_player1[i]
+                child1.append(attributes_player2[i])
+                child2.append(attributes_player1[i])
         normalized_child1 = PlayerAttributes.normalize_attr(
             child1, self.player_total_points
         )
