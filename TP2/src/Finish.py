@@ -24,6 +24,8 @@ class FinishMethod(Enum):
 @dataclass(frozen=True)
 class Configuration:
     methods: list[FinishMethod]
+    threshold: int
+    structure: Decimal
     time_limit: int = 10  # Seconds allowed for the algorithm to work
     max_generations: int = 50
     content_generations: Decimal = Decimal("0")
@@ -42,7 +44,6 @@ class PopulationStructure:
 
 class Finish:
     THRESHOLD = 5
-    STRUCTURE_DELTA = Decimal("0.90")
     FITNESS_DELTA = Decimal("0.90")
     HEIGHT_MULTI = 20
 
@@ -57,7 +58,7 @@ class Finish:
 
     def done(self, population: list[Player], generation: int) -> bool:
         if self.__eval(population):
-            if self.threshold >= self.THRESHOLD:
+            if self.threshold >= self.__configuration.threshold:
                 return True
         else:
             self.threshold = 0
@@ -76,7 +77,7 @@ class Finish:
     def __eval(self, population: list[Player]):
         ts = int(time()) - self.ts_start
         if ts >= self.__configuration.time_limit:
-            self.threshold += self.THRESHOLD
+            self.threshold += self.__configuration.threshold
             self.finish_reason = FinishReason.TIME_LIMIT
             return True
 
@@ -84,7 +85,7 @@ class Finish:
             match method:
                 case FinishMethod.MAX_GENERATIONS:
                     if self.generation >= self.__configuration.max_generations:
-                        self.threshold += self.THRESHOLD
+                        self.threshold += self.__configuration.threshold
                         self.finish_reason = FinishReason.MAX_GENERATIONS
                         return True
 
@@ -93,17 +94,20 @@ class Finish:
                         self.compute_population_content(population)
                         >= self.__configuration.acceptable_fitness
                     ):
-                        self.threshold += self.THRESHOLD
+                        self.threshold += self.__configuration.threshold
                         self.finish_reason = FinishReason.ACCEPTABLE_FITNESS
                         return True
                 case FinishMethod.STRUCTURE:
                     structure = self.compute_population_structure(population)
+                    if not self.prior_p_structure:
+                        self.prior_p_structure = structure
+
                     if (
                         self.compute_structure_delta(structure, self.prior_p_structure)
-                        > self.STRUCTURE_DELTA
+                        > self.__configuration.structure
                     ):
                         self.threshold += 1
-                        if self.threshold >= self.THRESHOLD:
+                        if self.threshold >= self.__configuration.threshold:
                             self.finish_reason = FinishReason.STRUCTURE
                         return True
 
@@ -117,7 +121,7 @@ class Finish:
 
                     if delta > self.FITNESS_DELTA:
                         self.threshold += 1
-                        if self.threshold >= self.THRESHOLD:
+                        if self.threshold >= self.__configuration.threshold:
                             self.finish_reason = FinishReason.CONTENT
                         return True
         return False
@@ -126,27 +130,49 @@ class Finish:
     def compute_structure_delta(
         struct1: PopulationStructure, struct2: PopulationStructure
     ):
+        total_deltas = 0
         delta = 0
-        delta += min(struct2.height, struct1.height) / max(
-            struct2.height, struct1.height
-        )
-        delta += Decimal(min(struct2.strength, struct1.strength)) / Decimal(
-            max(struct2.strength, struct1.strength)
-        )
-        delta += Decimal(min(struct2.endurance, struct1.endurance)) / Decimal(
-            max(struct2.endurance, struct1.endurance)
-        )
-        delta += Decimal(min(struct2.intelligence, struct1.intelligence)) / Decimal(
-            max(struct2.intelligence, struct1.intelligence)
-        )
-        delta += Decimal(min(struct2.dexterity, struct1.dexterity)) / Decimal(
-            max(struct2.dexterity, struct1.dexterity)
-        )
-        delta += Decimal(min(struct2.physique, struct1.physique)) / Decimal(
-            max(struct2.physique, struct1.physique)
-        )
 
-        return Decimal(delta / 6)
+        if struct1.height > 0 or struct1.height > 0:
+            total_deltas += 1
+            delta += min(struct2.height, struct1.height) / max(
+                struct2.height, struct1.height
+            )
+
+        if struct1.strength > 0 or struct1.strength > 0:
+            total_deltas += 1
+            delta += Decimal(min(struct2.strength, struct1.strength)) / Decimal(
+                max(struct2.strength, struct1.strength)
+            )
+
+        if struct1.endurance > 0 or struct1.endurance > 0:
+            total_deltas += 1
+            delta += Decimal(min(struct2.endurance, struct1.endurance)) / Decimal(
+                max(struct2.endurance, struct1.endurance)
+            )
+
+        if struct1.intelligence > 0 or struct1.intelligence > 0:
+            total_deltas += 1
+            delta += Decimal(min(struct2.intelligence, struct1.intelligence)) / Decimal(
+                max(struct2.intelligence, struct1.intelligence)
+            )
+
+        if struct1.dexterity > 0 or struct1.dexterity > 0:
+            total_deltas += 1
+            delta += Decimal(min(struct2.dexterity, struct1.dexterity)) / Decimal(
+                max(struct2.dexterity, struct1.dexterity)
+            )
+
+        if struct1.physique > 0 or struct1.physique > 0:
+            total_deltas += 1
+            delta += Decimal(min(struct2.physique, struct1.physique)) / Decimal(
+                max(struct2.physique, struct1.physique)
+            )
+
+        if total_deltas == 0:
+            return 1
+
+        return Decimal(delta / total_deltas)
 
     @staticmethod
     def compute_population_structure(population: list[Player]):

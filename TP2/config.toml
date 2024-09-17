@@ -75,7 +75,9 @@ gap = 0.5
 [finish]
 # Finish methods.
 # List with one or more of: ["time", "max_generations", "structure", "content", "acceptable_fitness"]
-method = ["time", "max_generations", "acceptable_fitness"]
+method = ["time", "max_generations", "structure"]
+# Structure and Content threshold
+threshold = 20
 
 [finish.time]
 # Time limit in seconds, must be in range [10; 120]
@@ -85,7 +87,7 @@ limit = 120
 generations = 50_000
 
 [finish.structure]
-structure = { } # TODO
+delta = 0.90
 
 [finish.content]
 generations = 10

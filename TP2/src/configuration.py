@@ -121,17 +121,18 @@ def read_configuration():
         ]
         finish_configuration = FinishConfiguration(
             methods=finish_methods,
+            threshold=data["finish"].get("threshold", 10),
             time_limit=(data["finish"]["time"].get("limit", 10)),
             max_generations=(
                 data["finish"]["max_generations"]["generations"]
                 if FinishMethod.MAX_GENERATIONS in finish_methods
                 else 0
             ),
-            # structure=(
-            #    data["finish"]["structure"]["structure"]
-            #    if FinishMethod.STRUCTURE in finish_methods
-            #    else None
-            # ),
+            structure=(
+               data["finish"]["structure"].get("delta", Decimal("0.9"))
+               if FinishMethod.STRUCTURE in finish_methods
+               else Decimal(0.9)
+            ),
             content_generations=(
                 data["finish"]["content"]["generations"]
                 if FinishMethod.CONTENT in finish_methods
