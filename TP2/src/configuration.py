@@ -102,15 +102,16 @@ def read_configuration():
             ),
         )
 
+        replacement_methods = [
+            key_from_enum_value(ReplacementMethod, method)
+            for method in data["replacement"]["method"]
+        ]
         replacement_configuration = ReplacementConfiguration(
-            method=[
-                key_from_enum_value(ReplacementMethod, method)
-                for method in data["replacement"]["method"]
-            ],
-            weight=[weight for weight in data["selection"]["weight"]],
+            method=replacement_methods,
+            weight=[weight for weight in data["replacement"]["weight"]],
             gap=(
-                data["selection"]["parameters"]["generational_gap"]["gap"]
-                if ReplacementMethod.GENERATIONAL_GAP in selection_methods
+                data["replacement"]["parameters"]["generational_gap"]["gap"]
+                if ReplacementMethod.GENERATIONAL_GAP in replacement_methods
                 else 0
             ),
         )
