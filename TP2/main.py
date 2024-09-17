@@ -304,6 +304,17 @@ def plot_results(df: pd.DataFrame, last_gen: [Player]):
         bars = ax.bar(
             attributes, means, yerr=stds, color=CUSTOM_PALETTE[: len(CUSTOM_PALETTE)]
         )
+        height = bars[0].get_height()
+        plt.text(
+            bars[0].get_x() + bars[0].get_width() / 2,
+            height,
+            f"{height:.2f}" if int(height) != height else f"{int(height)}",
+            ha="center",
+            va="bottom",
+            fontsize=10,
+            color=GREY,
+            fontweight="bold",
+        )
         ax.set_ylabel("Atributos")
         plt.xticks(rotation=25)
 

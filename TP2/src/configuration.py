@@ -134,8 +134,8 @@ def read_configuration():
                if FinishMethod.STRUCTURE in finish_methods
                else Decimal(0.9)
             ),
-            content_generations=(
-                data["finish"]["content"]["generations"]
+            content=(
+                data["finish"]["content"].get("delta", Decimal("0.9"))
                 if FinishMethod.CONTENT in finish_methods
                 else None
             ),

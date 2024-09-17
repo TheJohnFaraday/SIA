@@ -26,10 +26,10 @@ class Configuration:
     methods: list[FinishMethod]
     threshold: int
     structure: Decimal
+    content: Decimal
     time_limit: int = 10  # Seconds allowed for the algorithm to work
     max_generations: int = 50
-    content_generations: Decimal = Decimal("0")
-    acceptable_fitness: Decimal = Decimal("0")
+    acceptable_fitness: Decimal = Decimal("30")
 
 
 @dataclass(eq=True, frozen=True)
