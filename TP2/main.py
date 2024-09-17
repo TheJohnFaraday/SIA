@@ -240,7 +240,7 @@ def plot_results(df: pd.DataFrame):
             plt.text(
                 bar.get_x() + bar.get_width() / 2,
                 height,
-                f'{height}',
+                f'{height:.2f}' if int(height) != height else f'{int(height)}',
                 ha='center',
                 va='bottom',
                 fontsize=10,
