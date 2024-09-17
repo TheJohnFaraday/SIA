@@ -161,7 +161,7 @@ def standard_deviation_df(population_history: list[list[Player]]):
     return pd.DataFrame(std_by_generation, columns=["std"])
 
 
-def plot_results(df: pd.DataFrame):
+def plot_results(df: pd.DataFrame, last_gen: [Player]):
     def population_diversity():
         fig, ax = plt.subplots()
 
@@ -267,9 +267,53 @@ def plot_results(df: pd.DataFrame):
         plt.gca().axes.get_yaxis().set_visible(False)
         plt.savefig("plots/player_attributes.png")
 
+    def best_attributes():
+        df2 = pd.DataFrame(
+            {
+                "height": [float(individual.height) for individual in last_gen],
+                "strength": [
+                    float(individual.p_attr.strength) for individual in last_gen
+                ],
+                "dexterity": [
+                    float(individual.p_attr.dexterity) for individual in last_gen
+                ],
+                "intelligence": [
+                    float(individual.p_attr.intelligence) for individual in last_gen
+                ],
+                "endurance": [
+                    float(individual.p_attr.endurance) for individual in last_gen
+                ],
+                "physique": [
+                    float(individual.p_attr.physique) for individual in last_gen
+                ],
+            }
+        )
+        means = df2.mean()
+        stds = df2.std()
+        attributes = [
+            "Height",
+            "Strength",
+            "Dexterity",
+            "Intelligence",
+            "Endurance",
+            "Physique",
+        ]
+
+        fig, ax = plt.subplots()
+
+        bars = ax.bar(
+            attributes, means, yerr=stds, color=CUSTOM_PALETTE[: len(CUSTOM_PALETTE)]
+        )
+        ax.set_ylabel("Atributos")
+        plt.xticks(rotation=25)
+
+        ax.set_title("Atributos de la última generación")
+        plt.savefig("plots/last_gen_attributes.png")
+
     population_diversity()
     population_fitness()
     fittest_attributes()
+    best_attributes()
 
 
 if __name__ == "__main__":
@@ -328,4 +372,4 @@ if __name__ == "__main__":
     print(final_df)
 
     if configuration.plot:
-        plot_results(final_df)
+        plot_results(final_df, history[len(history) - 1])
