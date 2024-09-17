@@ -1,0 +1,104 @@
+# Show / Hide plots
+plot = true
+
+# [Optional] Seed for RNG
+#seed = 202409176
+seed = 13202409176
+#seed = 8202409176
+
+[general]
+# One of: ["warrior", "archer", "guardian", "wizard"]
+character = "wizard"
+# Distribution points, must be in range [100; 200]
+points = 150
+# Population
+# N
+initial_population = 100
+# K
+population_sample = 200
+
+[genetic]
+# Crossover strategy. One of: ["one_point", "two_point", "uniform", "annular"]
+crossover = "uniform"
+# Mutation strategy.
+# Gen must be one of: ["single", "multi"]
+mutation = "uniform"
+
+[genetic.parameters.crossover]
+# Probability of crossover in range [0; 1]
+pc = 0.5
+# Probability of crossover for each allele in uniform crossover.
+# Must be in range [0; 1]
+p = 0.5
+
+[genetic.parameters.mutation]
+pm = 0.2
+is_uniform = false
+generational_increment = 0.01
+lower_bound = -0.3
+higher_bound = 0.3
+
+[genetic.parameters.mutation.limited_multi]
+# Picks any amount of genes between [1; max_genes] for mutation
+max_genes = 6
+
+[selection]
+# Selection method
+# One of: ["elite", "roulette", "universal", "boltzmann", "deterministic_tournament",
+#          "probabilistic_tournament", "ranking"]
+#method = ["elite"]
+# method = ["elite", "roulette", "universal", "boltzmann", "deterministic_tournament",
+#           "probabilistic_tournament", "ranking"]
+method = ["deterministic_tournament"]
+# Weight of each selection method in range (0.0, 1.0]. The sum of all weights must be 1.0.
+#weight = [0.01, 0.1, 0.51, 0.1, 0.1, 0.1, 0.08]
+weight = [1.0]
+
+[selection.parameters]
+# Parameters depend on the selection method. Only those of the chosen selection method will be read.
+[selection.parameters.deterministic_tournament]
+individuals_to_select = 5
+
+[selection.parameters.probabilistic_tournament]
+# Threshold in range [0.5; 1]
+threshold = 0.75
+
+[selection.parameters.boltzmann]
+temperature = 10_000
+
+[replacement]
+# Replacement method
+# List with one or more of: ["fill_all", "fill_parent", "generational_gap"]
+# method = ["fill_all", "fill_parent", "generational_gap"]
+method = ["fill_all"]
+# Weight of each replacement method in range (0.0, 1.0]. The sum of all weights must be 1.0.
+# weight = [0.45, 0.45, 0.1]
+weight = [1.0]
+
+[replacement.parameters]
+# Parameters depend on the replacement method. Only those of the chosen selection method will be read.
+[replacement.parameters.generational_gap]
+gap = 0.5
+
+[finish]
+# Finish methods.
+# List with one or more of: ["time", "max_generations", "structure", "content", "acceptable_fitness"]
+method = ["time", "max_generations", "structure", "content"]
+# Structure and Content threshold
+threshold = 20
+
+[finish.time]
+# Time limit in seconds, must be in range [10; 120]
+limit = 30
+
+[finish.max_generations]
+generations = 300
+
+[finish.structure]
+delta = 0.999
+
+[finish.content]
+delta = 0.999
+
+[finish.acceptable_fitness]
+fitness = 30
