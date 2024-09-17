@@ -2,7 +2,9 @@
 plot = true
 
 # [Optional] Seed for RNG
-seed = 202409176
+#seed = 202409176
+seed = 13202409176
+#seed = 8202409176
 
 [general]
 # One of: ["warrior", "archer", "guardian", "wizard"]
@@ -44,7 +46,7 @@ max_genes = 2
 # Selection method
 # One of: ["elite", "roulette", "universal", "boltzmann", "deterministic_tournament",
 #          "probabilistic_tournament", "ranking"]
-method = ["boltzmann"]
+method = ["elite"]
 # Weight of each selection method in range (0.0, 1.0]. The sum of all weights must be 1.0.
 weight = [1.0]
 
@@ -84,7 +86,7 @@ threshold = 20
 limit = 10
 
 [finish.max_generations]
-generations = 50
+generations = 100
 
 [finish.structure]
 delta = 0.90
