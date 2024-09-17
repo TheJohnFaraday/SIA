@@ -81,24 +81,21 @@ def initial_population(
 def calculate_population_variance(population: list[Player]):
     df = pd.DataFrame(
         {
-            "height": [individual.height for individual in population],
-            "strength": [individual.p_attr.strength for individual in population],
-            "dexterity": [individual.p_attr.dexterity for individual in population],
+            "height": [float(individual.height) for individual in population],
+            "strength": [float(individual.p_attr.strength) for individual in population],
+            "dexterity": [float(individual.p_attr.dexterity) for individual in population],
             "intelligence": [
-                individual.p_attr.intelligence for individual in population
+                float(individual.p_attr.intelligence) for individual in population
             ],
-            "endurance": [individual.p_attr.endurance for individual in population],
-            "physique": [individual.p_attr.physique for individual in population],
+            "endurance": [float(individual.p_attr.endurance) for individual in population],
+            "physique": [float(individual.p_attr.physique) for individual in population],
         }
     )
 
-    # Calculate the mean of each attribute
-    means = df.mean()
+    variances = df.var()
+    mean_variance = variances.mean()
 
-    # Calculate the standard deviation of the means
-    variance = np.std(means.values.astype(float))
-
-    return variance
+    return mean_variance
 
 
 def calculate_historic_variance(population_history: list[list[Player]]):
