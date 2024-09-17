@@ -6,6 +6,14 @@ from functools import reduce
 from .Player import Player
 
 
+class FinishReason(Enum):
+    MAX_GENERATIONS = "Maximum generation reached"
+    STRUCTURE = "Structure has not been changing that much"
+    CONTENT = "Content has not been changing that much"
+    ACCEPTABLE_FITNESS = "Acceptable Fitness reached 💪"
+    TIME_LIMIT = "Time limit exceeded"
+
+
 class FinishMethod(Enum):
     MAX_GENERATIONS = "max_generations"
     STRUCTURE = "structure"
@@ -40,41 +48,53 @@ class Finish:
 
     def __init__(self, configuration: Configuration):
         self.__configuration = configuration
-        self.generation = 1
+        self.generation = 0
         self.threshold = 0
         self.ts_start = int(time())
         self.prior_p_structure = None
         self.prior_p_content = Decimal("0")
+        self.finish_reason: FinishReason | None = None
 
-    def done(self, population: list[Player]) -> bool:
+    def done(self, population: list[Player], generation: int) -> bool:
         if self.__eval(population):
             if self.threshold >= self.THRESHOLD:
                 return True
         else:
             self.threshold = 0
 
-        self.generation += 1
+        self.generation = generation
         self.prior_p_structure = self.compute_population_structure(population)
         self.prior_p_content = self.compute_population_content(population)
         return False
+
+    @property
+    def reason(self):
+        if not self.finish_reason:
+            raise RuntimeError("WE HAVE NOT FINISHED! (Now we did)")
+        return self.finish_reason.value
 
     def __eval(self, population: list[Player]):
         ts = int(time()) - self.ts_start
         if ts >= self.__configuration.time_limit:
             self.threshold += self.THRESHOLD
+            self.finish_reason = FinishReason.TIME_LIMIT
             return True
+
         for method in self.__configuration.methods:
             match method:
                 case FinishMethod.MAX_GENERATIONS:
                     if self.generation >= self.__configuration.max_generations:
                         self.threshold += self.THRESHOLD
+                        self.finish_reason = FinishReason.MAX_GENERATIONS
                         return True
+
                 case FinishMethod.ACCEPTABLE_FITNESS:
                     if (
                         self.compute_population_content(population)
                         >= self.__configuration.acceptable_fitness
                     ):
                         self.threshold += self.THRESHOLD
+                        self.finish_reason = FinishReason.ACCEPTABLE_FITNESS
                         return True
                 case FinishMethod.STRUCTURE:
                     structure = self.compute_population_structure(population)
@@ -83,7 +103,10 @@ class Finish:
                         > self.STRUCTURE_DELTA
                     ):
                         self.threshold += 1
+                        if self.threshold >= self.THRESHOLD:
+                            self.finish_reason = FinishReason.STRUCTURE
                         return True
+
                 case FinishMethod.CONTENT:
                     content = self.compute_population_content(population)
                     delta = 0
@@ -91,8 +114,11 @@ class Finish:
                         delta = content / self.prior_p_content
                     else:
                         delta = self.prior_p_content / content
+
                     if delta > self.FITNESS_DELTA:
                         self.threshold += 1
+                        if self.threshold >= self.THRESHOLD:
+                            self.finish_reason = FinishReason.CONTENT
                         return True
         return False
 

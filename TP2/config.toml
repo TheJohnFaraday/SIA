@@ -44,7 +44,7 @@ max_genes = 2
 # Selection method
 # One of: ["elite", "roulette", "universal", "boltzmann", "deterministic_tournament",
 #          "probabilistic_tournament", "ranking"]
-method = ["roulette"]
+method = ["elite"]
 # Weight of each selection method in range (0.0, 1.0]. The sum of all weights must be 1.0.
 weight = [1.0]
 
@@ -75,14 +75,14 @@ gap = 0.5
 [finish]
 # Finish methods.
 # List with one or more of: ["time", "max_generations", "structure", "content", "acceptable_fitness"]
-method = ["time", "max_generations"]
+method = ["time", "max_generations", "acceptable_fitness"]
 
 [finish.time]
 # Time limit in seconds, must be in range [10; 120]
-limit = 10
+limit = 120
 
 [finish.max_generations]
-generations = 10
+generations = 50_000
 
 [finish.structure]
 structure = { } # TODO
@@ -91,4 +91,4 @@ structure = { } # TODO
 generations = 10
 
 [finish.acceptable_fitness]
-fitness = 150
+fitness = 30

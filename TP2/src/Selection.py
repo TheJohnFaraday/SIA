@@ -152,7 +152,7 @@ class Selection:
         """
         population_length = len(population)
 
-        population.sort(reverse=True)
+        population.sort(reverse=True, key=lambda player: player.fitness)
 
         if population_sample_length <= population_length:
             return population[0:population_sample_length]

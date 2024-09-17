@@ -3,6 +3,7 @@ import random
 
 from src.configuration import read_configuration
 from src.Cross import Cross
+from src.EVE import EVE
 from src.Finish import Finish
 from src.Mutation import Mutation
 from src.Player import Player, PlayerClass, PlayerAttributes
@@ -19,17 +20,22 @@ def initial_population(
     player_class: PlayerClass, size: int, max_points: int
 ) -> list[Player]:
     def player_generator():
+        height = Decimal(
+            random.uniform(float(Player.MIN_HEIGHT), float(Player.MAX_HEIGHT))
+        )
         attributes = random_numbers_that_sum_n(
             PlayerAttributes.NUMBER_OF_ATTRIBUTES,
             max_points,
         )
+        player_attributes = PlayerAttributes(*attributes)
+        fitness = EVE(
+            height=height, p_class=player_class, attributes=player_attributes
+        ).performance
         return Player(
-            height=Decimal(
-                random.uniform(float(Player.MIN_HEIGHT), float(Player.MAX_HEIGHT))
-            ),
+            height=height,
             p_class=player_class,
-            p_attr=PlayerAttributes(*attributes),
-            fitness=Decimal(1),
+            p_attr=player_attributes,
+            fitness=Decimal(fitness),
         )
 
     return [player_generator() for _ in range(size)]
@@ -54,7 +60,7 @@ if __name__ == "__main__":
     population = initial_population(
         configuration.player, configuration.initial_population, configuration.points
     )
-    while not finish.done(population):
+    while not finish.done(population, generation):
         new_population = []
         generation += 1
 
@@ -76,4 +82,10 @@ if __name__ == "__main__":
         # Replacement
         population = replacement.replace(selected_population, new_population)
 
-        # TODO: History and metrics
+        population.sort(key=lambda player: player.fitness)
+        history.append(population)
+
+    print(f"DONE!!! Reason: {finish.reason}")
+    print(f"Fittest: {population[0]}")
+    print(f"Generations: {generation}")
+    # print(history)
