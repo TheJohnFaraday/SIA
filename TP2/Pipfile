@@ -6,6 +6,8 @@ name = "pypi"
 [packages]
 numpy = "*"
 scipy = "*"
+pandas = "*"
+matplotlib = "*"
 altair = {extras = ["all"], version = "*"}
 
 [dev-packages]
