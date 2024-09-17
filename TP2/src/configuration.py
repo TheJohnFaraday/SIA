@@ -49,7 +49,8 @@ def read_configuration():
             pm=data["genetic"]["parameters"]["mutation"]["pm"],
             is_uniform=is_uniform,
             max_genes=(
-                data["genetic"]["parameters"]["mutation"]["limited_multi"]
+                data["genetic"]["parameters"]["mutation"]["multi"].get(
+                    "max_genes", 1)
                 if genetic_mutation == MutationMethod.MULTI
                 else 1
             ),

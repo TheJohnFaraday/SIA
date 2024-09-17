@@ -33,25 +33,26 @@ p = 0.5
 
 [genetic.parameters.mutation]
 pm = 0.5
-is_uniform = false
-generational_increment = 0.01
-lower_bound = -0.2
-higher_bound = 0.2
+is_uniform = true
+generational_increment = 0.1
+lower_bound = -0.3
+higher_bound = 0.3
 
-[genetic.parameters.mutation.limited_multi]
+[genetic.parameters.mutation.multi]
 # Picks any amount of genes between [1; max_genes] for mutation
-max_genes = 2
+max_genes = 4
 
 [selection]
 # Selection method
 # One of: ["elite", "roulette", "universal", "boltzmann", "deterministic_tournament",
 #          "probabilistic_tournament", "ranking"]
 # method = ["elite"]
-method = ["elite", "roulette", "universal", "boltzmann", "deterministic_tournament",
-          "probabilistic_tournament", "ranking"]
+# method = ["elite", "roulette", "universal", "boltzmann", "deterministic_tournament",
+#          "probabilistic_tournament", "ranking"]
+method = ["roulette"]
 # Weight of each selection method in range (0.0, 1.0]. The sum of all weights must be 1.0.
-# weight = [1.0]
-weight = [0.01, 0.1, 0.51, 0.1, 0.1, 0.1, 0.08]
+weight = [1.0]
+# weight = [0.01, 0.1, 0.51, 0.1, 0.1, 0.1, 0.08]
 
 [selection.parameters]
 # Parameters depend on the selection method. Only those of the chosen selection method will be read.

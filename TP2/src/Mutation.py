@@ -54,7 +54,9 @@ class Mutation:
 
     def update(self):
         if self.configuration.is_uniform:
-            self.pm += self.configuration.generational_increment
+            self.pm -= self.configuration.generational_increment
+            if self.pm < Decimal('0'):
+                self.pm = Decimal('0.1')
 
     def perform(self, player: Player):
         match self.configuration.mutation:
@@ -160,10 +162,9 @@ class Mutation:
         gens_mutated = set()
         for i in range(self.max_genes - 1):
             if rnd.random() > pm:
-                mutation = rnd.uniform(interval[0], interval[1])
-                mut = gen_list[rnd.randint(0, len(gen_list) - 1)]
-                while mut not in gens_mutated:
-                    mut = gen_list[rnd.randint(0, len(gen_list) - 1)]
+                mutation = rnd.uniform(float(interval[0]), float(interval[1]))
+                possible_mut = list(filter(lambda m: m not in gens_mutated, gen_list))
+                mut = possible_mut[rnd.randint(0, len(possible_mut) - 1)]
                 match mut:
                     case GenMutation.HEIGHT:
                         new_height = Decimal(player.height * Decimal(1 + mutation))
