@@ -82,13 +82,21 @@ def calculate_population_variance(population: list[Player]):
     df = pd.DataFrame(
         {
             "height": [float(individual.height) for individual in population],
-            "strength": [float(individual.p_attr.strength) for individual in population],
-            "dexterity": [float(individual.p_attr.dexterity) for individual in population],
+            "strength": [
+                float(individual.p_attr.strength) for individual in population
+            ],
+            "dexterity": [
+                float(individual.p_attr.dexterity) for individual in population
+            ],
             "intelligence": [
                 float(individual.p_attr.intelligence) for individual in population
             ],
-            "endurance": [float(individual.p_attr.endurance) for individual in population],
-            "physique": [float(individual.p_attr.physique) for individual in population],
+            "endurance": [
+                float(individual.p_attr.endurance) for individual in population
+            ],
+            "physique": [
+                float(individual.p_attr.physique) for individual in population
+            ],
         }
     )
 
@@ -222,30 +230,32 @@ def plot_results(df: pd.DataFrame):
 
     def fittest_attributes():
         latest_row = df.iloc[-1]  # Fittest player
-        attributes =[
-        "Height",
-        "Strength",
-        "Dexterity",
-        "Intelligence",
-        "Endurance",
-        "Physique",
-            ]
+        attributes = [
+            "Height",
+            "Strength",
+            "Dexterity",
+            "Intelligence",
+            "Endurance",
+            "Physique",
+        ]
         player_attributes = latest_row[attributes]
 
         fig, ax = plt.subplots()
 
-        bars = ax.bar(attributes, player_attributes, color=CUSTOM_PALETTE[: len(CUSTOM_PALETTE)])
+        bars = ax.bar(
+            attributes, player_attributes, color=CUSTOM_PALETTE[: len(CUSTOM_PALETTE)]
+        )
         for bar in bars:
             height = bar.get_height()
             plt.text(
                 bar.get_x() + bar.get_width() / 2,
                 height,
-                f'{height:.2f}' if int(height) != height else f'{int(height)}',
-                ha='center',
-                va='bottom',
+                f"{height:.2f}" if int(height) != height else f"{int(height)}",
+                ha="center",
+                va="bottom",
                 fontsize=10,
                 color=GREY,
-                fontweight="bold"
+                fontweight="bold",
             )
 
         ax.set_ylabel("")

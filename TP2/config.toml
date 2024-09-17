@@ -46,9 +46,12 @@ max_genes = 2
 # Selection method
 # One of: ["elite", "roulette", "universal", "boltzmann", "deterministic_tournament",
 #          "probabilistic_tournament", "ranking"]
-method = ["elite"]
+#method = ["elite"]
+method = ["elite", "roulette", "universal", "boltzmann", "deterministic_tournament",
+          "probabilistic_tournament", "ranking"]
 # Weight of each selection method in range (0.0, 1.0]. The sum of all weights must be 1.0.
-weight = [1.0]
+# weight = [1.0]
+weight = [0.01, 0.1, 0.51, 0.1, 0.1, 0.1, 0.08]
 
 [selection.parameters]
 # Parameters depend on the selection method. Only those of the chosen selection method will be read.
