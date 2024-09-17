@@ -1,7 +1,7 @@
 # Show / Hide plots
 plot = true
 
-# [Optional] Seed for RNG
+# [Optional] Seed for RNG. Comment it out for randomness, or set an integer for determinism
 #seed = 202409176
 seed = 13202409176
 #seed = 8202409176
@@ -19,7 +19,7 @@ population_sample = 200
 
 [genetic]
 # Crossover strategy. One of: ["one_point", "two_point", "uniform", "annular"]
-crossover = "two_point"
+crossover = "annular"
 # Mutation strategy.
 # Gen must be one of: ["single", "limited_multi", "uniform_multi", "complete"]
 mutation = "single"
@@ -46,7 +46,7 @@ max_genes = 2
 # Selection method
 # One of: ["elite", "roulette", "universal", "boltzmann", "deterministic_tournament",
 #          "probabilistic_tournament", "ranking"]
-#method = ["elite"]
+# method = ["elite"]
 method = ["elite", "roulette", "universal", "boltzmann", "deterministic_tournament",
           "probabilistic_tournament", "ranking"]
 # Weight of each selection method in range (0.0, 1.0]. The sum of all weights must be 1.0.
@@ -81,7 +81,7 @@ gap = 0.5
 # Finish methods.
 # List with one or more of: ["time", "max_generations", "structure", "content", "acceptable_fitness"]
 method = ["time", "max_generations"]
-# Structure and Content threshold
+# Structure and Content threshold for considering that the delta is not an outlier
 threshold = 20
 
 [finish.time]
@@ -89,6 +89,7 @@ threshold = 20
 limit = 10
 
 [finish.max_generations]
+# Maximum number of generations
 generations = 100
 
 [finish.structure]
@@ -98,4 +99,5 @@ delta = 0.90
 generations = 10
 
 [finish.acceptable_fitness]
+# Desired fitness to be reached
 fitness = 30
