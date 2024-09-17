@@ -1,5 +1,5 @@
 # Show / Hide plots
-plot = false
+plot = true
 
 # [Optional] Seed for RNG
 seed = 202409176
@@ -44,7 +44,7 @@ max_genes = 2
 # Selection method
 # One of: ["elite", "roulette", "universal", "boltzmann", "deterministic_tournament",
 #          "probabilistic_tournament", "ranking"]
-method = ["elite"]
+method = ["boltzmann"]
 # Weight of each selection method in range (0.0, 1.0]. The sum of all weights must be 1.0.
 weight = [1.0]
 
@@ -58,14 +58,14 @@ individuals_to_select = 5
 threshold = 0.75
 
 [selection.parameters.boltzmann]
-temperature = 10
+temperature = 100_000
 
 [replacement]
 # Replacement method
 # List with one or more of: ["fill_all", "fill_parent", "generational_gap"]
-method = ["fill_all"]
+method = ["fill_all", "fill_parent", "generational_gap"]
 # Weight of each replacement method in range (0.0, 1.0]. The sum of all weights must be 1.0.
-weight = [1.0]
+weight = [0.45, 0.45, 0.1]
 
 [replacement.parameters]
 # Parameters depend on the replacement method. Only those of the chosen selection method will be read.
@@ -75,16 +75,16 @@ gap = 0.5
 [finish]
 # Finish methods.
 # List with one or more of: ["time", "max_generations", "structure", "content", "acceptable_fitness"]
-method = ["time", "max_generations", "structure"]
+method = ["time", "max_generations"]
 # Structure and Content threshold
 threshold = 20
 
 [finish.time]
 # Time limit in seconds, must be in range [10; 120]
-limit = 120
+limit = 10
 
 [finish.max_generations]
-generations = 50_000
+generations = 50
 
 [finish.structure]
 delta = 0.90

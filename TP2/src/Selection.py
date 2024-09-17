@@ -122,24 +122,24 @@ class Selection:
         """
         selected_population = []
         for idx, random_number in enumerate(random_numbers):
-            print(f"Random number {idx + 1}: {random_number}\n")
+            # print(f"Random number {idx + 1}: {random_number}\n")
 
             # Handle case where random_number is between 0 and the first cumulative_fitness value
             if random_number <= cumulative_fitness[0]:
                 selected_population.append(population[0])
-                print(
-                    f"The random number {random_number} falls into the interval [0, {cumulative_fitness[0]}], "
-                    f"so the selected individual is {population[0]}\n"
-                )
+                # print(
+                #     f"The random number {random_number} falls into the interval [0, {cumulative_fitness[0]}], "
+                #     f"so the selected individual is {population[0]}\n"
+                # )
                 continue
 
             # Iterate over the rest of the intervals
             for i in range(1, len(cumulative_fitness)):
                 if cumulative_fitness[i - 1] < random_number <= cumulative_fitness[i]:
-                    print(
-                        f"The random number {random_number} falls into the interval [{cumulative_fitness[i - 1]}, "
-                        f"{cumulative_fitness[i]}], so the selected individual is {population[i]}\n"
-                    )
+                    # print(
+                    #     f"The random number {random_number} falls into the interval [{cumulative_fitness[i - 1]}, "
+                    #     f"{cumulative_fitness[i]}], so the selected individual is {population[i]}\n"
+                    # )
                     selected_population.append(population[i])
                     break
 
@@ -299,13 +299,13 @@ class Selection:
             tournament = np.random.choice(
                 population, tournament_participants, replace=False
             )
-            print(
-                f"Tournament {i + 1}: Participants: {[player.fitness for player in tournament]}"
-            )
+            # print(
+            #     f"Tournament {i + 1}: Participants: {[player.fitness for player in tournament]}"
+            # )
 
             # Find the winner (individual with the highest fitness)
             winner = max(tournament, key=lambda player: player.fitness)
-            print(f"Winner of tournament {i + 1}: {winner.fitness}\n")
+            # print(f"Winner of tournament {i + 1}: {winner.fitness}\n")
 
             selected_population.append(winner)
 
@@ -329,9 +329,9 @@ class Selection:
         for i in range(population_sample_length):
             participants = np.random.choice(population, 2, replace=False)
 
-            print(
-                f"Tournament {i + 1}: Participants: {[player.fitness for player in participants]}"
-            )
+            # print(
+            #     f"Tournament {i + 1}: Participants: {[player.fitness for player in participants]}"
+            # )
 
             r = np.random.uniform(0, 1)
 
@@ -343,7 +343,7 @@ class Selection:
                 # Select the less fit individual
                 winner = min(participants, key=lambda player: player.fitness)
 
-            print(f"Winner of tournament {i + 1}: {winner.fitness}\n")
+            # print(f"Winner of tournament {i + 1}: {winner.fitness}\n")
 
             selected_population.append(winner)
 
