@@ -1,7 +1,8 @@
-from activation import Activation
+from .Activation import Activation
 import numpy as np
 
-#tanh(x), tanh'(x)= 1 - tanh^2(x)
+
+# tanh(x), tanh'(x)= 1 - tanh^2(x)
 class Tanh(Activation):
     def __init__(self):
         def tanh(x):

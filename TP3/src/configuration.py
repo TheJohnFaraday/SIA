@@ -1,6 +1,7 @@
 import tomllib
 from dataclasses import dataclass
 
+
 @dataclass(frozen=True)
 class And:
     input: (int, int)

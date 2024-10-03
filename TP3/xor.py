@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 from dense import Dense
 from activation_functions import Tanh
-from errors import mse, mse_prime
+from src.errors import mse
 from network import train, predict
 
 #reshape para hacerla de 2x1 (dense layer recibe columnas de input)
@@ -18,7 +18,7 @@ network = [
 ]
 
 # train
-train(network, mse, mse_prime, X, Y, epochs=10000, learning_rate=0.1)
+train(network, mse, X, Y, epochs=10000, learning_rate=0.1)
 
 # decision boundary plot
 points = []

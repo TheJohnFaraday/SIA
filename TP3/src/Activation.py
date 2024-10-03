@@ -1,8 +1,9 @@
-from layer import Layer
+from .Layer import Layer
 import numpy as np
 
+
 class Activation(Layer):
-    #recibe la funcion de activacion y su derivada (activation_prime)
+    # recibe la funcion de activacion y su derivada (activation_prime)
     def __init__(self, activation, activation_prime):
         self.activation = activation
         self.activation_prime = activation_prime

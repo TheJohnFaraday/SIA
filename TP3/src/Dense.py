@@ -4,7 +4,7 @@
 #
 # Todas  esas ecuaciones pasa a matriz (Y = W . X + B) (matrices)
 
-from layer import Layer
+from .Layer import Layer
 import numpy as np
 
 class Dense(Layer):
@@ -19,7 +19,7 @@ class Dense(Layer):
         self.input = input
         #hace el calculo de (Y = W. X + B)
         return np.dot(self.weights, self.input) + self.bias
-    
+
     #dE/dB = dE/dY . dY/dB = dE/dY . 1 = output_gradient
     def backward(self, output_gradient, learning_rate):
         #dE/dW = dE/dY . dY/dW = dE/dY . Xt (X transpuesta)
@@ -30,5 +30,5 @@ class Dense(Layer):
         self.weights -= learning_rate * weights_gradient
         self.bias -= learning_rate * output_gradient
         return input_gradient
-        
-        
+
+
