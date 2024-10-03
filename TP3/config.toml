@@ -1,0 +1,26 @@
+# Show / Hide plots
+plot = true
+
+# [Optional] Seed for RNG. Comment it out for randomness, or set an integer for determinism
+seed = 13202409176
+
+[and]
+input = [[-1,1],[1,-1],[-1,-1],[1,1]]
+output = [-1,-1,-1,1]
+
+[xor]
+input = [[-1,1],[1,-1],[-1,-1],[1,1]]
+output = [1,1,-1,-1]
+
+[single_layer.linear_non_linear]
+path = "./datasets/TP3-ej2-conjunto.csv"
+# Mutation strategy.
+
+[multi_layer.parity_discrimination]
+path = "./datasets/TP3-ej3-digitos.txt"
+
+[multi_layer.digit_discrimination]
+noise_val=0.0
+
+[multi_layer.mnist]
+path="./datasets/mnist.npz"
