@@ -3,12 +3,20 @@ import pandas as pd
 import errors
 
 
+def unnormalize(y, min, max):
+    return ((y + 1) * (max - min) / 2) + min
+
+
+def normalize(y, min, max):
+    return (2 * (y - min) / (max - min)) - 1
+
+
 def tanh_activation(x, beta):
     return np.tanh(beta * x)
 
 
 def tanh_prime(x, beta):
-    return beta * (1 - np.tanh(x) ** 2)
+    return beta * (1 - np.tanh(beta * x) ** 2)
 
 
 def linear_activation(x, beta):
@@ -30,7 +38,7 @@ class LinearPerceptron:
         error_function,
     ):
         # initialize weights w to small random values
-        self.weights = np.random.rand(input_size) * 0.01
+        self.weights = np.random.rand(input_size)
         # initialize bias to small random value
         self.bias = np.random.rand() * 0.01
         # set learning rate
@@ -77,24 +85,30 @@ if __name__ == "__main__":
             map(lambda row: [row[1]["x1"], row[1]["x2"], row[1]["x3"]], df.iterrows())
         )  # (index, row)
     )
-    expected = np.array(list(map(lambda row: row[1]["y"], df.iterrows())))
-
+    expected = list(map(lambda row: row[1]["y"], df.iterrows()))
+    expected_norm = np.array(
+        list(map(lambda y: normalize(y, np.min(expected), np.max(expected)), expected))
+    )
     # Perceptron Lineal
     linear_perceptron = LinearPerceptron(
-        len(input[0]), 0.0001, linear_activation, linear_prime, 0.2, errors.MSE()
+        len(input[0]), 0.01, linear_activation, linear_prime, 0.2, errors.MSE()
     )
-    linear_perceptron.train(input, expected, epochs=10000)
+    linear_perceptron.train(input, expected_norm, epochs=1000000)
 
     # TODO evaluar con los datos de prueba
     for x, y in zip(input, expected):
         pred, _ = linear_perceptron.predict(x)
-        print(f"Lineal: Entrada: {x}, Predicción: {pred}, Valor Esperado: {y}")
+        print(
+            f"Lineal: Entrada: {x}, Predicción: {unnormalize(pred, np.min(expected), np.max(expected))}, Valor Esperado: {y}"
+        )
 
     non_linear_perceptron = LinearPerceptron(
-        len(input[0]), 0.0001, tanh_activation, tanh_prime, 0.2, errors.MSE()
+        len(input[0]), 0.01, tanh_activation, tanh_prime, 0.2, errors.MSE()
     )
-    non_linear_perceptron.train(input, expected, epochs=10000)
+    non_linear_perceptron.train(input, expected_norm, epochs=1000000)
 
     for x, y in zip(input, expected):
         pred, _ = non_linear_perceptron.predict(x)
-        print(f"No Lineal: Entrada: {x}, Predicción: {pred}, Valor Esperado: {y}")
+        print(
+            f"No Lineal: Entrada: {x}, Predicción: {unnormalize(pred, np.min(expected), np.max(expected))}, Valor Esperado: {y}"
+        )
