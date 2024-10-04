@@ -1,11 +1,14 @@
 import numpy as np
+import errors
 
-def step_activation(x):
-    # TODO chequear si el else es 0 o -1
-    return 1 if x > 0 else -1
+def sigmoid_activation(x):
+    return 1 / (1 + np.exp(-x))
 
-class SimplePerceptron:
-    def __init__(self, input_size, learning_rate, activation_function):
+def linear_activation(x):
+    return x
+
+class LinearPerceptron:
+    def __init__(self, input_size, learning_rate, activation_function, error_function):
         # initialize weights w to small random values
         self.weights = np.random.rand(input_size) * 0.01
         # initialize bias to small random value
@@ -13,6 +16,7 @@ class SimplePerceptron:
         # set learning rate
         self.learning_rate = learning_rate
         self.activation_function = activation_function
+        self.error_function = error_function
 
 
     def predict(self, x):
@@ -38,25 +42,25 @@ class SimplePerceptron:
             #if total_error < 0.01:
              #   break
 
+    def test(self, data):
+       #TODO probar si aprendio correctamente
+       pass
 
 if __name__ == "__main__":
-    #AND:
-    and_input = np.array([[-1, 1], [1, -1], [-1, -1], [1, 1]])
-    and_expected = np.array([-1, -1, -1, 1])
-    and_perceptron = SimplePerceptron(2, 0.1, step_activation)
-    and_perceptron.train(and_input, and_expected, epochs=100)
+    #TODO cambiar por datos csv y ver como se divide:
+    linear_input = np.array([[-1, 1], [1, -1], [-1, -1], [1, 1]])
+    linear_expected = np.array([-1, -1, -1, 1]) 
 
-    for x, y in zip(and_input, and_expected):
-        pred = and_perceptron.predict(x)
-        print(f"Entrada: {x}, Predicción: {pred}, Valor Esperado: {y}")
+    #Perceptron Lineal
+    linear_perceptron = LinearPerceptron(2, 0.1, linear_activation, errors.MSE())
+    linear_perceptron.train(linear_input, linear_expected, epochs=100)
 
-    '''#XOR:
-    xor_input = np.array([[-1, 1], [1, -1], [-1, -1], [1, 1]])
-    xor_expected = np.array([1, 1, -1, -1])
-    xor_perceptron = SimplePerceptron(2, 0.1, step_activation)
-    xor_perceptron.train(xor_input, xor_expected, epochs=100)
+    #TODO evaluar con los datos de prueba
 
-    for x, y in zip(xor_input, xor_expected):
-        pred = xor_perceptron.predict(x)
-        print(f"Entrada: {x}, Predicción: {pred}, Valor Esperado: {y}")'''
-    
+    #Perceptron No Lineal
+    #TODO cambiar por datos csv y ver como se divide:
+    non_linear_input = np.array([[-1, 1], [1, -1], [-1, -1], [1, 1]])
+    non_linear_expected = np.array([-1, -1, -1, 1])
+
+    non_linear_perceptron = LinearPerceptron(2, 0.1, sigmoid_activation, errors.MSE())
+    non_linear_perceptron.train(non_linear_input, non_linear_expected, epochs=100)
