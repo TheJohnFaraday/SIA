@@ -5,14 +5,14 @@ def step_activation(x):
     return 1 if x > 0 else -1
 
 class SimplePerceptron:
-    def __init__(self, input_size, learning_rate, activation_function):
+    def __init__(self, input_size, learning_rate):
         # initialize weights w to small random values
         self.weights = np.random.rand(input_size) * 0.01
         # initialize bias to small random value
         self.bias = np.random.rand() * 0.01
         # set learning rate
         self.learning_rate = learning_rate
-        self.activation_function = activation_function
+        self.activation_function = step_activation
 
 
     def predict(self, x):
@@ -42,7 +42,7 @@ if __name__ == "__main__":
     #AND:
     and_input = np.array([[-1, 1], [1, -1], [-1, -1], [1, 1]])
     and_expected = np.array([-1, -1, -1, 1])
-    and_perceptron = SimplePerceptron(2, 0.001, step_activation)
+    and_perceptron = SimplePerceptron(len(and_input[0]), 0.001)
     and_perceptron.train(and_input, and_expected, epochs=100)
 
     for x, y in zip(and_input, and_expected):
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     #XOR:
     xor_input = np.array([[-1, 1], [1, -1], [-1, -1], [1, 1]])
     xor_expected = np.array([1, 1, -1, -1])
-    xor_perceptron = SimplePerceptron(2, 0.001, step_activation)
+    xor_perceptron = SimplePerceptron(len(xor_input[0]), 0.001)
     xor_perceptron.train(xor_input, xor_expected, epochs=10000)
 
     for x, y in zip(xor_input, xor_expected):

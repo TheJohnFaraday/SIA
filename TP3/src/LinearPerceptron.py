@@ -1,14 +1,12 @@
 import numpy as np
 import pandas as pd
-import errors
+from enum import Enum
 
 
-def unnormalize(y, min, max):
-    return ((y + 1) * (max - min) / 2) + min
-
-
-def normalize(y, min, max):
-    return (2 * (y - min) / (max - min)) - 1
+class ActivationFunction(Enum):
+    TANH = "tanh"
+    LOGISTIC = "logistic"
+    LINEAR = "linear"
 
 
 def tanh_activation(x, beta):
@@ -16,7 +14,15 @@ def tanh_activation(x, beta):
 
 
 def tanh_prime(x, beta):
-    return beta * (1 - np.tanh(beta * x) ** 2)
+    return beta * (1 - tanh_activation(x, beta) ** 2)
+
+
+def logistic_activation(x, beta):
+    return 1 / (1 + np.exp(-2 * beta * x))
+
+
+def logistic_prime(x, beta):
+    2 * beta * logistic_activation(x, beta)(1 - logistic_activation(x, beta))
 
 
 def linear_activation(x, beta):
@@ -33,7 +39,6 @@ class LinearPerceptron:
         input_size,
         learning_rate,
         activation_function,
-        activation_prime,
         beta,
         error_function,
     ):
@@ -43,8 +48,16 @@ class LinearPerceptron:
         self.bias = np.random.rand() * 0.01
         # set learning rate
         self.learning_rate = learning_rate
-        self.activation_function = activation_function
-        self.activation_prime = activation_prime
+        match activation_function:
+            case ActivationFunction.TANH:
+                self.activation_function = tanh_activation
+                self.activation_prime = tanh_prime
+            case ActivationFunction.LOGISTIC:
+                self.activation_function = logistic_activation
+                self.activation_prime = logistic_prime
+            case ActivationFunction.LINEAR:
+                self.activation_function = linear_activation
+                self.activation_prime = linear_prime
         self.beta = beta
         self.error_function = error_function
 
@@ -75,40 +88,3 @@ class LinearPerceptron:
     def test(self, data):
         # TODO probar si aprendio correctamente
         pass
-
-
-if __name__ == "__main__":
-    # TODO cambiar por datos csv y ver como se divide:
-    df = pd.read_csv("TP3/datasets/TP3-ej2-conjunto.csv", header=0)
-    input = np.array(
-        list(
-            map(lambda row: [row[1]["x1"], row[1]["x2"], row[1]["x3"]], df.iterrows())
-        )  # (index, row)
-    )
-    expected = list(map(lambda row: row[1]["y"], df.iterrows()))
-    expected_norm = np.array(
-        list(map(lambda y: normalize(y, np.min(expected), np.max(expected)), expected))
-    )
-    # Perceptron Lineal
-    linear_perceptron = LinearPerceptron(
-        len(input[0]), 0.01, linear_activation, linear_prime, 0.2, errors.MSE()
-    )
-    linear_perceptron.train(input, expected_norm, epochs=1000000)
-
-    # TODO evaluar con los datos de prueba
-    for x, y in zip(input, expected):
-        pred, _ = linear_perceptron.predict(x)
-        print(
-            f"Lineal: Entrada: {x}, Predicción: {unnormalize(pred, np.min(expected), np.max(expected))}, Valor Esperado: {y}"
-        )
-
-    non_linear_perceptron = LinearPerceptron(
-        len(input[0]), 0.01, tanh_activation, tanh_prime, 0.2, errors.MSE()
-    )
-    non_linear_perceptron.train(input, expected_norm, epochs=1000000)
-
-    for x, y in zip(input, expected):
-        pred, _ = non_linear_perceptron.predict(x)
-        print(
-            f"No Lineal: Entrada: {x}, Predicción: {unnormalize(pred, np.min(expected), np.max(expected))}, Valor Esperado: {y}"
-        )
