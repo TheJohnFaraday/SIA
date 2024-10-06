@@ -5,6 +5,7 @@ import numpy as np
 class Activation(Layer):
     # recibe la funcion de activacion y su derivada (activation_prime)
     def __init__(self, activation, activation_prime):
+        super().__init__()
         self.activation = activation
         self.activation_prime = activation_prime
 

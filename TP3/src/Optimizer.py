@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import numpy as np
 
+
 class Optimizer(ABC):
     @abstractmethod
     def update(self, weights, bias, weights_gradient, bias_gradient):
