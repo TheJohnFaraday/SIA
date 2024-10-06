@@ -28,7 +28,7 @@ class Configuration:
 
 
 def read_configuration():
-    with open("TP3/config.toml", "rb") as f:
+    with open("config.toml", "rb") as f:
         data = tomllib.load(f, parse_float=float)
 
         and_input = np.array(data["and"]["input"])

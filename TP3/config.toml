@@ -18,15 +18,15 @@ input = [[-1,1],[1,-1],[-1,-1],[1,1]]
 output = [1,1,-1,-1]
 
 [single_layer.linear_non_linear]
-path = "TP3/datasets/TP3-ej2-conjunto.csv"
+path = "datasets/TP3-ej2-conjunto.csv"
 # Activation function: tanh or logistic
 activation_function = "tanh"
 
 [multi_layer.parity_discrimination]
-path = "TP3/datasets/TP3-ej3-digitos.txt"
+path = "datasets/TP3-ej3-digitos.txt"
 
 [multi_layer.digit_discrimination]
 noise_val=0.0
 
 [multi_layer.mnist]
-path="TP3/datasets/mnist.npz"
+path="datasets/mnist.npz"
