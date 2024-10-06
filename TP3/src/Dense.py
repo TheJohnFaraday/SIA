@@ -6,14 +6,17 @@
 
 from .Layer import Layer
 import numpy as np
+from .Optimizer import GradientDescent
 
 class Dense(Layer):
     #input_size = numero de neuronas en el input (idem output_size)
-    def __init__(self, input_size, output_size):
+    def __init__(self, input_size, output_size, optimizer=GradientDescent(0.01)):
         #matriz: W
         self.weights = np.random.randn(output_size, input_size)
         #matriz: B
         self.bias = np.random.randn(output_size, 1)
+        
+        self.optimizer = optimizer
 
     def forward(self, input):
         self.input = input
@@ -27,8 +30,7 @@ class Dense(Layer):
         #dE/dX = dE/dY . dY/dX = Wt . dE/dY
         input_gradient = np.dot(self.weights.T, output_gradient)
         #update de los parametros:
-        self.weights -= learning_rate * weights_gradient
-        self.bias -= learning_rate * output_gradient
+        self.weights, self.bias = self.optimizer.update(self.weights, self.bias, weights_gradient, output_gradient)
         return input_gradient
 
 
