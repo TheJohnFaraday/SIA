@@ -1,17 +1,14 @@
-import os
 import numpy as np
 import matplotlib.pyplot as plt
 
 from src.configuration import Configuration
 
 from src.Dense import Dense
-from src.activation_functions import Tanh, Logistic
 from src.errors import MSE
 
 from src.MultiLayerPerceptron import MultiLayerPerceptron
 from src.Optimizer import GradientDescent
 from src.Training import Online
-from src.utils import unnormalize, unnormalize2
 
 
 def is_odd(config: Configuration):
@@ -43,13 +40,9 @@ def is_odd(config: Configuration):
 
 def which_number(config: Configuration):
     X = np.reshape(config.multilayer.digits_input, (10, 35, 1))
-    Y = np.reshape(config.multilayer.digits_output_norm, (10, 1, 1))
+    Y = np.reshape(config.multilayer.digits_output, (10, 10, 1))
     network = [
-        Dense(35, 70, GradientDescent(config.learning_rate)),
-        config.multilayer.digits_discrimination_activation_function,
-        Dense(70, 35, GradientDescent(config.learning_rate)),
-        config.multilayer.digits_discrimination_activation_function,
-        Dense(35, 1, GradientDescent(config.learning_rate)),
+        Dense(35, 10, GradientDescent(config.learning_rate)),
         config.multilayer.digits_discrimination_activation_function,
     ]
 
@@ -66,32 +59,4 @@ def which_number(config: Configuration):
     for x, y in zip(X, config.multilayer.digits_output):
         output = MultiLayerPerceptron.predict(new_network, x)
         print(f"Number Expected Output: {y}")
-        print(f"Number Output: {unnormalize2(output, 0, 9)}")
-
-
-def xor(config: Configuration):
-    X = np.reshape(config.xor_input, (4, 2, 1))
-    Y = np.reshape(config.xor_output, (4, 1, 1))
-
-    network = [
-        Dense(2, 3, GradientDescent(config.learning_rate)),
-        Tanh(config.beta),
-        Dense(3, 1, GradientDescent(config.learning_rate)),
-        Tanh(config.beta),
-    ]
-
-    mlp = MultiLayerPerceptron(
-        Online(MultiLayerPerceptron.predict),
-        network,
-        MSE(),
-        config.epoch,
-        config.learning_rate,
-    )
-
-    new_network = mlp.train(X, Y)
-
-    for x, y in zip(X, Y):
-        print(f"XOR Input: {x}")
-        output = MultiLayerPerceptron.predict(new_network, x)
-        print(f"XOR Expected Output: {y}")
-        print(f"XOR Output: {output}")
+        print(f"Number Output: {output / np.sqrt(np.sum(output**2))}")

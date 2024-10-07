@@ -12,7 +12,6 @@ from .activation_functions import Tanh, Logistic
 class MultiLayer:
     digits_input: np.ndarray
     digits_output: np.ndarray
-    digits_output_norm: np.ndarray
     parity_discrimination_activation_function: Activation
     digits_discrimination_activation_function: Activation
     noise_val: float
@@ -123,18 +122,17 @@ def read_configuration():
             digits_input.append(matrix)
 
         digits_input = np.array(digits_input)
-        digits_output = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-        digits_output_norm = np.array(
-            list(
-                map(
-                    lambda y: normalize2(
-                        y,
-                        0,
-                        9,
-                    ),
-                    digits_output,
-                )
-            )
+        digits_output = np.array(
+            [[1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+             [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+             [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+             [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+             [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+             [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+             [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+             [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+             [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+             [0, 0, 0, 0, 0, 0, 0, 0, 0, 1]]
         )
 
         parity_discrimination_activation_function = data["multi_layer"][
@@ -168,7 +166,6 @@ def read_configuration():
         multilayer_configuration = MultiLayer(
             digits_input=digits_input,
             digits_output=digits_output,
-            digits_output_norm=digits_output_norm,
             parity_discrimination_activation_function=parity_discrimination_activation_function,
             digits_discrimination_activation_function=digits_discrimination_activation_function,
             mnist_path=mnist_path,
