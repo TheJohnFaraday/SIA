@@ -9,6 +9,7 @@ from src.errors import MSE
 from src.MultiLayerPerceptron import MultiLayerPerceptron
 from src.Optimizer import GradientDescent
 from src.Training import Online
+from src.utils import normalize2
 
 
 def is_odd(config: Configuration):
@@ -32,10 +33,41 @@ def is_odd(config: Configuration):
 
     new_network = mlp.train(X, Y)
 
-    for x, y in zip(X, is_odd_output):
+    X_with_noise = list(
+        map(
+            lambda block: list(
+                map(
+                    lambda row: list(
+                        map(lambda x: x + np.random.normal(0, config.noise_val), row)
+                    ),
+                    block,
+                )
+            ),
+            config.multilayer.digits_input,
+        ),
+    )
+
+    X_with_noise = np.reshape(
+        list(
+            map(
+                lambda block: list(
+                    map(
+                        lambda row: list(
+                            map(lambda x: 0 if x < 0 else (1 if x > 1 else x), row)
+                        ),
+                        block,
+                    )
+                ),
+                X_with_noise,
+            )
+        ),
+        (10, 35, 1),
+    )
+
+    for x, y in zip(X_with_noise, is_odd_output):
         output = MultiLayerPerceptron.predict(new_network, x)
         print(f"Is Odd Expected Output: {y}")
-        print(f"Is Odd Output: {output}")
+        print(f"Is Odd Output:\n{output}")
 
 
 def which_number(config: Configuration):
@@ -56,7 +88,38 @@ def which_number(config: Configuration):
 
     new_network = mlp.train(X, Y)
 
-    for x, y in zip(X, config.multilayer.digits_output):
+    X_with_noise = list(
+        map(
+            lambda block: list(
+                map(
+                    lambda row: list(
+                        map(lambda x: x + np.random.normal(0, config.noise_val), row)
+                    ),
+                    block,
+                )
+            ),
+            config.multilayer.digits_input,
+        ),
+    )
+
+    X_with_noise = np.reshape(
+        list(
+            map(
+                lambda block: list(
+                    map(
+                        lambda row: list(
+                            map(lambda x: 0 if x < 0 else (1 if x > 1 else x), row)
+                        ),
+                        block,
+                    )
+                ),
+                X_with_noise,
+            )
+        ),
+        (10, 35, 1),
+    )
+
+    for x, y in zip(X_with_noise, config.multilayer.digits_output):
         output = MultiLayerPerceptron.predict(new_network, x)
         print(f"Number Expected Output: {y}")
-        print(f"Number Output: {output / np.sqrt(np.sum(output**2))}")
+        print(f"Number Output:\n{output}")

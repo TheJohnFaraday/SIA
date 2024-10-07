@@ -159,7 +159,7 @@ def read_configuration():
             case _:
                 digits_discrimination_activation_function = Tanh(beta)
 
-        noise_val = data["multi_layer"]["digit_discrimination"].get("noise_val", 0.0)
+        noise_val = data.get("noise_val", 0.0)
 
         mnist_path = data["multi_layer"].get("mnist", "./datasets/mnist.npz")
 
