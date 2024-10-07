@@ -60,7 +60,7 @@ class Batch(Training):
                 for layer in reversed(network):
                     output_gradient = layer.backward(output_gradient, learning_rate)
 
-                print(f"Epoch {epoch + 1}/{epochs} - loss: {loss}")
+                #print(f"Epoch {epoch + 1}/{epochs} - loss: {loss}")
 
         return network
 
@@ -100,7 +100,7 @@ class MiniBatch(Training):
                 for layer in reversed(network):
                     output_gradient = layer.backward(output_gradient, learning_rate)
 
-                print(f"Epoch {epoch + 1}/{epochs} - loss: {loss}")
+                # print(f"Epoch {epoch + 1}/{epochs} - loss: {loss}")
 
         return network
 
@@ -132,6 +132,6 @@ class Online(Training):
                 for layer in reversed(network):
                     output_gradient = layer.backward(output_gradient, learning_rate)
 
-                print(f"Epoch {epoch + 1}/{epochs} - loss: {loss}")
+                # print(f"Epoch {epoch + 1}/{epochs} - loss: {loss}")
 
         return network

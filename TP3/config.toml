@@ -3,7 +3,7 @@ plot = true
 
 # [Optional] Seed for RNG. Comment it out for randomness, or set an integer for determinism
 seed = 20241006
-learning_rate = 0.001
+learning_rate = 0.1
 beta = 0.4
 train_proportion = 0.7
 epoch=10000
@@ -19,14 +19,18 @@ output = [1,1,-1,-1]
 
 [single_layer.linear_non_linear]
 path = "datasets/TP3-ej2-conjunto.csv"
-# Activation function: tanh or logistic
+# Activation function: 'tanh' or 'logistic'
 activation_function = "tanh"
 
 [multi_layer.parity_discrimination]
 path = "datasets/TP3-ej3-digitos.txt"
+# Activation function: 'tanh' or 'logistic'
+activation_function = "logistic"
 
 [multi_layer.digit_discrimination]
 noise_val=0.0
+# Activation function: 'tanh' or 'logistic'
+activation_function = "logistic"
 
 [multi_layer.mnist]
 path="datasets/mnist.npz"

@@ -11,18 +11,18 @@ from src.errors import MSE
 from src.MultiLayerPerceptron import MultiLayerPerceptron
 from src.Optimizer import GradientDescent
 from src.Training import Online
-from src.utils import unnormalize
+from src.utils import unnormalize, unnormalize2
 
 
 def is_odd(config: Configuration):
     is_odd_output = np.array([0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
-    X = np.reshape(config.digits_input, (10, 35, 1))
+    X = np.reshape(config.multilayer.digits_input, (10, 35, 1))
     Y = np.reshape(is_odd_output, (10, 1, 1))
     network = [
         Dense(35, 70, GradientDescent(config.learning_rate)),
-        Logistic(config.beta),
+        config.multilayer.parity_discrimination_activation_function,
         Dense(70, 1, GradientDescent(config.learning_rate)),
-        Logistic(config.beta),
+        config.multilayer.parity_discrimination_activation_function,
     ]
 
     mlp = MultiLayerPerceptron(
@@ -42,13 +42,15 @@ def is_odd(config: Configuration):
 
 
 def which_number(config: Configuration):
-    X = np.reshape(config.digits_input, (10, 35, 1))
-    Y = np.reshape(config.digits_output_norm, (10, 1, 1))
+    X = np.reshape(config.multilayer.digits_input, (10, 35, 1))
+    Y = np.reshape(config.multilayer.digits_output_norm, (10, 1, 1))
     network = [
         Dense(35, 70, GradientDescent(config.learning_rate)),
-        Tanh(config.beta),
-        Dense(70, 1, GradientDescent(config.learning_rate)),
-        Tanh(config.beta),
+        config.multilayer.digits_discrimination_activation_function,
+        Dense(70, 35, GradientDescent(config.learning_rate)),
+        config.multilayer.digits_discrimination_activation_function,
+        Dense(35, 1, GradientDescent(config.learning_rate)),
+        config.multilayer.digits_discrimination_activation_function,
     ]
 
     mlp = MultiLayerPerceptron(
@@ -61,10 +63,10 @@ def which_number(config: Configuration):
 
     new_network = mlp.train(X, Y)
 
-    for x, y in zip(X, Y):
+    for x, y in zip(X, config.multilayer.digits_output):
         output = MultiLayerPerceptron.predict(new_network, x)
-        print(f"Is Odd Expected Output: {y}")
-        print(f"Is Odd Output: {unnormalize(output, 0, 9)}")
+        print(f"Number Expected Output: {y}")
+        print(f"Number Output: {unnormalize2(output, 0, 9)}")
 
 
 def xor(config: Configuration):

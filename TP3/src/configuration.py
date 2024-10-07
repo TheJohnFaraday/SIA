@@ -2,12 +2,19 @@ import numpy as np
 import pandas as pd
 import tomllib
 from dataclasses import dataclass
-from .utils import key_from_enum_value_with_fallback, normalize
+from .utils import key_from_enum_value_with_fallback, normalize, normalize2
 from .LinearPerceptron import ActivationFunction as LinearNonLinearActivationFunction
+from .Activation import Activation
+from .activation_functions import Tanh, Logistic
 
 
 @dataclass(frozen=True)
 class MultiLayer:
+    digits_input: np.ndarray
+    digits_output: np.ndarray
+    digits_output_norm: np.ndarray
+    parity_discrimination_activation_function: Activation
+    digits_discrimination_activation_function: Activation
     noise_val: float
     mnist_path: str
     momentum: float
@@ -33,9 +40,6 @@ class Configuration:
     linear_non_linear_output_norm: np.ndarray
     linear_non_linear_activation_function: LinearNonLinearActivationFunction
     multilayer: MultiLayer
-    digits_input: np.ndarray
-    digits_output: np.ndarray
-    digits_output_norm: np.ndarray
     mnist_path: str
     noise_val: float
     random_seed: int | None
@@ -45,6 +49,7 @@ def read_configuration():
     with open("config.toml", "rb") as f:
         data = tomllib.load(f, parse_float=float)
 
+        beta = float(data.get("beta", 0.4))
         and_input = np.array(data["and"]["input"])
         and_output = np.array(data["and"]["output"])
 
@@ -122,7 +127,7 @@ def read_configuration():
         digits_output_norm = np.array(
             list(
                 map(
-                    lambda y: normalize(
+                    lambda y: normalize2(
                         y,
                         0,
                         9,
@@ -132,11 +137,40 @@ def read_configuration():
             )
         )
 
+        parity_discrimination_activation_function = data["multi_layer"][
+            "parity_discrimination"
+        ].get("activation_function", "tanh")
+
+        match parity_discrimination_activation_function:
+            case "logistic":
+                parity_discrimination_activation_function = Logistic(beta)
+            case "tanh":
+                parity_discrimination_activation_function = Tanh(beta)
+            case _:
+                parity_discrimination_activation_function = Tanh(beta)
+
+        digits_discrimination_activation_function = data["multi_layer"][
+            "parity_discrimination"
+        ].get("activation_function", "tanh")
+
+        match digits_discrimination_activation_function:
+            case "logistic":
+                digits_discrimination_activation_function = Logistic(beta)
+            case "tanh":
+                digits_discrimination_activation_function = Tanh(beta)
+            case _:
+                digits_discrimination_activation_function = Tanh(beta)
+
         noise_val = data["multi_layer"]["digit_discrimination"].get("noise_val", 0.0)
 
         mnist_path = data["multi_layer"].get("mnist", "./datasets/mnist.npz")
 
         multilayer_configuration = MultiLayer(
+            digits_input=digits_input,
+            digits_output=digits_output,
+            digits_output_norm=digits_output_norm,
+            parity_discrimination_activation_function=parity_discrimination_activation_function,
+            digits_discrimination_activation_function=digits_discrimination_activation_function,
             mnist_path=mnist_path,
             noise_val=noise_val,
             momentum=data["multi_layer"]["momentum"].get("alpha", 0.9),
@@ -148,7 +182,7 @@ def read_configuration():
         configuration = Configuration(
             plot=bool(data["plot"]),
             learning_rate=float(data.get("learning_rate", 0.01)),
-            beta=float(data.get("beta", 0.4)),
+            beta=beta,
             epoch=int(data.get("epoch", 10000)),
             train_proportion=float(data.get("train_proportion", 0.7)),
             and_input=and_input,
@@ -159,9 +193,6 @@ def read_configuration():
             linear_non_linear_output=linear_non_linear_output,
             linear_non_linear_output_norm=linear_non_linear_output_norm,
             linear_non_linear_activation_function=linear_non_linear_activation_function,
-            digits_input=digits_input,
-            digits_output=digits_output,
-            digits_output_norm=digits_output_norm,
             mnist_path=mnist_path,
             noise_val=noise_val,
             random_seed=data.get("seed", None),
