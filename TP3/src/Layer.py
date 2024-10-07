@@ -13,7 +13,7 @@
 
 class Layer:
     def __init__(self):
-        self.input = None
+        self.input_matrix = None
         self.output = None
 
     def forward(self, input_matrix):

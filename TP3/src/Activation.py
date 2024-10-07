@@ -9,9 +9,9 @@ class Activation(Layer):
         self.activation = activation
         self.activation_prime = activation_prime
 
-    def forward(self, input):
-        self.input = input
-        return self.activation(self.input)
+    def forward(self, input_matrix):
+        self.input_matrix = input_matrix
+        return self.activation(self.input_matrix)
 
     def backward(self, output_gradient, learning_rate):
-        return np.multiply(output_gradient, self.activation_prime(self.input))
+        return np.multiply(output_gradient, self.activation_prime(self.input_matrix))

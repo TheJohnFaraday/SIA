@@ -120,15 +120,15 @@ class Online(Training):
         learning_rate: float = 0.1,
     ):
         for epoch in range(epochs):
-            for x, _ in zip(input_matrix, expected_output_matrix):
+            for x, y in zip(input_matrix, expected_output_matrix):
                 # forward
                 output = self.predict(network, x)
 
                 # error
-                loss = error.error(expected_output_matrix, output)
+                loss = error.error(y, output)
 
                 # backward
-                output_gradient = error.error_prime(expected_output_matrix, output)
+                output_gradient = error.error_prime(y, output)
                 for layer in reversed(network):
                     output_gradient = layer.backward(output_gradient, learning_rate)
 
