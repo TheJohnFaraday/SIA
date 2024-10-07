@@ -7,8 +7,20 @@ from .LinearPerceptron import ActivationFunction as LinearNonLinearActivationFun
 
 
 @dataclass(frozen=True)
+class MultiLayer:
+    parity_discrimination_path: str
+    noise_val: float
+    mnist_path: str
+    momentum: float
+    beta1: float
+    beta2: float
+    epsilon: float
+
+
+@dataclass(frozen=True)
 class Configuration:
     plot: bool
+    random_seed: int | None
     learning_rate: float
     beta: float
     epoch: int
@@ -21,11 +33,7 @@ class Configuration:
     linear_non_linear_output: np.ndarray
     linear_non_linear_output_norm: np.ndarray
     linear_non_linear_activation_function: LinearNonLinearActivationFunction
-    parity_discrimination_path: str
-    mnist_path: str
-    noise_val: float
-    random_seed: int | None
-    momentum: float
+    multilayer: MultiLayer
 
 
 def read_configuration():
@@ -91,6 +99,16 @@ def read_configuration():
 
         mnist_path = data["multi_layer"].get("mnist", "./datasets/mnist.npz")
 
+        multilayer_configuration = MultiLayer(
+            parity_discrimination_path=parity_discrimination_path,
+            mnist_path=mnist_path,
+            noise_val=noise_val,
+            momentum=data["multi_layer"]["momentum"].get("alpha", 0.9),
+            beta1=data["multi_layer"]["adam"].get("beta1", 0.9),
+            beta2=data["multi_layer"]["adam"].get("beta2", 0.99),
+            epsilon=data["multi_layer"]["adam"].get("epsilon", 1e-8),
+        )
+
         configuration = Configuration(
             plot=bool(data["plot"]),
             learning_rate=float(data.get('learning_rate', 0.01)),
@@ -105,11 +123,8 @@ def read_configuration():
             linear_non_linear_output=linear_non_linear_output,
             linear_non_linear_output_norm=linear_non_linear_output_norm,
             linear_non_linear_activation_function=linear_non_linear_activation_function,
-            parity_discrimination_path=parity_discrimination_path,
-            mnist_path=mnist_path,
-            noise_val=noise_val,
             random_seed=data.get("seed", None),
-            momentum=data["multi_layer"]["momentum"].get("alpha", 0.9),
+            multilayer=multilayer_configuration
         )
 
         return configuration

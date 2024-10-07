@@ -27,8 +27,10 @@ class Momentum(Optimizer):
         self.deltaBias = None
 
     def update(self, weights, bias, weights_gradient, bias_gradient):
+        # First time init
         if self.deltaWeights is None:
             self.deltaWeights = np.zeros(weights.shape)
+        if self.deltaBias is None:
             self.deltaBias = np.zeros(bias.shape)
 
         self.deltaWeights = (
@@ -47,32 +49,60 @@ class Momentum(Optimizer):
 class Adam(Optimizer):
 
     # good default settings:
-    def __init__(self, learning_rate, beta1=0.9, beta2=0.999, epsilon=1e-8):
+    def __init__(
+        self, learning_rate: float, beta1: float, beta2: float, epsilon: float
+    ):
         self.learning_rate = learning_rate
         self.beta1 = beta1
         self.beta2 = beta2
-        self.mw = None
-        self.vw = None
-        self.mb = None
-        self.vb = None
+        self.epsilon = epsilon
+
+        self.m_weights = None
+        self.v_weights = None
+        self.m_bias = None
+        self.v_bias = None
         self.t = 0
 
     def update(self, weights, bias, weights_gradient, bias_gradient):
+        # First time init
+        if self.m_weights is None:
+            self.m_weights = np.zeros(weights.shape)
+        if self.v_weights is None:
+            self.v_weights = np.zeros(weights.shape)
+        if self.m_bias is None:
+            self.m_bias = np.zeros(bias.shape)
+        if self.v_bias is None:
+            self.v_bias = np.zeros(bias.shape)
+
         self.t += 1
 
-        self.mw = self.beta1 * self.mw + (1 - self.beta1) * weights_gradient
-        self.vw = self.beta2 * self.vw + (1 - self.beta2) * weights_gradient**2
+        # Gradients: parameters
 
-        self.mw_hat = self.mw / (1 - self.beta1**self.t)
-        self.vw_hat = self.vw / (1 - self.beta2**self.t)
+        # Biased first moment estimation
+        self.m_weights = (
+            self.beta1 * self.m_weights + (1 - self.beta1) * weights_gradient
+        )
+        self.m_bias = self.beta1 * self.m_bias + (1 - self.beta1) * bias_gradient
 
-        self.mb = self.beta1 * self.mb + (1 - self.beta1) * bias_gradient
-        self.vb = self.beta2 * self.vb + (1 - self.beta2) * bias_gradient**2
+        # Biased second moment estimation
+        self.v_weights = self.beta2 * self.v_weights + (1 - self.beta2) * np.square(
+            weights_gradient
+        )
+        self.v_bias = self.beta2 * self.v_bias + (1 - self.beta2) * np.square(
+            bias_gradient
+        )
 
-        self.mb_hat = self.mb / (1 - self.beta1**self.t)
-        self.vb_hat = self.vb / (1 - self.beta2**self.t)
+        # First moment
+        m_weights_hat = self.m_weights / (1 - self.beta1**self.t)
+        m_bias_hat = self.m_bias / (1 - self.beta1**self.t)
+        # Second moment
+        v_weights_hat = self.v_weights / (1 - self.beta2**self.t)
+        v_bias_hat = self.v_bias / (1 - self.beta2**self.t)
 
-        weights -= self.learning_rate * self.mw_hat / (np.sqrt(self.vw_hat) + 1e-8)
-        bias -= self.learning_rate * self.mb_hat / (np.sqrt(self.vb_hat) + 1e-8)
+        # Update weights and bias
+        weights -= (
+            self.learning_rate * m_weights_hat / (np.sqrt(v_weights_hat) + self.epsilon)
+        )
+        bias -= self.learning_rate * m_bias_hat / (np.sqrt(v_bias_hat) + self.epsilon)
 
         return weights, bias
