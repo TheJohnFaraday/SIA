@@ -8,7 +8,6 @@ from .LinearPerceptron import ActivationFunction as LinearNonLinearActivationFun
 
 @dataclass(frozen=True)
 class MultiLayer:
-    parity_discrimination_path: str
     noise_val: float
     mnist_path: str
     momentum: float
@@ -34,6 +33,12 @@ class Configuration:
     linear_non_linear_output_norm: np.ndarray
     linear_non_linear_activation_function: LinearNonLinearActivationFunction
     multilayer: MultiLayer
+    digits_input: np.ndarray
+    digits_output: np.ndarray
+    digits_output_norm: np.ndarray
+    mnist_path: str
+    noise_val: float
+    random_seed: int | None
 
 
 def read_configuration():
@@ -69,7 +74,12 @@ def read_configuration():
         linear_non_linear_output_norm = np.array(
             list(
                 map(
-                    lambda y: normalize(y, np.min(linear_non_linear_output), np.max(linear_non_linear_output)), linear_non_linear_output
+                    lambda y: normalize(
+                        y,
+                        np.min(linear_non_linear_output),
+                        np.max(linear_non_linear_output),
+                    ),
+                    linear_non_linear_output,
                 )
             )
         )
@@ -85,22 +95,48 @@ def read_configuration():
             )
             raise RuntimeError
 
-        parity_discrimination_path = data["multi_layer"]["parity_discrimination"][
-            "path"
-        ]
+        digits_path = data["multi_layer"]["parity_discrimination"]["path"]
 
-        if not parity_discrimination_path or parity_discrimination_path == "":
+        if not digits_path or digits_path == "":
             print(
                 "Invalid or unexistent dataset path provided for Multi Layer Parity Discrimination"
             )
             raise RuntimeError
+
+        digits_input = []
+        with open(digits_path, "r") as file:
+            matrix = []
+            for i, line in enumerate(file):
+                if i != 0 and i % 7 == 0:
+                    digits_input.append(matrix)
+                    matrix = []
+                    row = list(map(int, line.split()))
+                    matrix.append(row)
+                else:
+                    row = list(map(int, line.split()))
+                    matrix.append(row)
+            digits_input.append(matrix)
+
+        digits_input = np.array(digits_input)
+        digits_output = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        digits_output_norm = np.array(
+            list(
+                map(
+                    lambda y: normalize(
+                        y,
+                        0,
+                        9,
+                    ),
+                    digits_output,
+                )
+            )
+        )
 
         noise_val = data["multi_layer"]["digit_discrimination"].get("noise_val", 0.0)
 
         mnist_path = data["multi_layer"].get("mnist", "./datasets/mnist.npz")
 
         multilayer_configuration = MultiLayer(
-            parity_discrimination_path=parity_discrimination_path,
             mnist_path=mnist_path,
             noise_val=noise_val,
             momentum=data["multi_layer"]["momentum"].get("alpha", 0.9),
@@ -111,10 +147,10 @@ def read_configuration():
 
         configuration = Configuration(
             plot=bool(data["plot"]),
-            learning_rate=float(data.get('learning_rate', 0.01)),
-            beta=float(data.get('beta', 0.4)),
-            epoch=int(data.get('epoch', 10000)),
-            train_proportion=float(data.get('train_proportion', 0.7)),
+            learning_rate=float(data.get("learning_rate", 0.01)),
+            beta=float(data.get("beta", 0.4)),
+            epoch=int(data.get("epoch", 10000)),
+            train_proportion=float(data.get("train_proportion", 0.7)),
             and_input=and_input,
             and_output=and_output,
             xor_input=xor_input,
@@ -123,8 +159,13 @@ def read_configuration():
             linear_non_linear_output=linear_non_linear_output,
             linear_non_linear_output_norm=linear_non_linear_output_norm,
             linear_non_linear_activation_function=linear_non_linear_activation_function,
+            digits_input=digits_input,
+            digits_output=digits_output,
+            digits_output_norm=digits_output_norm,
+            mnist_path=mnist_path,
+            noise_val=noise_val,
             random_seed=data.get("seed", None),
-            multilayer=multilayer_configuration
+            multilayer=multilayer_configuration,
         )
 
         return configuration
