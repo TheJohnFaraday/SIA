@@ -23,6 +23,12 @@ path = "datasets/TP3-ej2-conjunto.csv"
 # Activation function: 'tanh' or 'logistic'
 activation_function = "tanh"
 
+[multi_layer]
+# Choose one between 'online', 'minibatch' and 'batch'
+training_style = 'batch'
+# If 'minibatch' is chosen, a batch_size is needed
+batch_size = 10
+
 [multi_layer.parity_discrimination]
 path = "datasets/TP3-ej3-digitos.txt"
 # Activation function: 'tanh' or 'logistic'

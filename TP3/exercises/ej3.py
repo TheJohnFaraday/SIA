@@ -1,15 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from src.configuration import Configuration
+from src.configuration import Configuration, TrainingStyle
 
 from src.Dense import Dense
 from src.errors import MSE
 
 from src.MultiLayerPerceptron import MultiLayerPerceptron
 from src.Optimizer import GradientDescent
-from src.Training import Online
-from src.utils import normalize2
+from src.Training import Online, MiniBatch, Batch
 
 
 def is_odd(config: Configuration):
@@ -23,8 +22,20 @@ def is_odd(config: Configuration):
         config.multilayer.parity_discrimination_activation_function,
     ]
 
+    match config.multilayer.training_style:
+        case TrainingStyle.ONLINE:
+            training_style = Online(MultiLayerPerceptron.predict)
+        case TrainingStyle.MINIBATCH:
+            training_style = MiniBatch(
+                MultiLayerPerceptron.predict, config.multilayer.batch_size
+            )
+        case TrainingStyle.BATCH:
+            training_style = Batch(
+                MultiLayerPerceptron.predict, config.multilayer.batch_size
+            )
+
     mlp = MultiLayerPerceptron(
-        Online(MultiLayerPerceptron.predict),
+        training_style,
         network,
         MSE(),
         config.epoch,
@@ -78,8 +89,20 @@ def which_number(config: Configuration):
         config.multilayer.digits_discrimination_activation_function,
     ]
 
+    match config.multilayer.training_style:
+        case TrainingStyle.ONLINE:
+            training_style = Online(MultiLayerPerceptron.predict)
+        case TrainingStyle.MINIBATCH:
+            training_style = MiniBatch(
+                MultiLayerPerceptron.predict, config.multilayer.batch_size
+            )
+        case TrainingStyle.BATCH:
+            training_style = Batch(
+                MultiLayerPerceptron.predict, config.multilayer.batch_size
+            )
+
     mlp = MultiLayerPerceptron(
-        Online(MultiLayerPerceptron.predict),
+        training_style,
         network,
         MSE(),
         config.epoch,

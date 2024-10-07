@@ -6,10 +6,19 @@ from .utils import key_from_enum_value_with_fallback, normalize, normalize2
 from .LinearPerceptron import ActivationFunction as LinearNonLinearActivationFunction
 from .Activation import Activation
 from .activation_functions import Tanh, Logistic
+from .Training import Training, Batch, MiniBatch, Online
+from enum import Enum
+
+
+class TrainingStyle(Enum):
+    ONLINE = "online"
+    MINIBATCH = "minibatch"
+    BATCH = "batch"
 
 
 @dataclass(frozen=True)
 class MultiLayer:
+    training_style: TrainingStyle
     digits_input: np.ndarray
     digits_output: np.ndarray
     parity_discrimination_activation_function: Activation
@@ -20,6 +29,7 @@ class MultiLayer:
     beta1: float
     beta2: float
     epsilon: float
+    batch_size: int = 0
 
 
 @dataclass(frozen=True)
@@ -123,21 +133,29 @@ def read_configuration():
 
         digits_input = np.array(digits_input)
         digits_output = np.array(
-            [[1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 1]]
+            [
+                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            ]
         )
 
         parity_discrimination_activation_function = data["multi_layer"][
             "parity_discrimination"
         ].get("activation_function", "tanh")
+
+        training_style = key_from_enum_value_with_fallback(
+            TrainingStyle,
+            data["multi_layer"].get("training_style"),
+            TrainingStyle.ONLINE,
+        )
 
         match parity_discrimination_activation_function:
             case "logistic":
@@ -164,6 +182,7 @@ def read_configuration():
         mnist_path = data["multi_layer"].get("mnist", "./datasets/mnist.npz")
 
         multilayer_configuration = MultiLayer(
+            training_style=training_style,
             digits_input=digits_input,
             digits_output=digits_output,
             parity_discrimination_activation_function=parity_discrimination_activation_function,
@@ -174,6 +193,7 @@ def read_configuration():
             beta1=data["multi_layer"]["adam"].get("beta1", 0.9),
             beta2=data["multi_layer"]["adam"].get("beta2", 0.99),
             epsilon=data["multi_layer"]["adam"].get("epsilon", 1e-8),
+            batch_size=data["multi_layer"].get("batch_size", 0),
         )
 
         configuration = Configuration(

@@ -5,7 +5,6 @@ from typing import Callable
 from src.errors import Error
 from src.Layer import Layer
 
-
 class Training(ABC):
     type NeuralNetwork = list[Layer]
 
