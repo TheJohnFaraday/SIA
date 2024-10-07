@@ -31,8 +31,8 @@ class Momentum(Optimizer):
         if self.deltaW is None:
             self.deltaW = np.zeros(weights.shape)
             self.deltaB = np.zeros(bias.shape)
-        
-        #TODO chequear formulas y el tema de acumulación de los gradients 
+
+        #TODO chequear formulas y el tema de acumulación de los gradients
         self.deltaW = - self.learning_rate * weights_gradient + self.alpha * self.deltaW
         self.deltaB = - self.learning_rate * bias_gradient + self.alpha * self.deltaB
 
@@ -56,7 +56,7 @@ class Adam(Optimizer):
         self.t = 0
 
     def update(self, weights, bias, weights_gradient, bias_gradient):
-        
+
         self.t += 1
 
         self.mw = self.beta1 * self.mw + (1 - self.beta1) * weights_gradient

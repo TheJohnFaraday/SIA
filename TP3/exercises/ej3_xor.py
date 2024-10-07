@@ -37,6 +37,8 @@ def xor(config: Configuration):
 
     new_network = mlp.train(X, Y)
 
-    print(f"XOR Input: {X}")
-    output = MultiLayerPerceptron.predict(new_network, X)
-    print(f"XOR Output: {output}")
+    for x, y in zip(X, Y):
+        print(f"XOR Input: {x}")
+        output = MultiLayerPerceptron.predict(new_network, x)
+        print(f'XOR Expected Output: {y}')
+        print(f"XOR Output: {output}")
