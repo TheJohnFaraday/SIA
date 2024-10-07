@@ -6,31 +6,37 @@ from src.configuration import Configuration
 from src.Dense import Dense
 from src.activation_functions import Tanh
 from src.errors import MSE
-from network import train, predict
+
+from src.MultiLayerPerceptron import MultiLayerPerceptron
+from src.Optimizer import GradientDescent
+from src.Training import Online
 
 # reshape para hacerla de 2x1 (dense layer recibe columnas de input)
-X = np.reshape([[0, 0], [0, 1], [1, 0], [1, 1]], (4, 2, 1))
-Y = np.reshape([[0], [1], [1], [0]], (4, 1, 1))
+# X = np.reshape([[0, 0], [0, 1], [1, 0], [1, 1]], (4, 2, 1))
+# Y = np.reshape([[0], [1], [1], [0]], (4, 1, 1))
 
 
 def xor(config: Configuration):
-    network = [Dense(2, 3), Tanh(), Dense(3, 1), Tanh()]
+    X = np.reshape(config.xor_input, (4, 2, 1))
+    Y = np.reshape(config.xor_output, (4, 1, 1))
 
-    train(network, MSE().error, X, Y, epochs=10000, learning_rate=0.1)
+    network = [
+        Dense(2, 3, GradientDescent(config.learning_rate)),
+        Tanh(),
+        Dense(3, 1, GradientDescent(config.learning_rate)),
+        Tanh(),
+    ]
 
-    # decision boundary plot
-    points = []
-    for x in np.linspace(0, 1, 20):
-        for y in np.linspace(0, 1, 20):
-            z = predict(network, [[x], [y]])
-            points.append([x, y, z[0, 0]])
+    mlp = MultiLayerPerceptron(
+        Online(MultiLayerPerceptron.predict),
+        network,
+        MSE(),
+        config.epoch,
+        config.learning_rate,
+    )
 
-    points = np.array(points)
+    new_network = mlp.train(X, Y)
 
-    if config.plot:
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection="3d")
-        ax.scatter(
-            points[:, 0], points[:, 1], points[:, 2], c=points[:, 2], cmap="winter"
-        )
-        plt.show()
+    print(f"XOR Input: {X}")
+    output = MultiLayerPerceptron.predict(new_network, X)
+    print(f"XOR Output: {output}")

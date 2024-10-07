@@ -10,7 +10,6 @@ class MultiLayerPerceptron:
     def __init__(
         self,
         training_method: Training,
-        optimizer: Optimizer,
         neural_network: Training.NeuralNetwork,
         error: Error,
         epochs: int,
@@ -21,7 +20,6 @@ class MultiLayerPerceptron:
         self.neural_network = neural_network
         self.error = error
         self.learning_rate = learning_rate
-        self.optimizer = optimizer
 
     @staticmethod
     def predict(network: Training.NeuralNetwork, input_matrix: np.array):
@@ -32,7 +30,7 @@ class MultiLayerPerceptron:
         return output
 
     def train(self, input_matrix, expected_output):
-        self.training_method.train(
+        return self.training_method.train(
             self.neural_network,
             self.error,
             input_matrix,

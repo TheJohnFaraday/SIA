@@ -21,8 +21,9 @@ def ej3(config: Configuration):
 
 def main():
     config = read_configuration()
-    ej1(config)
-    ej2(config)
+    # ej1(config)
+    # ej2(config)
+    ej3(config)
 
 
 if __name__ == "__main__":

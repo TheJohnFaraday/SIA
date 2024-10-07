@@ -14,7 +14,7 @@ class Dense(Layer):
         self,
         input_size: int,
         output_size: int,
-        optimizer: Optimizer = GradientDescent(0.01),
+        optimizer: Optimizer,
     ):
         """
 

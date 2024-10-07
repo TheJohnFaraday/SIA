@@ -21,7 +21,7 @@ class Training(ABC):
         expected_output_matrix: np.array,
         epochs: int = 10_000,
         learning_rate: float = 0.1,
-    ):
+    ) -> NeuralNetwork:
         pass
 
 
