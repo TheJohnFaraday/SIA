@@ -60,6 +60,7 @@ class LinearPerceptron:
                 self.activation_prime = linear_prime
         self.beta = beta
         self.error_function = error_function
+        self.train_errors = []
 
     def predict(self, x):
         weighted_sum = np.dot(x, self.weights) + self.bias
@@ -83,6 +84,8 @@ class LinearPerceptron:
             # convergencia:
             if total_error < 0.01:
                 break
+
+        self.train_errors.append(total_error)
         print(f"{e + 1}/{epochs}, error={total_error}")
 
     def test(self, data):
