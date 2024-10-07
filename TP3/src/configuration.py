@@ -25,6 +25,7 @@ class Configuration:
     mnist_path: str
     noise_val: float
     random_seed: int | None
+    momentum: float
 
 
 def read_configuration():
@@ -108,6 +109,7 @@ def read_configuration():
             mnist_path=mnist_path,
             noise_val=noise_val,
             random_seed=data.get("seed", None),
+            momentum=data["multi_layer"]["momentum"].get("alpha", 0.9),
         )
 
         return configuration

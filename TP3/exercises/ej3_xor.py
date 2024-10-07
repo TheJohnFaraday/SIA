@@ -8,7 +8,7 @@ from src.activation_functions import Tanh
 from src.errors import MSE
 
 from src.MultiLayerPerceptron import MultiLayerPerceptron
-from src.Optimizer import GradientDescent
+from src.Optimizer import GradientDescent, Momentum
 from src.Training import Online
 
 # reshape para hacerla de 2x1 (dense layer recibe columnas de input)
@@ -21,9 +21,11 @@ def xor(config: Configuration):
     Y = np.reshape(config.xor_output, (4, 1, 1))
 
     network = [
-        Dense(2, 3, GradientDescent(config.learning_rate)),
+        # Dense(2, 3, GradientDescent(config.learning_rate)),
+        Dense(2, 3, Momentum(config.learning_rate, config.momentum)),
         Tanh(),
-        Dense(3, 1, GradientDescent(config.learning_rate)),
+        # Dense(3, 1, GradientDescent(config.learning_rate)),
+        Dense(3, 1, Momentum(config.learning_rate, config.momentum)),
         Tanh(),
     ]
 
@@ -40,5 +42,5 @@ def xor(config: Configuration):
     for x, y in zip(X, Y):
         print(f"XOR Input: {x}")
         output = MultiLayerPerceptron.predict(new_network, x)
-        print(f'XOR Expected Output: {y}')
+        print(f"XOR Expected Output: {y}")
         print(f"XOR Output: {output}")

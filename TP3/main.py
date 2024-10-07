@@ -1,3 +1,6 @@
+import random
+import numpy as np
+
 from exercises.ej1_and import ej1_and
 from exercises.ej1_xor import ej1_xor
 from exercises.ej2 import ej2 as ej2_implementation
@@ -21,6 +24,10 @@ def ej3(config: Configuration):
 
 def main():
     config = read_configuration()
+    if config.random_seed:
+        random.seed(config.random_seed)
+        np.random.seed(config.random_seed)
+
     # ej1(config)
     # ej2(config)
     ej3(config)

@@ -2,11 +2,11 @@
 plot = true
 
 # [Optional] Seed for RNG. Comment it out for randomness, or set an integer for determinism
-seed = 13202409176
+seed = 20241006
 learning_rate = 0.01
 beta = 0.4
 train_proportion = 0.7
-epoch=100000
+epoch=10000
 
 
 [and]
@@ -30,3 +30,7 @@ noise_val=0.0
 
 [multi_layer.mnist]
 path="datasets/mnist.npz"
+
+[multi_layer.momentum]
+# Usually 0.8 or 0.9. Must be in range [0, 1]
+alpha=0.8

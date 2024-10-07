@@ -20,31 +20,33 @@ class GradientDescent(Optimizer):
 
 class Momentum(Optimizer):
 
-    #valores usuales de alpha 0.8/0.9 y es entre 0 y 1
-    def __init__(self, learning_rate, alpha):
+    def __init__(self, learning_rate, alpha=0.8):
         self.learning_rate = learning_rate
         self.alpha = alpha
-        self.deltaW = None
-        self.deltaB = None
+        self.deltaWeights = None
+        self.deltaBias = None
 
     def update(self, weights, bias, weights_gradient, bias_gradient):
-        if self.deltaW is None:
-            self.deltaW = np.zeros(weights.shape)
-            self.deltaB = np.zeros(bias.shape)
+        if self.deltaWeights is None:
+            self.deltaWeights = np.zeros(weights.shape)
+            self.deltaBias = np.zeros(bias.shape)
 
-        #TODO chequear formulas y el tema de acumulación de los gradients
-        self.deltaW = - self.learning_rate * weights_gradient + self.alpha * self.deltaW
-        self.deltaB = - self.learning_rate * bias_gradient + self.alpha * self.deltaB
+        self.deltaWeights = (
+            self.alpha * self.deltaWeights - self.learning_rate * weights_gradient
+        )
+        self.deltaBias = (
+            self.alpha * self.deltaBias - self.learning_rate * bias_gradient
+        )
 
-        weights += self.deltaW
-        bias += self.deltaB
+        weights += self.deltaWeights
+        bias += self.deltaBias
 
         return weights, bias
 
 
 class Adam(Optimizer):
 
-    #good default settings:
+    # good default settings:
     def __init__(self, learning_rate, beta1=0.9, beta2=0.999, epsilon=1e-8):
         self.learning_rate = learning_rate
         self.beta1 = beta1
@@ -56,7 +58,6 @@ class Adam(Optimizer):
         self.t = 0
 
     def update(self, weights, bias, weights_gradient, bias_gradient):
-
         self.t += 1
 
         self.mw = self.beta1 * self.mw + (1 - self.beta1) * weights_gradient
@@ -75,10 +76,3 @@ class Adam(Optimizer):
         bias -= self.learning_rate * self.mb_hat / (np.sqrt(self.vb_hat) + 1e-8)
 
         return weights, bias
-
-
-
-
-
-
-
