@@ -76,6 +76,24 @@ def get_confusion_matrix(df: pd.DataFrame):
 
 def is_odd(config: Configuration):
     is_odd_output = np.array([0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
+    X = np.reshape(config.multilayer.digits_input, (10, 35, 1))
+    Y = np.reshape(is_odd_output, (10, 1, 1))
+    match config.multilayer.parity_discrimination_activation_function:
+        case ActivationFunction.TANH:
+            layer1 = Tanh(config.beta)
+            layer2 = Tanh(config.beta)
+            layer3 = Tanh(config.beta)
+        case ActivationFunction.LOGISTIC:
+            layer1 = Logistic(config.beta)
+            layer2 = Logistic(config.beta)
+            layer3 = Logistic(config.beta)
+    network = [
+        layer1,
+        Dense(35, 70, GradientDescent(config.learning_rate)),
+        layer2,
+        Dense(70, 1, GradientDescent(config.learning_rate)),
+        layer3
+    ]
 
     dataset_accuracy = []
     if config.train_proportion < 1:
@@ -127,6 +145,7 @@ def is_odd(config: Configuration):
             mse,
             config.epoch,
             config.learning_rate,
+            get_optimizer_instance(config),
         )
 
         new_network, errors_by_epoch = mlp.train(X, Y)
@@ -251,6 +270,7 @@ def which_number(config: Configuration):
         MSE(),
         config.epoch,
         config.learning_rate,
+        get_optimizer_instance(config),
     )
 
     new_network, errors = mlp.train(X, Y)

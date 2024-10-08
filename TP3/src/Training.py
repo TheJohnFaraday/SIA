@@ -47,7 +47,6 @@ class Batch(Training):
         errors = []
         for epoch in range(epochs):
             total_loss = 0
-            weights_gradient = None
             output_gradient = 0.0
             for x, y in zip(input_matrix, expected_output_matrix):
                 # forward
@@ -59,19 +58,16 @@ class Batch(Training):
 
                 # backward
                 output_gradient = error.error_prime(y, output)
-                if weights_gradient is None:
-                    weights_gradient = np.dot(output_gradient, x.T)
-                else:
-                    weights_gradient += np.dot(output_gradient, x.T)
 
             for layer in reversed(network):
-                output_gradient, weights_gradient = layer.backward(
-                    output_gradient, weights_gradient, learning_rate
+                # print(f'Weights Gradient: {weights_gradient}')
+                output_gradient = layer.backward(
+                    output_gradient, learning_rate
                 )
 
             errors.append(total_loss / len(input_matrix))
-            print(f"Epoch {epoch + 1}/{epochs} - loss: {loss}")
 
+        print(f"Epoch {epoch + 1}/{epochs} - loss: {loss}")
         return network, errors
 
 
@@ -104,7 +100,6 @@ class MiniBatch(Training):
                 X_batch = input_matrix[i : i + self.batch_size]
                 Y_batch = expected_output_matrix[i : i + self.batch_size]
 
-                weights_gradient = None
                 for x, y in zip(X_batch, Y_batch):
                     # forward
                     output = self.predict(network, x)
@@ -115,19 +110,14 @@ class MiniBatch(Training):
 
                     # backward
                     output_gradient = error.error_prime(y, output)
-                    if weights_gradient is None:
-                        weights_gradient = np.dot(output_gradient, x.T)
-                    else:
-                        weights_gradient += np.dot(output_gradient, x.T)
                 for layer in reversed(network):
-                    output_gradient, weights_gradient = layer.backward(
-                        output_gradient, weights_gradient, learning_rate
+                    output_gradient = layer.backward(
+                        output_gradient, learning_rate
                     )
-
-            print(f"Epoch {epoch + 1}/{epochs} - loss: {loss}")
 
             errors.append(total_loss / len(input_matrix))
 
+        print(f"Epoch {epoch + 1}/{epochs} - loss: {loss}")
         return network, errors
 
 
@@ -159,14 +149,12 @@ class Online(Training):
 
                 # backward
                 output_gradient = error.error_prime(y, output)
-                weights_gradient = np.dot(output_gradient, x.T)
                 for layer in reversed(network):
-                    output_gradient, weights_gradient = layer.backward(
-                        output_gradient, weights_gradient, learning_rate
+                    output_gradient = layer.backward(
+                        output_gradient, learning_rate
                     )
-
-            print(f"Epoch {epoch + 1}/{epochs} - loss: {loss}")
 
             errors.append(total_loss / len(input_matrix))
 
+        print(f"Epoch {epoch + 1}/{epochs} - loss: {loss}")
         return network, errors

@@ -14,6 +14,7 @@ class MultiLayerPerceptron:
         error: Error,
         epochs: int,
         learning_rate: float,
+        optimizer: Optimizer
     ):
         self.training_method = training_method
         self.epochs = epochs
