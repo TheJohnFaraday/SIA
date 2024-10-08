@@ -10,6 +10,7 @@ pandas = "*"
 matplotlib = "*"
 keras = "*"
 scikit-learn = "*"
+seaborn = "*"
 
 [dev-packages]
 
