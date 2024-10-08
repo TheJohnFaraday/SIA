@@ -74,6 +74,9 @@ def graph_error_by_epoch(
     errors_by_epoch: list[float],
     proportion: float,
 ):
+    if not config.plot:
+        return
+
     def print_epoch_error(df: pd.DataFrame):
         fig, ax = plt.subplots()
 
@@ -117,6 +120,9 @@ def graph_is_odd_matrix(
     outputs: list[NetworkOutput],
     proportion: float,
 ):
+    if not config.plot:
+        return
+
     def print_output_matrix(df: pd.DataFrame):
         confusion_matrix = {
             "Not Predicted": [0, 0],
@@ -181,6 +187,9 @@ def graph_is_odd_matrix(
 def graph_accuracy_vs_dataset(
     exercise: str, config: Configuration, dataset_accuracy: list[tuple[float, float]]
 ):
+    if not config.plot:
+        return
+
     def print_accuracy_vs_proportion(df: pd.DataFrame):
         fig, ax = plt.subplots()
 
@@ -218,6 +227,9 @@ def graph_which_number_matrix(
     outputs: list[NetworkOutput],
     proportion: float,
 ):
+    if not config.plot:
+        return
+
     def print_output_matrix(df: pd.DataFrame):
         confusion_matrix = [[0] * 10 for _ in range(10)]
         for _, row in df.iterrows():
