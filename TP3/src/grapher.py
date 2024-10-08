@@ -257,6 +257,8 @@ def graph_which_number_matrix(
             f"Activation = {map_activation[config.multilayer.digits_discrimination_activation_function]}"
             " | "
             f"Proportion = {proportion}"
+            " | "
+            f"Noise = {config.noise_val}"
         )
 
         ax.set_ylabel("Expected")
