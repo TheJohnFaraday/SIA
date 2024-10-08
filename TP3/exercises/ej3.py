@@ -91,7 +91,7 @@ def is_odd(config: Configuration):
         print(f"Is Odd Expected Output: {y}")
         print(f"Is Odd Output:\n{output}")
 
-    graph_error_by_epoch(outputs_with_error, errors_by_epoch)
+    graph_error_by_epoch(config, outputs_with_error, errors_by_epoch)
 
 
 def which_number(config: Configuration):

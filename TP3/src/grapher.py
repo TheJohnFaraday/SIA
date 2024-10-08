@@ -6,6 +6,7 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 
 from exercises.NetworkOutput import NetworkOutput
+from src.configuration import Configuration, TrainingStyle, Optimizer
 
 CUSTOM_PALETTE = [
     "#508fbe",
@@ -30,6 +31,7 @@ PLT_THEME = {
     "axes.titlecolor": GREY,  # Set title color
     "axes.labelcolor": GREY,  # Set labels color
     "axes.labelpad": 10,
+    "axes.titlesize": 8,
     "xtick.bottom": False,  # Remove ticks on the X axis
     "ytick.labelcolor": GREY,  # Set Y ticks color
     "ytick.color": GREY,  # Set Y label color
@@ -43,7 +45,21 @@ sns.set_palette(CUSTOM_PALETTE)
 sns.set_style(PLT_THEME)
 
 
-def graph_error_by_epoch(outputs: list[NetworkOutput], errors_by_epoch: list[float]):
+def graph_error_by_epoch(
+    config: Configuration, outputs: list[NetworkOutput], errors_by_epoch: list[float]
+):
+    map_training = {
+        TrainingStyle.BATCH: "Batch",
+        TrainingStyle.MINIBATCH: "MiniBatch",
+        TrainingStyle.ONLINE: "Online",
+    }
+
+    map_optimizer = {
+        Optimizer.GRADIENT_DESCENT: "Gradient Descent",
+        Optimizer.ADAM: "Adam",
+        Optimizer.MOMENTUM: "Momentum",
+    }
+
     def print_epoch_error(df: pd.DataFrame):
         fig, ax = plt.subplots()
 
@@ -51,7 +67,14 @@ def graph_error_by_epoch(outputs: list[NetworkOutput], errors_by_epoch: list[flo
 
         ax.set_ylabel("Error")
         ax.set_xlabel("Epoch")
-        ax.set_title("Error by Epoch")
+        fig.suptitle("Error by Epoch")
+        ax.set_title(
+            f"Learning Rate = {config.learning_rate}"
+            " | "
+            f"Training = {map_training[config.multilayer.training_style]}"
+            " | "
+            f"Optimizer = {map_optimizer[config.multilayer.optimizer]}"
+        )
         plt.savefig("plots/error_by_epoch.png")
 
     def print_output_matrix(df: pd.DataFrame):
@@ -72,7 +95,15 @@ def graph_error_by_epoch(outputs: list[NetworkOutput], errors_by_epoch: list[flo
 
         fig, ax = plt.subplots(figsize=(6, 4))
 
-        ax.set_title("Predictions by Expected Value")
+        fig.suptitle("Predictions by Expected Value")
+        ax.set_title(
+            f"Learning Rate = {config.learning_rate}"
+            " | "
+            f"Training = {map_training[config.multilayer.training_style]}"
+            " | "
+            f"Optimizer = {map_optimizer[config.multilayer.optimizer]}"
+        )
+
         sns.heatmap(
             matrix_df,
             annot=True,

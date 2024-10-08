@@ -16,8 +16,15 @@ class TrainingStyle(Enum):
     BATCH = "batch"
 
 
+class Optimizer(Enum):
+    GRADIENT_DESCENT = "gradient_descent"
+    MOMENTUM = "momentum"
+    ADAM = "adam"
+
+
 @dataclass(frozen=True)
 class MultiLayer:
+    optimizer: Optimizer
     training_style: TrainingStyle
     digits_input: np.ndarray
     digits_output: np.ndarray
@@ -181,7 +188,13 @@ def read_configuration():
 
         mnist_path = data["multi_layer"].get("mnist", "./datasets/mnist.npz")
 
+        optimizer = key_from_enum_value_with_fallback(
+            Optimizer, data["multi_layer"].get("optimizer"),
+            Optimizer.GRADIENT_DESCENT
+        )
+
         multilayer_configuration = MultiLayer(
+            optimizer=optimizer,
             training_style=training_style,
             digits_input=digits_input,
             digits_output=digits_output,
