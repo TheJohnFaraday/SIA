@@ -101,15 +101,18 @@ def train_without_kfold(inputs, outputs, config):
     linear_perceptron.train_errors = [(error - min_train_error) / (max_train_error - min_train_error) for error in linear_perceptron.train_errors]
     non_linear_perceptron.train_errors = [(error - min_train_error) / (max_train_error - min_train_error) for error in non_linear_perceptron.train_errors]
 
+    # Determinar el mínimo de los final_epochs entre ambos perceptrones
+    min_epochs = min(len(linear_perceptron.final_epochs), len(non_linear_perceptron.final_epochs))
+
     # Gráfica de evolución del error de entrenamiento
     plt.figure(figsize=(10, 5))
-    plt.plot(linear_perceptron.final_epochs, linear_perceptron.train_errors, label='Lineal (train_proportion)')
-    plt.plot(non_linear_perceptron.final_epochs, non_linear_perceptron.train_errors, label='No Lineal (train_proportion)')
+    plt.plot(linear_perceptron.final_epochs[:min_epochs], linear_perceptron.train_errors[:min_epochs], label='Lineal (train_proportion)')
+    plt.plot(non_linear_perceptron.final_epochs[:min_epochs], non_linear_perceptron.train_errors[:min_epochs], label='No Lineal (train_proportion)')
     plt.xlabel('Época')
     plt.ylabel('Error (MSE)')
     plt.title('Evolución del MSE durante el entrenamiento (sin K-Fold)')
     plt.legend()
-    plt.xlim(0, config.epoch)
+    plt.xlim(0, min_epochs)
     plt.ylim(0, 1)  # Normalizado
     plt.show()
 
