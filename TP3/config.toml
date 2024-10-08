@@ -7,7 +7,7 @@ learning_rate = 0.01
 beta = 0.4
 train_proportion = 0.7
 epoch=10000
-noise_val=0.3
+noise_val=0.0
 
 
 [and]
@@ -25,9 +25,9 @@ activation_function = "tanh"
 
 [multi_layer]
 # Choose one between 'online', 'minibatch' and 'batch'
-training_style = 'batch'
+training_style = 'minibatch'
 # If 'minibatch' is chosen, a batch_size is needed
-batch_size = 10
+batch_size = 2
 
 [multi_layer.parity_discrimination]
 path = "datasets/TP3-ej3-digitos.txt"

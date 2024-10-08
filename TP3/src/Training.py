@@ -5,6 +5,7 @@ from typing import Callable
 from src.errors import Error
 from src.Layer import Layer
 
+
 class Training(ABC):
     type NeuralNetwork = list[Layer]
 
@@ -44,23 +45,23 @@ class Batch(Training):
         learning_rate: float = 0.1,
     ):
         for epoch in range(epochs):
-            for i in range(0, input_matrix.shape[0], self.batch_size):
-                X_batch = input_matrix[i : i + self.batch_size]
-                Y_batch = expected_output_matrix[i : i + self.batch_size]
-
+            output_gradient = None
+            for x, y in zip(input_matrix, expected_output_matrix):
                 # forward
-                output = self.predict(network, X_batch)
+                output = self.predict(network, x)
 
                 # error
-                loss = np.mean(error.error(Y_batch, output))
+                loss = np.mean(error.error(y, output))
 
                 # backward
-                output_gradient = error.error_prime(Y_batch, output)
-                for layer in reversed(network):
-                    output_gradient = layer.backward(output_gradient, learning_rate)
+                if not output_gradient:
+                    output_gradient = error.error_prime(y, output)
+                else:
+                    output_gradient += error.error_prime(y, output)
+            for layer in reversed(network):
+                output_gradient = layer.backward(output_gradient, learning_rate)
 
-                #print(f"Epoch {epoch + 1}/{epochs} - loss: {loss}")
-
+            # print(f"Epoch {epoch + 1}/{epochs} - loss: {loss}")
         return network
 
 
@@ -85,17 +86,22 @@ class MiniBatch(Training):
     ):
         for epoch in range(epochs):
             for i in range(0, input_matrix.shape[0], self.batch_size):
-                X_batch = input_matrix[i : i + self.batch_size]
-                Y_batch = expected_output_matrix[i : i + self.batch_size]
+                X_batch = input_matrix[i:i+self.batch_size]
+                Y_batch = expected_output_matrix[i:i+self.batch_size]
 
-                # forward
-                output = self.predict(network, X_batch)
+                output_gradient = None
+                for x, y in zip(X_batch, Y_batch):
+                    # forward
+                    output = self.predict(network, x)
 
-                # error
-                loss = np.mean(error.error(Y_batch, output))
+                    # error
+                    loss = np.mean(error.error(y, output))
 
-                # backward
-                output_gradient = error.error_prime(Y_batch, output)
+                    # backward
+                    if not output_gradient:
+                        output_gradient = error.error_prime(y, output)
+                    else:
+                        output_gradient += error.error_prime(y, output)
                 for layer in reversed(network):
                     output_gradient = layer.backward(output_gradient, learning_rate)
 
