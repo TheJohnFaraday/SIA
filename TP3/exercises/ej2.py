@@ -41,6 +41,7 @@ def train_with_kfold(inputs, outputs, unnom_outputs, config):
     mse_linear, mse_nonlinear = [], []
     fold = 1
 
+    print("Train with kfold")
     for train_index, test_index in kf.split(inputs):
         print(f"\n===== Fold {fold} =====")
 
@@ -49,12 +50,14 @@ def train_with_kfold(inputs, outputs, unnom_outputs, config):
         train_unnom_output, test_unnom_output = unnom_outputs[train_index], unnom_outputs[test_index]
 
         # Entrenamos y evaluamos el perceptrón lineal
+        print("Linear Perceptron")
         linear_perceptron, test_lineal_errors = train_and_evaluate_perceptron(
             train_input, train_output, test_input, test_output, test_unnom_output, config, ActivationFunction.LINEAR
         )
         mse_linear.append(linear_perceptron.final_error[-1])
 
         # Entrenamos y evaluamos el perceptrón no lineal
+        print("No Linear Perceptron")
         non_linear_perceptron, test_non_lineal_errors = train_and_evaluate_perceptron(
             train_input, train_output, test_input, test_output, test_unnom_output, config, config.linear_non_linear_activation_function
         )
@@ -69,6 +72,7 @@ def train_with_kfold(inputs, outputs, unnom_outputs, config):
 
 
 def train_without_kfold(inputs, outputs, config):
+    print("\nTrain without kfold\n")
     """Entrena el modelo sin K-Fold usando train_test_split"""
     train_input, test_input, train_output, test_output = train_test_split(
         inputs, outputs, train_size=config.train_proportion, random_state=42
@@ -82,6 +86,7 @@ def train_without_kfold(inputs, outputs, config):
         config.beta,
         MSE(),
     )
+    print("Linear Perceptron")
     linear_perceptron.train(train_input, train_output, config.epoch)
 
     # Perceptrón No Lineal
@@ -92,6 +97,7 @@ def train_without_kfold(inputs, outputs, config):
         config.beta,
         MSE(),
     )
+    print("No Linear Perceptron")
     non_linear_perceptron.train(train_input, train_output, config.epoch)
 
     # Normalización de los errores de entrenamiento para graficar
