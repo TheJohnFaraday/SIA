@@ -33,9 +33,9 @@ def main():
         np.random.seed(config.random_seed)
 
     # ej1(config)
-    # ej2(config)
+    ej2(config)
     # ej3(config)
-    ej4(config)
+    # ej4(config)
 
 
 if __name__ == "__main__":

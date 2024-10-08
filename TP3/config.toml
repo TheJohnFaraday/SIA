@@ -6,7 +6,7 @@ seed = 20241006
 learning_rate = 0.01
 beta = 0.4
 train_proportion = 0.7
-epoch=100
+epoch=10000
 noise_val=0.3
 
 
