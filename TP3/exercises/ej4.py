@@ -69,13 +69,13 @@ def mnist_digit_clasification(config: Configuration):
             layer4 = Logistic(config.beta)
 
     network = [
-        layer1,
-        Dense(784, 196, GradientDescent(config.learning_rate)),
+        # layer1,
+        Dense(784, 10, GradientDescent(config.learning_rate)),
         layer2,
-        Dense(196, 28, GradientDescent(config.learning_rate)),
-        layer3,
-        Dense(28, 10, GradientDescent(config.learning_rate)),
-        layer4,
+        # Dense(196, 28, GradientDescent(config.learning_rate)),
+        # layer3,
+        # Dense(28, 10, GradientDescent(config.learning_rate)),
+        # layer4,
     ]
 
     match config.multilayer.training_style:

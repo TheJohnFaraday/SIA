@@ -1,7 +1,6 @@
 import numpy as np
 
 from src.errors import Error
-from src.Optimizer import Optimizer
 from src.Training import Training
 
 
@@ -14,7 +13,6 @@ class MultiLayerPerceptron:
         error: Error,
         epochs: int,
         learning_rate: float,
-        optimizer: Optimizer
     ):
         self.training_method = training_method
         self.epochs = epochs

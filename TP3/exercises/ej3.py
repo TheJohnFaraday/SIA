@@ -145,7 +145,6 @@ def is_odd(config: Configuration):
             mse,
             config.epoch,
             config.learning_rate,
-            get_optimizer_instance(config),
         )
 
         new_network, errors_by_epoch = mlp.train(X, Y)
@@ -270,7 +269,6 @@ def which_number(config: Configuration):
         MSE(),
         config.epoch,
         config.learning_rate,
-        get_optimizer_instance(config),
     )
 
     new_network, errors = mlp.train(X, Y)
