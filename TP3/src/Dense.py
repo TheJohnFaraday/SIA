@@ -48,7 +48,7 @@ class Dense(Layer):
         self.input_matrix = input_matrix
         return np.dot(self.weights, self.input_matrix) + self.bias
 
-    def backward(self, output_gradient, learning_rate: float):
+    def backward(self, output_gradient, weights_gradient):
         """
         Returns dE/dX
 
@@ -63,8 +63,6 @@ class Dense(Layer):
         """
 
         # dE/dW = dE/dY . dY/dW = dE/dY . X^t
-        weights_gradient = np.dot(output_gradient, self.input_matrix.T)
-
         self.weights, self.bias = self.optimizer.update(
             self.weights, self.bias, weights_gradient, output_gradient
         )

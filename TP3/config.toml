@@ -3,7 +3,7 @@ plot = true
 
 # [Optional] Seed for RNG. Comment it out for randomness, or set an integer for determinism
 seed = 20241006
-learning_rate = 0.01
+learning_rate = 0.1
 beta = 0.4
 train_proportion = 0.7
 epoch=10000

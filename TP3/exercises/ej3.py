@@ -16,9 +16,8 @@ def is_odd(config: Configuration):
     X = np.reshape(config.multilayer.digits_input, (10, 35, 1))
     Y = np.reshape(is_odd_output, (10, 1, 1))
     network = [
-        Dense(35, 70, GradientDescent(config.learning_rate)),
         config.multilayer.parity_discrimination_activation_function,
-        Dense(70, 1, GradientDescent(config.learning_rate)),
+        Dense(35, 1, GradientDescent(config.learning_rate)),
         config.multilayer.parity_discrimination_activation_function,
     ]
 
