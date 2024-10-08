@@ -32,11 +32,11 @@ batch_size = 2
 [multi_layer.parity_discrimination]
 path = "datasets/TP3-ej3-digitos.txt"
 # Activation function: 'tanh' or 'logistic'
-activation_function = "logistic"
+activation_function = "tanh"
 
 [multi_layer.digit_discrimination]
 # Activation function: 'tanh' or 'logistic'
-activation_function = "logistic"
+activation_function = "tanh"
 
 [multi_layer.mnist]
 path="datasets/mnist.npz"

@@ -2,7 +2,12 @@ import numpy as np
 import pandas as pd
 import tomllib
 from dataclasses import dataclass
-from .utils import key_from_enum_value_with_fallback, normalize, normalize2, normalize_0_1
+from .utils import (
+    key_from_enum_value_with_fallback,
+    normalize,
+    normalize2,
+    normalize_0_1,
+)
 from .LinearPerceptron import ActivationFunction as LinearNonLinearActivationFunction
 from .Activation import Activation
 from .activation_functions import Tanh, Logistic
@@ -14,6 +19,11 @@ class TrainingStyle(Enum):
     ONLINE = "online"
     MINIBATCH = "minibatch"
     BATCH = "batch"
+
+
+class ActivationFunction(Enum):
+    TANH = "tanh"
+    LOGISTIC = "logistic"
 
 
 @dataclass(frozen=True)
@@ -92,7 +102,10 @@ def read_configuration():
         )
 
         linear_non_linear_output = list(map(lambda row: row[1]["y"], df.iterrows()))
-        if linear_non_linear_activation_function == LinearNonLinearActivationFunction.TANH:
+        if (
+            linear_non_linear_activation_function
+            == LinearNonLinearActivationFunction.TANH
+        ):
             normalize_fn = normalize
         else:
             normalize_fn = normalize_0_1
@@ -164,25 +177,17 @@ def read_configuration():
             TrainingStyle.ONLINE,
         )
 
-        match parity_discrimination_activation_function:
-            case "logistic":
-                parity_discrimination_activation_function = Logistic(beta)
-            case "tanh":
-                parity_discrimination_activation_function = Tanh(beta)
-            case _:
-                parity_discrimination_activation_function = Tanh(beta)
+        parity_discrimination_activation_function = key_from_enum_value_with_fallback(
+            ActivationFunction,
+            data["multi_layer"]["parity_discrimination"]["activation_function"],
+            ActivationFunction.TANH,
+        )
 
-        digits_discrimination_activation_function = data["multi_layer"][
-            "parity_discrimination"
-        ].get("activation_function", "tanh")
-
-        match digits_discrimination_activation_function:
-            case "logistic":
-                digits_discrimination_activation_function = Logistic(beta)
-            case "tanh":
-                digits_discrimination_activation_function = Tanh(beta)
-            case _:
-                digits_discrimination_activation_function = Tanh(beta)
+        digits_discrimination_activation_function = key_from_enum_value_with_fallback(
+            ActivationFunction,
+            data["multi_layer"]["digit_discrimination"]["activation_function"],
+            ActivationFunction.TANH,
+        )
 
         noise_val = data.get("noise_val", 0.0)
 

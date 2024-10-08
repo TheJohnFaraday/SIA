@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from src.configuration import Configuration, TrainingStyle
+from src.configuration import Configuration, TrainingStyle, ActivationFunction
 
 from src.Dense import Dense
 from src.errors import MSE
@@ -9,16 +9,24 @@ from src.errors import MSE
 from src.MultiLayerPerceptron import MultiLayerPerceptron
 from src.Optimizer import GradientDescent
 from src.Training import Online, MiniBatch, Batch
+from src.activation_functions import Tanh, Logistic
 
 
 def is_odd(config: Configuration):
     is_odd_output = np.array([0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
     X = np.reshape(config.multilayer.digits_input, (10, 35, 1))
     Y = np.reshape(is_odd_output, (10, 1, 1))
+    match config.multilayer.parity_discrimination_activation_function:
+        case ActivationFunction.TANH:
+            layer1 = Tanh(config.beta)
+            layer2 = Tanh(config.beta)
+        case ActivationFunction.LOGISTIC:
+            layer1 = Logistic(config.beta)
+            layer2 = Logistic(config.beta)
     network = [
-        config.multilayer.parity_discrimination_activation_function,
+        layer1,
         Dense(35, 1, GradientDescent(config.learning_rate)),
-        config.multilayer.parity_discrimination_activation_function,
+        layer2
     ]
 
     match config.multilayer.training_style:
@@ -83,15 +91,26 @@ def is_odd(config: Configuration):
 def which_number(config: Configuration):
     X = np.reshape(config.multilayer.digits_input, (10, 35, 1))
     Y = np.reshape(config.multilayer.digits_output, (10, 10, 1))
+    match config.multilayer.digits_discrimination_activation_function:
+        case ActivationFunction.TANH:
+            layer1 = Tanh(config.beta)
+            layer2 = Tanh(config.beta)
+            layer3 = Tanh(config.beta)
+            layer4 = Tanh(config.beta)
+        case ActivationFunction.LOGISTIC:
+            layer1 = Logistic(config.beta)
+            layer2 = Logistic(config.beta)
+            layer3 = Logistic(config.beta)
+            layer4 = Logistic(config.beta)
     network = [
         Dense(35, 70, GradientDescent(config.learning_rate)),
-        config.multilayer.digits_discrimination_activation_function,
+        layer1,
         Dense(70, 35, GradientDescent(config.learning_rate)),
-        config.multilayer.digits_discrimination_activation_function,
+        layer2,
         Dense(35, 5, GradientDescent(config.learning_rate)),
-        config.multilayer.digits_discrimination_activation_function,
+        layer3,
         Dense(5, 10, GradientDescent(config.learning_rate)),
-        config.multilayer.digits_discrimination_activation_function,
+        layer4,
     ]
 
     match config.multilayer.training_style:

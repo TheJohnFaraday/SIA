@@ -3,7 +3,7 @@ import pandas as pd
 from enum import Enum
 from src.utils import unnormalize
 
-from TP3.src.utils import unnormalize_0_1
+from src.utils import unnormalize_0_1
 
 
 class ActivationFunction(Enum):
