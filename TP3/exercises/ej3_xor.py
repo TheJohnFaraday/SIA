@@ -53,7 +53,7 @@ def xor(config: Configuration):
         config.learning_rate,
     )
 
-    new_network = mlp.train(X, Y)
+    new_network, _ = mlp.train(X, Y)
 
     for x, y in zip(X, Y):
         print(f"XOR Input: {x}")

@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 
 from src.configuration import Configuration, TrainingStyle
 
@@ -9,6 +8,9 @@ from src.errors import MSE
 from src.MultiLayerPerceptron import MultiLayerPerceptron
 from src.Optimizer import GradientDescent
 from src.Training import Online, MiniBatch, Batch
+
+from exercises.NetworkOutput import NetworkOutput
+from src.grapher import graph_error_by_epoch
 
 
 def is_odd(config: Configuration):
@@ -36,15 +38,16 @@ def is_odd(config: Configuration):
         case _:
             raise RuntimeError("Invalid TrainingStyle")
 
+    mse = MSE()
     mlp = MultiLayerPerceptron(
         training_style,
         network,
-        MSE(),
+        mse,
         config.epoch,
         config.learning_rate,
     )
 
-    new_network = mlp.train(X, Y)
+    new_network, errors_by_epoch = mlp.train(X, Y)
 
     X_with_noise = list(
         map(
@@ -79,10 +82,16 @@ def is_odd(config: Configuration):
         (10, 35, 1),
     )
 
+    outputs_with_error: list[NetworkOutput] = []
     for x, y in zip(X_with_noise, is_odd_output):
         output = MultiLayerPerceptron.predict(new_network, x)
+        loss = mse.error(y, output)
+        outputs_with_error.append(NetworkOutput(expected=y, output=output, error=loss))
+
         print(f"Is Odd Expected Output: {y}")
         print(f"Is Odd Output:\n{output}")
+
+    graph_error_by_epoch(outputs_with_error, errors_by_epoch)
 
 
 def which_number(config: Configuration):
@@ -115,7 +124,7 @@ def which_number(config: Configuration):
         config.learning_rate,
     )
 
-    new_network = mlp.train(X, Y)
+    new_network, errors = mlp.train(X, Y)
 
     X_with_noise = list(
         map(

@@ -44,14 +44,17 @@ class Batch(Training):
         epochs: int = 10_000,
         learning_rate: float = 0.1,
     ):
+        errors = []
         for epoch in range(epochs):
+            total_loss = 0
             output_gradient = None
             for x, y in zip(input_matrix, expected_output_matrix):
                 # forward
                 output = self.predict(network, x)
 
                 # error
-                loss = np.mean(error.error(y, output))
+                loss = error.error(y, output)
+                total_loss += loss
 
                 # backward
                 if output_gradient is None:
@@ -62,8 +65,10 @@ class Batch(Training):
             for layer in reversed(network):
                 output_gradient = layer.backward(output_gradient, learning_rate)
 
+            errors.append(total_loss / len(input_matrix))
+
             # print(f"Epoch {epoch + 1}/{epochs} - loss: {loss}")
-        return network
+        return network, errors
 
 
 # Actualizacion pesos--> luego de calcular el dW para UN SUBCONJUNTO DE ELEMENTOS del conj de datos
@@ -85,7 +90,9 @@ class MiniBatch(Training):
         epochs: int = 10_000,
         learning_rate: float = 0.1,
     ):
+        errors = []
         for epoch in range(epochs):
+            total_loss = 0
             for i in range(0, input_matrix.shape[0], self.batch_size):
                 X_batch = input_matrix[i : i + self.batch_size]
                 Y_batch = expected_output_matrix[i : i + self.batch_size]
@@ -96,7 +103,8 @@ class MiniBatch(Training):
                     output = self.predict(network, x)
 
                     # error
-                    loss = np.mean(error.error(y, output))
+                    loss = error.error(y, output)
+                    total_loss += loss
 
                     # backward
                     if output_gradient is None:
@@ -109,7 +117,9 @@ class MiniBatch(Training):
 
                 # print(f"Epoch {epoch + 1}/{epochs} - loss: {loss}")
 
-        return network
+            errors.append(total_loss / len(input_matrix))
+
+        return network, errors
 
 
 # actualizacion pesos de la red--> luego de calcular el dW PARA UN ELEMENTO del conjunto de datos
@@ -126,13 +136,16 @@ class Online(Training):
         epochs: int = 10_000,
         learning_rate: float = 0.1,
     ):
+        errors = []
         for epoch in range(epochs):
+            total_loss = 0
             for x, y in zip(input_matrix, expected_output_matrix):
                 # forward
                 output = self.predict(network, x)
 
                 # error
                 loss = error.error(y, output)
+                total_loss += loss
 
                 # backward
                 output_gradient = error.error_prime(y, output)
@@ -141,4 +154,6 @@ class Online(Training):
 
                 # print(f"Epoch {epoch + 1}/{epochs} - loss: {loss}")
 
-        return network
+            errors.append(total_loss / len(input_matrix))
+
+        return network, errors
