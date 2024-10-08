@@ -67,8 +67,8 @@ def train_with_kfold(inputs, outputs, unnom_outputs, config):
 
     # Gráfica de comparación del MSE para el entrenamiento y la evaluación
     folds = np.arange(1, len(mse_linear) + 1)
-    plot_mse_comparison(folds, mse_linear, mse_nonlinear, 'Comparación del MSE de entrenamiento', 'MSE (entrenamiento)')
-    plot_mse_comparison(folds, test_lineal_errors, test_non_lineal_errors, 'Comparación del MSE de evaluación', 'MSE (evaluación)')
+    plot_mse_comparison(folds, mse_linear, mse_nonlinear, 'Comparison of training MSE', 'Training MSE')
+    plot_mse_comparison(folds, test_lineal_errors, test_non_lineal_errors, 'Comparison of testing MSE', 'Testing MSE')
 
 
 def train_without_kfold(inputs, outputs, config):
@@ -114,9 +114,9 @@ def train_without_kfold(inputs, outputs, config):
     plt.figure(figsize=(10, 5))
     plt.plot(linear_perceptron.final_epochs[:min_epochs], linear_perceptron.train_errors[:min_epochs], label='Lineal (train_proportion)')
     plt.plot(non_linear_perceptron.final_epochs[:min_epochs], non_linear_perceptron.train_errors[:min_epochs], label='No Lineal (train_proportion)')
-    plt.xlabel('Época')
+    plt.xlabel('Epoch')
     plt.ylabel('Error (MSE)')
-    plt.title('Evolución del MSE durante el entrenamiento (sin K-Fold)')
+    plt.title('Evolution of MSE during training (without K-Fold)')
     plt.legend()
     plt.xlim(0, min_epochs)
     plt.ylim(0, 1)  # Normalizado
