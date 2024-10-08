@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from dataclasses import dataclass
 
-from src.configuration import Configuration, TrainingStyle, Optimizer
+from src.configuration import Configuration, TrainingStyle, Optimizer, ActivationFunction
 
 from src.Dense import Dense
 from src.errors import MSE
@@ -11,6 +11,7 @@ from src.errors import MSE
 from src.MultiLayerPerceptron import MultiLayerPerceptron
 from src.Optimizer import GradientDescent, Momentum, Adam
 from src.Training import Online, MiniBatch, Batch
+from src.activation_functions import Tanh, Logistic
 
 from exercises.NetworkOutput import NetworkOutput
 from src.grapher import graph_error_by_epoch, graph_accuracy_vs_dataset
@@ -88,11 +89,21 @@ def is_odd(config: Configuration):
         X = np.reshape(train_set.train_input, (train_set.train_input.shape[0], 35, 1))
         Y = np.reshape(train_set.train_output, (train_set.train_input.shape[0], 1, 1))
 
+        match config.multilayer.parity_discrimination_activation_function:
+            case ActivationFunction.TANH:
+                layer1 = Tanh(config.beta)
+                layer2 = Tanh(config.beta)
+            case ActivationFunction.LOGISTIC:
+                layer1 = Logistic(config.beta)
+                layer2 = Logistic(config.beta)
+            case _:
+                raise RuntimeError("Invalid ActivationFunction")
+
         network = [
             Dense(35, 70, get_optimizer_instance(config)),
-            config.multilayer.parity_discrimination_activation_function,
+            layer1,
             Dense(70, 1, get_optimizer_instance(config)),
-            config.multilayer.parity_discrimination_activation_function,
+            layer2,
         ]
 
         match config.multilayer.training_style:
@@ -195,9 +206,29 @@ def is_odd(config: Configuration):
 def which_number(config: Configuration):
     X = np.reshape(config.multilayer.digits_input, (10, 35, 1))
     Y = np.reshape(config.multilayer.digits_output, (10, 10, 1))
+    match config.multilayer.digits_discrimination_activation_function:
+        case ActivationFunction.TANH:
+            layer1 = Tanh(config.beta)
+            layer2 = Tanh(config.beta)
+            layer3 = Tanh(config.beta)
+            layer4 = Tanh(config.beta)
+        case ActivationFunction.LOGISTIC:
+            layer1 = Logistic(config.beta)
+            layer2 = Logistic(config.beta)
+            layer3 = Logistic(config.beta)
+            layer4 = Logistic(config.beta)
+        case _:
+            raise RuntimeError("Invalid ActivationFunction")
+
     network = [
-        Dense(35, 10, get_optimizer_instance(config)),
-        config.multilayer.digits_discrimination_activation_function,
+        Dense(35, 70, get_optimizer_instance(config)),
+        layer1,
+        Dense(70, 35, get_optimizer_instance(config)),
+        layer2,
+        Dense(35, 5, get_optimizer_instance(config)),
+        layer3,
+        Dense(5, 10, get_optimizer_instance(config)),
+        layer4,
     ]
 
     match config.multilayer.training_style:

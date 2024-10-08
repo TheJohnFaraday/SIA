@@ -19,21 +19,9 @@ def xor(config: Configuration):
     network = [
         # Dense(2, 3, GradientDescent(config.learning_rate)),
         # Dense(2, 3, Momentum(config.learning_rate, config.multilayer.momentum)),
+        config.multilayer.parity_discrimination_activation_function,
         Dense(
             2,
-            3,
-            Adam(
-                learning_rate=config.learning_rate,
-                beta1=config.multilayer.beta1,
-                beta2=config.multilayer.beta2,
-                epsilon=config.multilayer.epsilon,
-            ),
-        ),
-        Tanh(),
-        # Dense(3, 1, GradientDescent(config.learning_rate)),
-        # Dense(3, 1, Momentum(config.learning_rate, config.multilayer.momentum)),
-        Dense(
-            3,
             1,
             Adam(
                 learning_rate=config.learning_rate,
@@ -42,7 +30,9 @@ def xor(config: Configuration):
                 epsilon=config.multilayer.epsilon,
             ),
         ),
-        Tanh(),
+        # Dense(3, 1, GradientDescent(config.learning_rate)),
+        # Dense(3, 1, Momentum(config.learning_rate, config.multilayer.momentum)),
+        config.multilayer.parity_discrimination_activation_function,
     ]
 
     mlp = MultiLayerPerceptron(

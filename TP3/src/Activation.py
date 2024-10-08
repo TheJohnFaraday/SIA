@@ -14,7 +14,10 @@ class Activation(Layer):
         self.input_matrix = input_matrix
         return self.activation(self.input_matrix, self.beta)
 
-    def backward(self, output_gradient, learning_rate):
-        return np.multiply(
-            output_gradient, self.activation_prime(self.input_matrix, self.beta)
+    def backward(self, output_gradient, weights_gradient, learning_rate):
+        return (
+            np.multiply(
+                output_gradient, self.activation_prime(self.input_matrix, self.beta)
+            ),
+            None,
         )

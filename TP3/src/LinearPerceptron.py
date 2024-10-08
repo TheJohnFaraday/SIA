@@ -3,6 +3,7 @@ import pandas as pd
 from enum import Enum
 from src.utils import unnormalize
 
+from src.utils import unnormalize_0_1
 
 
 class ActivationFunction(Enum):
@@ -24,7 +25,7 @@ def logistic_activation(x, beta):
 
 
 def logistic_prime(x, beta):
-    2 * beta * logistic_activation(x, beta)(1 - logistic_activation(x, beta))
+    return 2 * beta * logistic_activation(x, beta) * (1 - logistic_activation(x, beta))
 
 
 def linear_activation(x, beta):
@@ -42,7 +43,7 @@ class LinearPerceptron:
         learning_rate,
         activation_function,
         beta,
-        error_function,
+        error_function
     ):
         # initialize weights w to small random values
         self.weights = np.random.rand(input_size)
@@ -54,12 +55,15 @@ class LinearPerceptron:
             case ActivationFunction.TANH:
                 self.activation_function = tanh_activation
                 self.activation_prime = tanh_prime
+                self.unnormalize = unnormalize
             case ActivationFunction.LOGISTIC:
                 self.activation_function = logistic_activation
                 self.activation_prime = logistic_prime
+                self.unnormalize = unnormalize_0_1
             case ActivationFunction.LINEAR:
                 self.activation_function = linear_activation
                 self.activation_prime = linear_prime
+                self.unnormalize = unnormalize
         self.beta = beta
         self.error_function = error_function
         self.final_error = []
@@ -102,8 +106,8 @@ class LinearPerceptron:
             predictions.append(y_pred)
             error = self.error_function.error(y_true, y_pred)
             errors.append(error)
-            print(f"Entrada: {x}, Predicción: {unnormalize(y_pred, np.min(unnom_expected_output), np.max(unnom_expected_output))}, "
-                  f"Valor Esperado: {unnormalize(y_true, np.min(unnom_expected_output), np.max(unnom_expected_output))}, Error: {error}")
+            #print(f"Entrada: {x}, Predicción: {self.unnormalize(y_pred, np.min(unnom_expected_output), np.max(unnom_expected_output))}, "
+            #      f"Valor Esperado: {self.unnormalize(y_true, np.min(unnom_expected_output), np.max(unnom_expected_output))}, Error: {error}")
 
         avg_error = np.mean(errors)
         print(f"Error medio en el conjunto de prueba: {avg_error}")

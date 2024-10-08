@@ -6,7 +6,7 @@ seed = 20241006
 learning_rate = 0.01
 beta = 0.4
 train_proportion = 0.7
-epoch=100000
+epoch=10000
 noise_val=0.0
 
 
@@ -21,7 +21,7 @@ output = [1,1,-1,-1]
 [single_layer.linear_non_linear]
 path = "datasets/TP3-ej2-conjunto.csv"
 # Activation function: 'tanh' or 'logistic'
-activation_function = "tanh"
+activation_function = "logistic"
 
 [multi_layer]
 # Choose one between 'online', 'minibatch' and 'batch'
@@ -34,11 +34,11 @@ optimizer = 'gradient_descent'
 [multi_layer.parity_discrimination]
 path = "datasets/TP3-ej3-digitos.txt"
 # Activation function: 'tanh' or 'logistic'
-activation_function = "logistic"
+activation_function = "tanh"
 
 [multi_layer.digit_discrimination]
 # Activation function: 'tanh' or 'logistic'
-activation_function = "logistic"
+activation_function = "tanh"
 
 [multi_layer.mnist]
 path="datasets/mnist.npz"
