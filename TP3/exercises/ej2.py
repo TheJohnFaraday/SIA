@@ -35,10 +35,30 @@ def plot_mse_comparison(folds, mse_linear, mse_nonlinear, title, ylabel):
     plt.show()
 
 
+def plot_epochs_comparison(folds, epochs_linear, epochs_nonlinear, title, ylabel):
+    """Genera una gráfica de barras para comparar los epochs alcanzados en cada fold por tipo de perceptrón"""
+    plt.figure(figsize=(10, 5))
+    bar_width = 0.35
+
+    # Gráfico para el perceptrón lineal
+    plt.bar(folds - bar_width/2, epochs_linear, width=bar_width, color='skyblue', label='Linear Perceptron')
+
+    # Gráfico para el perceptrón no lineal
+    plt.bar(folds + bar_width/2, epochs_nonlinear, width=bar_width, color='lightgreen', label='Non-Linear Perceptron')
+
+    plt.xlabel('Fold')
+    plt.ylabel(ylabel)
+    plt.title(title)
+    plt.xticks(folds)
+    plt.legend()
+    plt.show()
+
+
 def train_with_kfold(inputs, outputs, unnom_outputs, config):
     """Entrena y evalúa el modelo utilizando K-Fold Cross-Validation"""
     kf = KFold(n_splits=5, shuffle=True, random_state=42)
     mse_linear, mse_nonlinear = [], []
+    epochs_linear, epochs_nonlinear = [], []
     fold = 1
 
     print("Train with kfold")
@@ -55,6 +75,7 @@ def train_with_kfold(inputs, outputs, unnom_outputs, config):
             train_input, train_output, test_input, test_output, test_unnom_output, config, ActivationFunction.LINEAR
         )
         mse_linear.append(linear_perceptron.final_error[-1])
+        epochs_linear.append(len(linear_perceptron.final_epochs))  # Guardamos el número de epochs lineales
 
         # Entrenamos y evaluamos el perceptrón no lineal
         print("No Linear Perceptron")
@@ -62,6 +83,7 @@ def train_with_kfold(inputs, outputs, unnom_outputs, config):
             train_input, train_output, test_input, test_output, test_unnom_output, config, config.linear_non_linear_activation_function
         )
         mse_nonlinear.append(non_linear_perceptron.final_error[-1])
+        epochs_nonlinear.append(len(non_linear_perceptron.final_epochs))  # Guardamos el número de epochs no lineales
 
         fold += 1
 
@@ -69,6 +91,7 @@ def train_with_kfold(inputs, outputs, unnom_outputs, config):
     folds = np.arange(1, len(mse_linear) + 1)
     plot_mse_comparison(folds, mse_linear, mse_nonlinear, 'Comparison of training MSE', 'Training MSE')
     plot_mse_comparison(folds, test_lineal_errors, test_non_lineal_errors, 'Comparison of testing MSE', 'Testing MSE')
+    plot_epochs_comparison(folds, epochs_linear, epochs_nonlinear, 'Epochs Reached per Fold', 'Epochs')
 
 
 def train_without_kfold(inputs, outputs, config):
