@@ -3,7 +3,12 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from dataclasses import dataclass
 
-from src.configuration import Configuration, TrainingStyle, Optimizer, ActivationFunction
+from src.configuration import (
+    Configuration,
+    TrainingStyle,
+    Optimizer,
+    ActivationFunction,
+)
 
 from src.Dense import Dense
 from src.errors import MSE
@@ -14,7 +19,12 @@ from src.Training import Online, MiniBatch, Batch
 from src.activation_functions import Tanh, Logistic
 
 from exercises.NetworkOutput import NetworkOutput
-from src.grapher import graph_error_by_epoch, graph_accuracy_vs_dataset
+from src.grapher import (
+    graph_error_by_epoch,
+    graph_accuracy_vs_dataset,
+    graph_is_odd_matrix,
+    graph_which_number_matrix
+)
 
 
 @dataclass
@@ -43,12 +53,19 @@ def get_optimizer_instance(config: Configuration):
 
 
 def get_train_set(config: Configuration, output, proportion: float):
-    train_input, test_input, train_output, test_output = train_test_split(
-        config.multilayer.digits_input,
-        output,
-        train_size=proportion,
-        random_state=config.random_seed,
-    )
+    if proportion < 1.0:
+        train_input, test_input, train_output, test_output = train_test_split(
+            config.multilayer.digits_input,
+            output,
+            train_size=proportion,
+            random_state=config.random_seed,
+        )
+    else:
+        train_input = config.multilayer.digits_input
+        test_input = np.array([])
+        train_output = output
+        test_output = np.array([])
+
     return TrainSet(
         train_input=train_input,
         test_input=test_input,
@@ -76,24 +93,6 @@ def get_confusion_matrix(df: pd.DataFrame):
 
 def is_odd(config: Configuration):
     is_odd_output = np.array([0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
-    X = np.reshape(config.multilayer.digits_input, (10, 35, 1))
-    Y = np.reshape(is_odd_output, (10, 1, 1))
-    match config.multilayer.parity_discrimination_activation_function:
-        case ActivationFunction.TANH:
-            layer1 = Tanh(config.beta)
-            layer2 = Tanh(config.beta)
-            layer3 = Tanh(config.beta)
-        case ActivationFunction.LOGISTIC:
-            layer1 = Logistic(config.beta)
-            layer2 = Logistic(config.beta)
-            layer3 = Logistic(config.beta)
-    network = [
-        # layer1,
-        Dense(35, 1, GradientDescent(config.learning_rate)),
-        layer2,
-        # Dense(70, 1, GradientDescent(config.learning_rate)),
-        # layer3
-    ]
 
     dataset_accuracy = []
     if config.train_proportion < 1:
@@ -102,6 +101,7 @@ def is_odd(config: Configuration):
         proportion = 1
 
     while proportion <= 1.0:
+        proportion = round(proportion, 1)
         train_set = get_train_set(config, is_odd_output, proportion)
 
         X = np.reshape(train_set.train_input, (train_set.train_input.shape[0], 35, 1))
@@ -126,14 +126,21 @@ def is_odd(config: Configuration):
 
         match config.multilayer.training_style:
             case TrainingStyle.ONLINE:
-                training_style = Online(MultiLayerPerceptron.predict)
+                training_style = Online(
+                    MultiLayerPerceptron.predict,
+                    epsilon=config.multilayer.acceptable_error_epsilon,
+                )
             case TrainingStyle.MINIBATCH:
                 training_style = MiniBatch(
-                    MultiLayerPerceptron.predict, config.multilayer.batch_size
+                    MultiLayerPerceptron.predict,
+                    batch_size=config.multilayer.batch_size,
+                    epsilon=config.multilayer.acceptable_error_epsilon,
                 )
             case TrainingStyle.BATCH:
                 training_style = Batch(
-                    MultiLayerPerceptron.predict, config.multilayer.batch_size
+                    MultiLayerPerceptron.predict,
+                    batch_size=config.multilayer.batch_size,
+                    epsilon=config.multilayer.acceptable_error_epsilon,
                 )
             case _:
                 raise RuntimeError("Invalid TrainingStyle")
@@ -215,10 +222,11 @@ def is_odd(config: Configuration):
         )
         dataset_accuracy.append((proportion, accuracy))
 
-        graph_error_by_epoch(config, outputs_with_error, errors_by_epoch)
+        graph_error_by_epoch("is_odd", config, errors_by_epoch, proportion)
+        graph_is_odd_matrix("is_odd", config, outputs_with_error, proportion)
         proportion += 0.1
 
-    graph_accuracy_vs_dataset(config, dataset_accuracy)
+    graph_accuracy_vs_dataset("is_odd", config, dataset_accuracy)
 
 
 def which_number(config: Configuration):
@@ -251,27 +259,34 @@ def which_number(config: Configuration):
 
     match config.multilayer.training_style:
         case TrainingStyle.ONLINE:
-            training_style = Online(MultiLayerPerceptron.predict)
+            training_style = Online(MultiLayerPerceptron.predict, epsilon=config.multilayer.acceptable_error_epsilon)
         case TrainingStyle.MINIBATCH:
             training_style = MiniBatch(
-                MultiLayerPerceptron.predict, config.multilayer.batch_size
+                MultiLayerPerceptron.predict,
+                batch_size=config.multilayer.batch_size,
+                epsilon=config.multilayer.acceptable_error_epsilon,
+
             )
         case TrainingStyle.BATCH:
             training_style = Batch(
-                MultiLayerPerceptron.predict, config.multilayer.batch_size
+                MultiLayerPerceptron.predict,
+                batch_size=config.multilayer.batch_size,
+                epsilon=config.multilayer.acceptable_error_epsilon,
+
             )
         case _:
             raise RuntimeError("Invalid TrainingStyle")
 
+    mse = MSE()
     mlp = MultiLayerPerceptron(
         training_style,
         network,
-        MSE(),
+        mse,
         config.epoch,
         config.learning_rate,
     )
 
-    new_network, errors = mlp.train(X, Y)
+    new_network, errors_by_epoch = mlp.train(X, Y)
 
     X_with_noise = list(
         map(
@@ -306,7 +321,18 @@ def which_number(config: Configuration):
         (10, 35, 1),
     )
 
+    outputs_with_error: list[NetworkOutput] = []
+    print(f"Noise: {config.noise_val}")
     for x, y in zip(X_with_noise, config.multilayer.digits_output):
         output = MultiLayerPerceptron.predict(new_network, x)
+        loss = mse.error(y, output)
+        outputs_with_error.append(
+            NetworkOutput(expected=y, output=output, error=loss)
+        )
+
         print(f"Number Expected Output: {y}")
         print(f"Number Output:\n{output}")
+        print(f"Number Output - Rounded:\n{[round(n[0]) for n in output]}")
+
+    graph_error_by_epoch("which_number", config, errors_by_epoch, proportion=1.0)
+    graph_which_number_matrix("which_number", config, outputs_with_error, proportion=1.0)

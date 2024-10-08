@@ -38,14 +38,15 @@ class MultiLayer:
     training_style: TrainingStyle
     digits_input: np.ndarray
     digits_output: np.ndarray
-    parity_discrimination_activation_function: Activation
-    digits_discrimination_activation_function: Activation
+    parity_discrimination_activation_function: ActivationFunction
+    digits_discrimination_activation_function: ActivationFunction
     noise_val: float
     mnist_path: str
     momentum: float
     beta1: float
     beta2: float
     epsilon: float
+    acceptable_error_epsilon: float
     batch_size: int = 0
 
 
@@ -218,6 +219,7 @@ def read_configuration():
             beta2=data["multi_layer"]["adam"].get("beta2", 0.99),
             epsilon=data["multi_layer"]["adam"].get("epsilon", 1e-8),
             batch_size=data["multi_layer"].get("batch_size", 0),
+            acceptable_error_epsilon=data["multi_layer"].get("acceptable_error_epsilon", 1e-16)
         )
 
         configuration = Configuration(

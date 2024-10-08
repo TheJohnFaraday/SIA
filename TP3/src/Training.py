@@ -9,8 +9,11 @@ from src.Layer import Layer
 class Training(ABC):
     type NeuralNetwork = list[Layer]
 
-    def __init__(self, predict: Callable[[NeuralNetwork, np.array], np.array]):
+    def __init__(
+        self, predict: Callable[[NeuralNetwork, np.array], np.array], epsilon: float
+    ):
         self.predict = predict
+        self.epsilon = epsilon
 
     @abstractmethod
     def train(
@@ -30,11 +33,11 @@ class Batch(Training):
     def __init__(
         self,
         predict: Callable[[Training.NeuralNetwork, np.array], np.array],
+        epsilon: float,
         batch_size: int,
     ):
-        super().__init__(predict)
+        super().__init__(predict, epsilon)
         self.batch_size = batch_size
-        self.epsilon = 0.001
 
     def train(
         self,
@@ -49,6 +52,7 @@ class Batch(Training):
         for epoch in range(epochs):
             total_loss = 0
             output_gradient = 0.0
+            loss = 0.0
             for x, y in zip(input_matrix, expected_output_matrix):
                 # forward
                 output = self.predict(network, x)
@@ -62,17 +66,17 @@ class Batch(Training):
 
                 for layer in reversed(network):
                     # print(f'Weights Gradient: {weights_gradient}')
-                    output_gradient = layer.backward(
-                        output_gradient, learning_rate
-                    )
+                    output_gradient = layer.backward(output_gradient, learning_rate)
             for layer in reversed(network):
                 layer.update()
-            total_error = total_loss/len(input_matrix)
+
+            total_error = total_loss / len(input_matrix)
             errors.append(total_error)
+
             if total_error < self.epsilon:
                 break
 
-        print(f"Epoch {epoch + 1}/{epochs} - loss: {loss}")
+            print(f"Epoch {epoch + 1}/{epochs} - loss: {loss}")
         return network, errors
 
 
@@ -81,11 +85,11 @@ class MiniBatch(Training):
     def __init__(
         self,
         predict: Callable[[Training.NeuralNetwork, np.array], np.array],
+        epsilon: float,
         batch_size: int,
     ):
-        super().__init__(predict)
+        super().__init__(predict, epsilon)
         self.batch_size = batch_size
-        self.epislon = 0.001
 
     def train(
         self,
@@ -117,13 +121,11 @@ class MiniBatch(Training):
                     # backward
                     output_gradient = error.error_prime(y, output)
                     for layer in reversed(network):
-                        output_gradient = layer.backward(
-                            output_gradient, learning_rate
-                        )
+                        output_gradient = layer.backward(output_gradient, learning_rate)
                 for layer in reversed(network):
                     layer.update()
 
-            total_error = total_loss/len(input_matrix)
+            total_error = total_loss / len(input_matrix)
             errors.append(total_error)
             if total_error < self.epsilon:
                 break
@@ -134,9 +136,12 @@ class MiniBatch(Training):
 
 # actualizacion pesos de la red--> luego de calcular el dW PARA UN ELEMENTO del conjunto de datos
 class Online(Training):
-    def __init__(self, predict: Callable[[Training.NeuralNetwork, np.array], np.array]):
-        super().__init__(predict)
-        self.epsilon = 0.001
+    def __init__(
+        self,
+        predict: Callable[[Training.NeuralNetwork, np.array], np.array],
+        epsilon: float,
+    ):
+        super().__init__(predict, epsilon)
 
     def train(
         self,
@@ -162,13 +167,11 @@ class Online(Training):
                 # backward
                 output_gradient = error.error_prime(y, output)
                 for layer in reversed(network):
-                    output_gradient = layer.backward(
-                        output_gradient, learning_rate
-                    )
+                    output_gradient = layer.backward(output_gradient, learning_rate)
                 for layer in reversed(network):
                     layer.update()
 
-            total_error = total_loss/len(input_matrix)
+            total_error = total_loss / len(input_matrix)
             errors.append(total_error)
             if total_error < self.epsilon:
                 break

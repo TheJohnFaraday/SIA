@@ -80,15 +80,21 @@ def mnist_digit_clasification(config: Configuration):
 
     match config.multilayer.training_style:
         case TrainingStyle.ONLINE:
-            training_style = Online(MultiLayerPerceptron.predict)
+            training_style = Online(MultiLayerPerceptron.predict,epsilon=config.multilayer.acceptable_error_epsilon)
         case TrainingStyle.MINIBATCH:
             training_style = MiniBatch(
-                MultiLayerPerceptron.predict, config.multilayer.batch_size
+                MultiLayerPerceptron.predict,
+                batch_size=config.multilayer.batch_size,
+                epsilon=config.multilayer.acceptable_error_epsilon,
             )
         case TrainingStyle.BATCH:
             training_style = Batch(
-                MultiLayerPerceptron.predict, config.multilayer.batch_size
+                MultiLayerPerceptron.predict,
+                batch_size=config.multilayer.batch_size,
+                epsilon=config.multilayer.acceptable_error_epsilon,
             )
+        case _:
+            raise RuntimeError("Invalid TrainingStyle")
 
     mlp = MultiLayerPerceptron(
         training_style,
