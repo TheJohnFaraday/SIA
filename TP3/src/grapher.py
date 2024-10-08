@@ -45,21 +45,22 @@ sns.set_palette(CUSTOM_PALETTE)
 sns.set_style(PLT_THEME)
 
 
+map_training = {
+    TrainingStyle.BATCH: "Batch",
+    TrainingStyle.MINIBATCH: "MiniBatch",
+    TrainingStyle.ONLINE: "Online",
+}
+
+map_optimizer = {
+    Optimizer.GRADIENT_DESCENT: "Gradient Descent",
+    Optimizer.ADAM: "Adam",
+    Optimizer.MOMENTUM: "Momentum",
+}
+
+
 def graph_error_by_epoch(
     config: Configuration, outputs: list[NetworkOutput], errors_by_epoch: list[float]
 ):
-    map_training = {
-        TrainingStyle.BATCH: "Batch",
-        TrainingStyle.MINIBATCH: "MiniBatch",
-        TrainingStyle.ONLINE: "Online",
-    }
-
-    map_optimizer = {
-        Optimizer.GRADIENT_DESCENT: "Gradient Descent",
-        Optimizer.ADAM: "Adam",
-        Optimizer.MOMENTUM: "Momentum",
-    }
-
     def print_epoch_error(df: pd.DataFrame):
         fig, ax = plt.subplots()
 
@@ -75,7 +76,7 @@ def graph_error_by_epoch(
             " | "
             f"Optimizer = {map_optimizer[config.multilayer.optimizer]}"
         )
-        plt.savefig("plots/error_by_epoch.png")
+        plt.savefig(f"plots/error_by_epoch_lr{config.learning_rate}_{config.multilayer.training_style}_{config.multilayer.optimizer}.png")
 
     def print_output_matrix(df: pd.DataFrame):
         confusion_matrix = {
@@ -113,7 +114,7 @@ def graph_error_by_epoch(
             cbar=True,
             fmt="d",
         )
-        plt.savefig("plots/output_matrix.png")
+        plt.savefig(f"plots/output_matrix_lr{config.learning_rate}_{config.multilayer.training_style}_{config.multilayer.optimizer}.png")
 
     errors_df = pd.DataFrame(
         [float(e) for e in errors_by_epoch],
@@ -133,3 +134,25 @@ def graph_error_by_epoch(
     print(outputs_df)
     print_epoch_error(errors_df)
     print_output_matrix(outputs_df)
+
+
+def graph_accuracy_vs_dataset(config: Configuration, dataset_accuracy: list[tuple[float, float]]):
+    def print_accuracy_vs_proportion(df: pd.DataFrame):
+        fig, ax = plt.subplots()
+
+        ax.plot(df["Proportion"], df["Accuracy"], color=CUSTOM_PALETTE[0])
+
+        ax.set_ylabel("Accuracy")
+        ax.set_xlabel("Proportion")
+        fig.suptitle("Accuracy vs Proportion of the Dataset")
+        ax.set_title(
+            f"Learning Rate = {config.learning_rate}"
+            " | "
+            f"Training = {map_training[config.multilayer.training_style]}"
+            " | "
+            f"Optimizer = {map_optimizer[config.multilayer.optimizer]}"
+        )
+        plt.savefig(f"plots/accuracy_vs_proportion_lr{config.learning_rate}_{config.multilayer.training_style}_{config.multilayer.optimizer}.png")
+
+    df = pd.DataFrame(dataset_accuracy, columns=["Proportion", "Accuracy"])
+    print_accuracy_vs_proportion(df)

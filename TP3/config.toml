@@ -28,6 +28,8 @@ activation_function = "tanh"
 training_style = 'minibatch'
 # If 'minibatch' is chosen, a batch_size is needed
 batch_size = 2
+# Optimizer must be one of: 'gradient_descent', 'momentum', and 'adam'
+optimizer = 'gradient_descent'
 
 [multi_layer.parity_discrimination]
 path = "datasets/TP3-ej3-digitos.txt"
