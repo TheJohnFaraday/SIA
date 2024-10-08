@@ -54,10 +54,11 @@ class Batch(Training):
                 loss = np.mean(error.error(y, output))
 
                 # backward
-                if not output_gradient:
+                if output_gradient is None:
                     output_gradient = error.error_prime(y, output)
                 else:
                     output_gradient += error.error_prime(y, output)
+
             for layer in reversed(network):
                 output_gradient = layer.backward(output_gradient, learning_rate)
 
@@ -86,8 +87,8 @@ class MiniBatch(Training):
     ):
         for epoch in range(epochs):
             for i in range(0, input_matrix.shape[0], self.batch_size):
-                X_batch = input_matrix[i:i+self.batch_size]
-                Y_batch = expected_output_matrix[i:i+self.batch_size]
+                X_batch = input_matrix[i : i + self.batch_size]
+                Y_batch = expected_output_matrix[i : i + self.batch_size]
 
                 output_gradient = None
                 for x, y in zip(X_batch, Y_batch):
@@ -98,10 +99,11 @@ class MiniBatch(Training):
                     loss = np.mean(error.error(y, output))
 
                     # backward
-                    if not output_gradient:
+                    if output_gradient is None:
                         output_gradient = error.error_prime(y, output)
                     else:
                         output_gradient += error.error_prime(y, output)
+
                 for layer in reversed(network):
                     output_gradient = layer.backward(output_gradient, learning_rate)
 
