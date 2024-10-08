@@ -32,7 +32,6 @@ class ActivationFunction(Enum):
     LOGISTIC = "logistic"
 
 
-
 @dataclass(frozen=True)
 class MultiLayer:
     optimizer: Optimizer
@@ -199,11 +198,10 @@ def read_configuration():
 
         noise_val = data.get("noise_val", 0.0)
 
-        mnist_path = data["multi_layer"].get("mnist", "./datasets/mnist.npz")
+        mnist_path = data["multi_layer"]["mnist"].get("path", "./datasets/mnist.npz")
 
         optimizer = key_from_enum_value_with_fallback(
-            Optimizer, data["multi_layer"].get("optimizer"),
-            Optimizer.GRADIENT_DESCENT
+            Optimizer, data["multi_layer"].get("optimizer"), Optimizer.GRADIENT_DESCENT
         )
 
         multilayer_configuration = MultiLayer(

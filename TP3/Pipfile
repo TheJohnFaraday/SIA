@@ -11,6 +11,7 @@ matplotlib = "*"
 keras = "*"
 scikit-learn = "*"
 seaborn = "*"
+tensorflow = "2.17.0"
 
 [dev-packages]
 

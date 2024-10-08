@@ -6,6 +6,7 @@ from exercises.ej1_xor import ej1_xor
 from exercises.ej2 import ej2 as ej2_implementation
 from exercises.ej3_xor import xor as ej3_xor
 from exercises.ej3 import is_odd as ej3_a, which_number as ej3_b
+from exercises.ej4 import mnist_digit_clasification as ej4
 
 from src.configuration import Configuration, read_configuration
 
@@ -33,7 +34,8 @@ def main():
 
     # ej1(config)
     # ej2(config)
-    ej3(config)
+    # ej3(config)
+    ej4(config)
 
 
 if __name__ == "__main__":
