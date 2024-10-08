@@ -11,10 +11,14 @@ class Activation(Layer):
         self.beta = beta
 
     def forward(self, input_matrix):
+        print(f" ACTIVATION IDA----input_matrix: {input_matrix.shape}")
         self.input_matrix = input_matrix
         return self.activation(self.input_matrix, self.beta)
 
     def backward(self, output_gradient, learning_rate):
+        print("-----activation-------")
+        print(f"output gradient: {output_gradient.shape}")
+        print(f"input matrix: {self.input_matrix.shape}")
         return np.multiply(
             output_gradient, self.activation_prime(self.input_matrix, self.beta)
         )

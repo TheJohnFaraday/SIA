@@ -48,7 +48,8 @@ class Dense(Layer):
         self.input_matrix = input_matrix
         return np.dot(self.weights, self.input_matrix) + self.bias
 
-    def backward(self, output_gradient, weights_gradient):
+    #TODO sacar el learning_Rate(me reta layer), ver si se puede sacar de layer o no
+    def backward(self, output_gradient, learning_rate):
         """
         Returns dE/dX
 
@@ -61,11 +62,15 @@ class Dense(Layer):
         -------
 
         """
+        weights_gradient = np.dot(output_gradient, self.input_matrix.T)
+        bias_gradient = np.sum(output_gradient, axis=1, keepdims=True)
 
         # dE/dW = dE/dY . dY/dW = dE/dY . X^t
         self.weights, self.bias = self.optimizer.update(
             self.weights, self.bias, weights_gradient, output_gradient
         )
-
+        print("----dense----")
+        print(f"devuelvo: {np.dot(self.weights.T, output_gradient).shape}")
+        print(f"input_matrix: {self.input_matrix.shape}")
         # dE/dX = dE/dY . dY/dX = W^t . dE/dY
         return np.dot(self.weights.T, output_gradient)

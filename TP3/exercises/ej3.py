@@ -84,7 +84,13 @@ def which_number(config: Configuration):
     X = np.reshape(config.multilayer.digits_input, (10, 35, 1))
     Y = np.reshape(config.multilayer.digits_output, (10, 10, 1))
     network = [
-        Dense(35, 10, GradientDescent(config.learning_rate)),
+        Dense(35, 70, GradientDescent(config.learning_rate)),
+        config.multilayer.digits_discrimination_activation_function,
+        Dense(70, 35, GradientDescent(config.learning_rate)),
+        config.multilayer.digits_discrimination_activation_function,
+        Dense(35, 5, GradientDescent(config.learning_rate)),
+        config.multilayer.digits_discrimination_activation_function,
+        Dense(5, 10, GradientDescent(config.learning_rate)),
         config.multilayer.digits_discrimination_activation_function,
     ]
 
