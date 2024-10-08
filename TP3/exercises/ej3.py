@@ -33,6 +33,8 @@ def is_odd(config: Configuration):
             training_style = Batch(
                 MultiLayerPerceptron.predict, config.multilayer.batch_size
             )
+        case _:
+            raise RuntimeError("Invalid TrainingStyle")
 
     mlp = MultiLayerPerceptron(
         training_style,
@@ -59,17 +61,19 @@ def is_odd(config: Configuration):
     )
 
     X_with_noise = np.reshape(
-        list(
-            map(
-                lambda block: list(
-                    map(
-                        lambda row: list(
-                            map(lambda x: 0 if x < 0 else (1 if x > 1 else x), row)
-                        ),
-                        block,
-                    )
-                ),
-                X_with_noise,
+        np.array(
+            list(
+                map(
+                    lambda block: list(
+                        map(
+                            lambda row: list(
+                                map(lambda x: 0 if x < 0 else (1 if x > 1 else x), row)
+                            ),
+                            block,
+                        )
+                    ),
+                    X_with_noise,
+                )
             )
         ),
         (10, 35, 1),
@@ -100,6 +104,8 @@ def which_number(config: Configuration):
             training_style = Batch(
                 MultiLayerPerceptron.predict, config.multilayer.batch_size
             )
+        case _:
+            raise RuntimeError("Invalid TrainingStyle")
 
     mlp = MultiLayerPerceptron(
         training_style,
@@ -126,17 +132,19 @@ def which_number(config: Configuration):
     )
 
     X_with_noise = np.reshape(
-        list(
-            map(
-                lambda block: list(
-                    map(
-                        lambda row: list(
-                            map(lambda x: 0 if x < 0 else (1 if x > 1 else x), row)
-                        ),
-                        block,
-                    )
-                ),
-                X_with_noise,
+        np.array(
+            list(
+                map(
+                    lambda block: list(
+                        map(
+                            lambda row: list(
+                                map(lambda x: 0 if x < 0 else (1 if x > 1 else x), row)
+                            ),
+                            block,
+                        )
+                    ),
+                    X_with_noise,
+                )
             )
         ),
         (10, 35, 1),
