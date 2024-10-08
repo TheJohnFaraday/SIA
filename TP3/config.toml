@@ -1,13 +1,13 @@
 # Show / Hide plots
-plot = false
+plot = true
 
 # [Optional] Seed for RNG. Comment it out for randomness, or set an integer for determinism
 seed = 20241006
 learning_rate = 0.01
 beta = 0.4
-train_proportion = 0.7
-epoch=10000
-noise_val=0.3
+train_proportion = 1.0
+epoch=100
+noise_val=0.4
 
 
 [and]
@@ -25,9 +25,9 @@ activation_function = "logistic"
 
 [multi_layer]
 # Choose one between 'online', 'minibatch' and 'batch'
-training_style = 'batch'
+training_style = 'minibatch'
 # If 'minibatch' is chosen, a batch_size is needed
-batch_size = 2
+batch_size = 10000
 # Optimizer must be one of: 'gradient_descent', 'momentum', and 'adam'
 optimizer = 'adam'
 # Acceptable error value

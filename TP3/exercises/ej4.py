@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import keras
 
 from src.configuration import (
@@ -16,6 +17,12 @@ from src.Optimizer import GradientDescent, Momentum, Adam
 from src.Training import Online, MiniBatch, Batch
 from src.activation_functions import Tanh, Logistic
 from src.utils import normalize_0_1
+
+from exercises.NetworkOutput import NetworkOutput
+from src.grapher import (
+    graph_error_by_epoch,
+    graph_which_number_matrix,
+)
 
 
 def get_optimizer_instance(config: Configuration):
@@ -35,6 +42,23 @@ def get_optimizer_instance(config: Configuration):
             raise RuntimeError("Invalid optimizer selected")
 
 
+def get_confusion_matrix(df: pd.DataFrame):
+    confusion_matrix = {
+        "Not Predicted": [0, 0],
+        "Predicted": [0, 0],
+    }
+    for _, row in df.iterrows():
+        expected = row["Expected Output"]
+        value = row["Rounded Output"]
+
+        if expected == value:
+            confusion_matrix["Predicted"][expected] += 1
+        else:
+            confusion_matrix["Not Predicted"][expected] += 1
+
+    return confusion_matrix
+
+
 def mnist_digit_clasification(config: Configuration):
     # x_train.shape = (60000, 28, 28)
     # y_train.shape = (60000,)
@@ -52,8 +76,34 @@ def mnist_digit_clasification(config: Configuration):
         Y.append(row)
     Y = np.reshape(Y, (60000, 10, 1))
 
+    X_test = np.reshape(x_test, (10000, 784, 1))
+    Y_test = []
+    for y in y_test:
+        row = np.zeros(10)
+        row[y] = 1
+        Y_test.append(row)
+    Y_test = np.reshape(Y_test, (10000, 10, 1))
+
     X_norm = np.array(
-        list(map(lambda row: np.array(list(map(lambda x: normalize_0_1(x, 0, 255), row))), X))
+        list(
+            map(
+                lambda row: np.array(
+                    list(map(lambda x: normalize_0_1(x, 0, 255), row))
+                ),
+                X,
+            )
+        )
+    )
+
+    X_test_norm = np.array(
+        list(
+            map(
+                lambda row: np.array(
+                    list(map(lambda x: normalize_0_1(x, 0, 255), row))
+                ),
+                X_test,
+            )
+        )
     )
 
     match config.multilayer.parity_discrimination_activation_function:
@@ -68,9 +118,10 @@ def mnist_digit_clasification(config: Configuration):
             layer3 = Logistic(config.beta)
             layer4 = Logistic(config.beta)
 
+    mse = MSE()
     network = [
         # layer1,
-        Dense(784, 10, GradientDescent(config.learning_rate)),
+        Dense(784, 10, get_optimizer_instance(config)),
         layer2,
         # Dense(196, 28, GradientDescent(config.learning_rate)),
         # layer3,
@@ -80,7 +131,10 @@ def mnist_digit_clasification(config: Configuration):
 
     match config.multilayer.training_style:
         case TrainingStyle.ONLINE:
-            training_style = Online(MultiLayerPerceptron.predict,epsilon=config.multilayer.acceptable_error_epsilon)
+            training_style = Online(
+                MultiLayerPerceptron.predict,
+                epsilon=config.multilayer.acceptable_error_epsilon,
+            )
         case TrainingStyle.MINIBATCH:
             training_style = MiniBatch(
                 MultiLayerPerceptron.predict,
@@ -104,42 +158,22 @@ def mnist_digit_clasification(config: Configuration):
         config.learning_rate,
     )
 
-    new_network = mlp.train(X_norm, Y)
+    new_network, errors_by_epoch = mlp.train(X, Y)
 
-    '''
-    X_with_noise = list(
-        map(
-            lambda block: list(
-                map(
-                    lambda row: list(
-                        map(lambda x: x + np.random.normal(0, config.noise_val), row)
-                    ),
-                    block,
-                )
-            ),
-            config.multilayer.digits_input,
-        ),
-    )
-
-    X_with_noise = np.reshape(
-        list(
-            map(
-                lambda block: list(
-                    map(
-                        lambda row: list(
-                            map(lambda x: 0 if x < 0 else (1 if x > 1 else x), row)
-                        ),
-                        block,
-                    )
-                ),
-                X_with_noise,
-            )
-        ),
-        (10, 35, 1),
-    )
-
-    for x, y in zip(X_with_noise, is_odd_output):
+    outputs_with_error: list[NetworkOutput] = []
+    print(f"Noise: {config.noise_val}")
+    for x, y in zip(X_test_norm, Y_test):
         output = MultiLayerPerceptron.predict(new_network, x)
-        print(f"Is Odd Expected Output: {y}")
-        print(f"Is Odd Output:\n{output}")
-        '''
+        loss = mse.error(y, output)
+        outputs_with_error.append(
+            NetworkOutput(expected=y, output=output, error=loss)
+        )
+
+        print(f"Number Expected Output: {y}")
+        print(f"Number Output:\n{output}")
+        print(f"Number Output - Rounded:\n{[round(n[0]) for n in output]}")
+
+    graph_error_by_epoch("which_number_mnist", config, errors_by_epoch, proportion=1.0)
+    graph_which_number_matrix(
+        "which_number_mnist", config, outputs_with_error, proportion=1.0
+    )

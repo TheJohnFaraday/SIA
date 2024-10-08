@@ -23,7 +23,7 @@ from src.grapher import (
     graph_error_by_epoch,
     graph_accuracy_vs_dataset,
     graph_is_odd_matrix,
-    graph_which_number_matrix
+    graph_which_number_matrix,
 )
 
 
@@ -236,43 +236,44 @@ def which_number(config: Configuration):
         case ActivationFunction.TANH:
             layer1 = Tanh(config.beta)
             layer2 = Tanh(config.beta)
-            layer3 = Tanh(config.beta)
-            layer4 = Tanh(config.beta)
+            # layer3 = Tanh(config.beta)
+            # layer4 = Tanh(config.beta)
         case ActivationFunction.LOGISTIC:
             layer1 = Logistic(config.beta)
             layer2 = Logistic(config.beta)
-            layer3 = Logistic(config.beta)
-            layer4 = Logistic(config.beta)
+            # layer3 = Logistic(config.beta)
+            # layer4 = Logistic(config.beta)
         case _:
             raise RuntimeError("Invalid ActivationFunction")
 
     network = [
         Dense(35, 70, get_optimizer_instance(config)),
         layer1,
-        Dense(70, 35, get_optimizer_instance(config)),
+        Dense(70, 10, get_optimizer_instance(config)),
         layer2,
-        Dense(35, 5, get_optimizer_instance(config)),
-        layer3,
-        Dense(5, 10, get_optimizer_instance(config)),
-        layer4,
+        # Dense(35, 5, get_optimizer_instance(config)),
+        # layer3,
+        # Dense(5, 10, get_optimizer_instance(config)),
+        # layer4,
     ]
 
     match config.multilayer.training_style:
         case TrainingStyle.ONLINE:
-            training_style = Online(MultiLayerPerceptron.predict, epsilon=config.multilayer.acceptable_error_epsilon)
+            training_style = Online(
+                MultiLayerPerceptron.predict,
+                epsilon=config.multilayer.acceptable_error_epsilon,
+            )
         case TrainingStyle.MINIBATCH:
             training_style = MiniBatch(
                 MultiLayerPerceptron.predict,
                 batch_size=config.multilayer.batch_size,
                 epsilon=config.multilayer.acceptable_error_epsilon,
-
             )
         case TrainingStyle.BATCH:
             training_style = Batch(
                 MultiLayerPerceptron.predict,
                 batch_size=config.multilayer.batch_size,
                 epsilon=config.multilayer.acceptable_error_epsilon,
-
             )
         case _:
             raise RuntimeError("Invalid TrainingStyle")
@@ -288,51 +289,66 @@ def which_number(config: Configuration):
 
     new_network, errors_by_epoch = mlp.train(X, Y)
 
-    X_with_noise = list(
-        map(
-            lambda block: list(
-                map(
-                    lambda row: list(
-                        map(lambda x: x + np.random.normal(0, config.noise_val), row)
-                    ),
-                    block,
-                )
-            ),
-            config.multilayer.digits_input,
-        ),
-    )
+    X_with_noise = np.reshape(config.multilayer.digits_input, (10, 35, 1))
 
-    X_with_noise = np.reshape(
-        np.array(
-            list(
-                map(
-                    lambda block: list(
+    Xs_with_noise = []
+    for _ in range(32):
+        X_with_noise1 = list(
+            map(
+                lambda block: list(
+                    map(
+                        lambda row: list(
+                            map(
+                                lambda x: x + np.random.normal(0, config.noise_val), row
+                            )
+                        ),
+                        block,
+                    )
+                ),
+                X_with_noise,
+            ),
+        )
+        Xs_with_noise.append(
+            np.reshape(
+                np.array(
+                    list(
                         map(
-                            lambda row: list(
-                                map(lambda x: 0 if x < 0 else (1 if x > 1 else x), row)
+                            lambda block: list(
+                                map(
+                                    lambda row: list(
+                                        map(
+                                            lambda x: (
+                                                0 if x < 0 else (1 if x > 1 else x)
+                                            ),
+                                            row,
+                                        )
+                                    ),
+                                    block,
+                                )
                             ),
-                            block,
+                            X_with_noise1,
                         )
-                    ),
-                    X_with_noise,
-                )
+                    )
+                ),
+                (10, 35, 1),
             )
-        ),
-        (10, 35, 1),
-    )
+        )
 
     outputs_with_error: list[NetworkOutput] = []
     print(f"Noise: {config.noise_val}")
-    for x, y in zip(X_with_noise, config.multilayer.digits_output):
-        output = MultiLayerPerceptron.predict(new_network, x)
-        loss = mse.error(y, output)
-        outputs_with_error.append(
-            NetworkOutput(expected=y, output=output, error=loss)
-        )
+    for Xs in Xs_with_noise:
+        for x, y in zip(Xs, config.multilayer.digits_output):
+            output = MultiLayerPerceptron.predict(new_network, x)
+            loss = mse.error(y, output)
+            outputs_with_error.append(
+                NetworkOutput(expected=y, output=output, error=loss)
+            )
 
-        print(f"Number Expected Output: {y}")
-        print(f"Number Output:\n{output}")
-        print(f"Number Output - Rounded:\n{[round(n[0]) for n in output]}")
+            print(f"Number Expected Output: {y}")
+            print(f"Number Output:\n{output}")
+            print(f"Number Output - Rounded:\n{[round(n[0]) for n in output]}")
 
     graph_error_by_epoch("which_number", config, errors_by_epoch, proportion=1.0)
-    graph_which_number_matrix("which_number", config, outputs_with_error, proportion=1.0)
+    graph_which_number_matrix(
+        "which_number", config, outputs_with_error, proportion=1.0
+    )

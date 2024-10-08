@@ -21,8 +21,8 @@ def ej2(config: Configuration):
 
 
 def ej3(config: Configuration):
-    #ej3_xor(config)
-    ej3_a(config)
+    # ej3_xor(config)
+    # ej3_a(config)
     ej3_b(config)
 
 
@@ -33,9 +33,9 @@ def main():
         np.random.seed(config.random_seed)
 
     # ej1(config)
-    ej2(config)
+    # ej2(config)
     # ej3(config)
-    # ej4(config)
+    ej4(config)
 
 
 if __name__ == "__main__":
