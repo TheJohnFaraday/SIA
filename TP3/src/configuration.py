@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import tomllib
 from dataclasses import dataclass
-from .utils import key_from_enum_value_with_fallback, normalize, normalize2
+from .utils import key_from_enum_value_with_fallback, normalize, normalize2, normalize_0_1
 from .LinearPerceptron import ActivationFunction as LinearNonLinearActivationFunction
 from .Activation import Activation
 from .activation_functions import Tanh, Logistic
@@ -84,11 +84,23 @@ def read_configuration():
                 )
             )  # (index, row)
         )
+
+        linear_non_linear_activation_function = key_from_enum_value_with_fallback(
+            LinearNonLinearActivationFunction,
+            data["single_layer"]["linear_non_linear"]["activation_function"],
+            LinearNonLinearActivationFunction.TANH,
+        )
+
         linear_non_linear_output = list(map(lambda row: row[1]["y"], df.iterrows()))
+        if linear_non_linear_activation_function == LinearNonLinearActivationFunction.TANH:
+            normalize_fn = normalize
+        else:
+            normalize_fn = normalize_0_1
+
         linear_non_linear_output_norm = np.array(
             list(
                 map(
-                    lambda y: normalize(
+                    lambda y: normalize_fn(
                         y,
                         np.min(linear_non_linear_output),
                         np.max(linear_non_linear_output),
@@ -96,11 +108,6 @@ def read_configuration():
                     linear_non_linear_output,
                 )
             )
-        )
-        linear_non_linear_activation_function = key_from_enum_value_with_fallback(
-            LinearNonLinearActivationFunction,
-            data["single_layer"]["linear_non_linear"]["activation_function"],
-            LinearNonLinearActivationFunction.TANH,
         )
 
         if not linear_non_linear_path or linear_non_linear_path == "":
