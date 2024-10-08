@@ -32,6 +32,9 @@ class Dense(Layer):
         self.bias = np.random.randn(output_size, 1)
 
         self.optimizer = optimizer
+        self.weights_accum = 0
+        self.bias_accum = 0
+        self.count = 0
 
     def forward(self, input_matrix):
         """
@@ -48,7 +51,7 @@ class Dense(Layer):
         self.input_matrix = input_matrix
         return np.dot(self.weights, self.input_matrix) + self.bias
 
-    #TODO sacar el learning_Rate(me reta layer), ver si se puede sacar de layer o no
+    # TODO sacar el learning_Rate(me reta layer), ver si se puede sacar de layer o no
     def backward(self, output_gradient, learning_rate):
         """
         Returns dE/dX
@@ -62,13 +65,23 @@ class Dense(Layer):
         -------
 
         """
-        bias_gradient = np.sum(output_gradient, axis=1, keepdims=True)
         weights_gradient = np.dot(output_gradient, self.input_matrix.T)
-
         input_gradient = np.dot(self.weights.T, output_gradient)
+
         # dE/dW = dE/dY . dY/dW = dE/dY . X^t
-        self.weights, self.bias = self.optimizer.update(
-            self.weights, self.bias, weights_gradient, bias_gradient
+        weights, bias = self.optimizer.update(
+            self.weights, self.bias, weights_gradient, output_gradient
         )
+        self.weights_accum += weights
+        self.bias_accum += bias
+        self.count += 1
+
         # dE/dX = dE/dY . dY/dX = W^t . dE/dY
         return input_gradient
+
+    def update(self):
+        self.weights -= self.weights_accum / self.count
+        self.bias -= self.bias_accum / self.count
+        self.count = 0
+        self.weights_accum = 0
+        self.bias_accum = 0

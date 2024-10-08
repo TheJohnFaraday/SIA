@@ -13,9 +13,10 @@ class GradientDescent(Optimizer):
         self.learning_rate = learning_rate
 
     def update(self, weights, bias, weights_gradient, bias_gradient):
-        weights -= self.learning_rate * weights_gradient
-        bias -= self.learning_rate * bias_gradient
-        return weights, bias
+        return (
+            self.learning_rate * weights_gradient,
+            self.learning_rate * bias_gradient,
+        )
 
 
 class Momentum(Optimizer):
@@ -40,10 +41,7 @@ class Momentum(Optimizer):
             self.alpha * self.deltaBias - self.learning_rate * bias_gradient
         )
 
-        weights += self.deltaWeights
-        bias += self.deltaBias
-
-        return weights, bias
+        return (self.deltaWeights, self.deltaBias)
 
 
 class Adam(Optimizer):
@@ -100,9 +98,9 @@ class Adam(Optimizer):
         v_bias_hat = self.v_bias / (1 - self.beta2**self.t)
 
         # Update weights and bias
-        weights -= (
+        updated_weights_deltas = (
             self.learning_rate * m_weights_hat / (np.sqrt(v_weights_hat) + self.epsilon)
         )
-        bias -= self.learning_rate * m_bias_hat / (np.sqrt(v_bias_hat) + self.epsilon)
+        updated_biases_deltas = self.learning_rate * m_bias_hat / (np.sqrt(v_bias_hat) + self.epsilon)
 
-        return weights, bias
+        return (updated_weights_deltas, updated_biases_deltas)

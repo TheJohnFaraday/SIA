@@ -3,11 +3,11 @@ plot = false
 
 # [Optional] Seed for RNG. Comment it out for randomness, or set an integer for determinism
 seed = 20241006
-learning_rate = 0.1
-beta = 0.4
+learning_rate = 0.01
+beta = 1
 train_proportion = 0.7
-epoch=10000
-noise_val=0.0
+epoch=100000
+noise_val=0.3
 
 
 [and]
@@ -34,11 +34,11 @@ optimizer = 'gradient_descent'
 [multi_layer.parity_discrimination]
 path = "datasets/TP3-ej3-digitos.txt"
 # Activation function: 'tanh' or 'logistic'
-activation_function = "logistic"
+activation_function = "tanh"
 
 [multi_layer.digit_discrimination]
 # Activation function: 'tanh' or 'logistic'
-activation_function = "logistic"
+activation_function = "tanh"
 
 [multi_layer.mnist]
 path="datasets/mnist.npz"

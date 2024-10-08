@@ -18,3 +18,6 @@ class Activation(Layer):
         return np.multiply(
             output_gradient, self.activation_prime(self.input_matrix, self.beta)
         )
+
+    def update(self):
+        pass

@@ -34,6 +34,7 @@ class Batch(Training):
     ):
         super().__init__(predict)
         self.batch_size = batch_size
+        self.epsilon = 0.001
 
     def train(
         self,
@@ -59,13 +60,17 @@ class Batch(Training):
                 # backward
                 output_gradient = error.error_prime(y, output)
 
+                for layer in reversed(network):
+                    # print(f'Weights Gradient: {weights_gradient}')
+                    output_gradient = layer.backward(
+                        output_gradient, learning_rate
+                    )
             for layer in reversed(network):
-                # print(f'Weights Gradient: {weights_gradient}')
-                output_gradient = layer.backward(
-                    output_gradient, learning_rate
-                )
-
-            errors.append(total_loss / len(input_matrix))
+                layer.update()
+            total_error = total_loss/len(input_matrix)
+            errors.append(total_error)
+            if total_error < self.epsilon:
+                break
 
         print(f"Epoch {epoch + 1}/{epochs} - loss: {loss}")
         return network, errors
@@ -80,6 +85,7 @@ class MiniBatch(Training):
     ):
         super().__init__(predict)
         self.batch_size = batch_size
+        self.epislon = 0.001
 
     def train(
         self,
@@ -110,12 +116,17 @@ class MiniBatch(Training):
 
                     # backward
                     output_gradient = error.error_prime(y, output)
+                    for layer in reversed(network):
+                        output_gradient = layer.backward(
+                            output_gradient, learning_rate
+                        )
                 for layer in reversed(network):
-                    output_gradient = layer.backward(
-                        output_gradient, learning_rate
-                    )
+                    layer.update()
 
-            errors.append(total_loss / len(input_matrix))
+            total_error = total_loss/len(input_matrix)
+            errors.append(total_error)
+            if total_error < self.epsilon:
+                break
 
         print(f"Epoch {epoch + 1}/{epochs} - loss: {loss}")
         return network, errors
@@ -125,6 +136,7 @@ class MiniBatch(Training):
 class Online(Training):
     def __init__(self, predict: Callable[[Training.NeuralNetwork, np.array], np.array]):
         super().__init__(predict)
+        self.epsilon = 0.001
 
     def train(
         self,
@@ -153,8 +165,13 @@ class Online(Training):
                     output_gradient = layer.backward(
                         output_gradient, learning_rate
                     )
+                for layer in reversed(network):
+                    layer.update()
 
-            errors.append(total_loss / len(input_matrix))
+            total_error = total_loss/len(input_matrix)
+            errors.append(total_error)
+            if total_error < self.epsilon:
+                break
 
         print(f"Epoch {epoch + 1}/{epochs} - loss: {loss}")
         return network, errors

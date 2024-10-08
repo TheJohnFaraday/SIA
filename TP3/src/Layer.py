@@ -21,3 +21,6 @@ class Layer:
 
     def backward(self, output_gradient, learning_rate):
         raise NotImplementedError("Should be override by child implementation")
+
+    def update(self):
+        raise NotImplementedError("Should be override by child implementation")

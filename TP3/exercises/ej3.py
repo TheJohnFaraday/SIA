@@ -88,11 +88,11 @@ def is_odd(config: Configuration):
             layer2 = Logistic(config.beta)
             layer3 = Logistic(config.beta)
     network = [
-        layer1,
-        Dense(35, 70, GradientDescent(config.learning_rate)),
+        # layer1,
+        Dense(35, 1, GradientDescent(config.learning_rate)),
         layer2,
-        Dense(70, 1, GradientDescent(config.learning_rate)),
-        layer3
+        # Dense(70, 1, GradientDescent(config.learning_rate)),
+        # layer3
     ]
 
     dataset_accuracy = []
