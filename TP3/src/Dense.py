@@ -3,10 +3,11 @@
 #   ------    wji   -----                                          (b1= bias)
 #
 # Todas esas ecuaciones pasa a matriz (Y = W . X + B) (matrices)
+from pickletools import optimize
 
 from .Layer import Layer
 import numpy as np
-from .Optimizer import Optimizer, GradientDescent
+from .Optimizer import Optimizer, GradientDescent, Momentum
 
 
 class Dense(Layer):
@@ -85,3 +86,6 @@ class Dense(Layer):
         self.count = 0
         self.weights_accum = 0
         self.bias_accum = 0
+        if isinstance(self.optimizer, Momentum):
+            self.optimizer.deltaWeights = None
+            self.optimizer.deltaBias = None

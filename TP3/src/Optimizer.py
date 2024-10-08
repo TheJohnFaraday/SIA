@@ -35,10 +35,10 @@ class Momentum(Optimizer):
             self.deltaBias = np.zeros(bias.shape)
 
         self.deltaWeights = (
-            self.alpha * self.deltaWeights - self.learning_rate * weights_gradient
+            self.alpha * self.deltaWeights + self.learning_rate * weights_gradient
         )
         self.deltaBias = (
-            self.alpha * self.deltaBias - self.learning_rate * bias_gradient
+            self.alpha * self.deltaBias + self.learning_rate * bias_gradient
         )
 
         return (self.deltaWeights, self.deltaBias)
