@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 from enum import Enum
+from src.utils import unnormalize
+
 
 
 class ActivationFunction(Enum):
@@ -60,7 +62,9 @@ class LinearPerceptron:
                 self.activation_prime = linear_prime
         self.beta = beta
         self.error_function = error_function
+        self.final_error = []
         self.train_errors = []
+        self.final_epochs = []
 
     def predict(self, x):
         weighted_sum = np.dot(x, self.weights) + self.bias
@@ -72,6 +76,7 @@ class LinearPerceptron:
         total_error = 0
         for e in range(epochs):
             error = []
+            self.final_epochs.append(e + 1)
             for x, y in zip(input, expected_output):
                 # forward
                 output, prime = self.predict(x)
@@ -81,13 +86,25 @@ class LinearPerceptron:
                 self.weights += self.learning_rate * (y - output) * prime * x
                 self.bias += self.learning_rate * (y - output) * prime
             total_error = 0.5 * np.sum(error)
+            self.train_errors.append(total_error)
             # convergencia:
             if total_error < 0.01:
                 break
 
-        self.train_errors.append(total_error)
+        self.final_error.append(total_error)
         print(f"{e + 1}/{epochs}, error={total_error}")
 
-    def test(self, data):
-        # TODO probar si aprendio correctamente
-        pass
+    def test(self, input, expected_output, unnom_expected_output):
+        predictions = []
+        errors = []
+        for x, y_true, unnom_y_true in zip(input, expected_output, unnom_expected_output):
+            y_pred, _ = self.predict(x)
+            predictions.append(y_pred)
+            error = self.error_function.error(y_true, y_pred)
+            errors.append(error)
+            print(f"Entrada: {x}, Predicción: {unnormalize(y_pred, np.min(unnom_expected_output), np.max(unnom_expected_output))}, "
+                  f"Valor Esperado: {unnormalize(y_true, np.min(unnom_expected_output), np.max(unnom_expected_output))}, Error: {error}")
+
+        avg_error = np.mean(errors)
+        print(f"Error medio en el conjunto de prueba: {avg_error}")
+        return predictions, errors
