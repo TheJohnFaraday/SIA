@@ -30,6 +30,8 @@ training_style = 'batch'
 batch_size = 2
 # Optimizer must be one of: 'gradient_descent', 'momentum', and 'adam'
 optimizer = 'adam'
+# Acceptable error value
+acceptable_error_epsilon=0.0000001
 
 [multi_layer.parity_discrimination]
 path = "datasets/TP3-ej3-digitos.txt"
