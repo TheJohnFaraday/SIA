@@ -158,10 +158,9 @@ def mnist_digit_clasification(config: Configuration):
         config.learning_rate,
     )
 
-    new_network, errors_by_epoch = mlp.train(X, Y)
+    new_network, errors_by_epoch = mlp.train(X_norm, Y)
 
     outputs_with_error: list[NetworkOutput] = []
-    print(f"Noise: {config.noise_val}")
     for x, y in zip(X_test_norm, Y_test):
         output = MultiLayerPerceptron.predict(new_network, x)
         loss = mse.error(y, output)
