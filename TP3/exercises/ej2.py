@@ -2,9 +2,40 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import KFold, train_test_split
 from src.configuration import Configuration
-from src.LinearPerceptron import LinearPerceptron, ActivationFunction
+from src.LinearPerceptron import (
+    LinearPerceptron,
+    TanhPerceptron,
+    LogisticPerceptron,
+    ActivationFunction,
+)
 from src.errors import MSE
-from src.utils import unnormalize
+
+
+def create_perceptron(activation_function, train_input, learning_rate, beta):
+    match activation_function:
+        case ActivationFunction.LINEAR:
+            return LinearPerceptron(
+                len(train_input[0]),
+                learning_rate,
+                beta,
+                MSE(),
+            )
+        case ActivationFunction.LOGISTIC:
+            return LogisticPerceptron(
+                len(train_input[0]),
+                learning_rate,
+                beta,
+                MSE(),
+            )
+        case ActivationFunction.TANH:
+            return TanhPerceptron(
+                len(train_input[0]),
+                learning_rate,
+                beta,
+                MSE(),
+            )
+        case _:
+            raise RuntimeError("Non valid Activation Function entered")
 
 
 def train_and_evaluate_perceptron(
@@ -12,23 +43,17 @@ def train_and_evaluate_perceptron(
     train_output,
     test_input,
     test_output,
-    test_unnom_output,
     config,
     activation_function,
 ):
     """Entrena y evalúa un perceptrón (lineal o no lineal)"""
-    perceptron = LinearPerceptron(
-        len(train_input[0]),
-        config.learning_rate,
-        activation_function,
-        config.beta,
-        MSE(),
+    perceptron = create_perceptron(
+        activation_function, train_input, config.learning_rate, config.beta
     )
+
     perceptron.train(train_input, train_output, config.epoch)
 
-    test_predictions, test_errors = perceptron.test(
-        test_input, test_output, test_unnom_output
-    )
+    test_predictions, test_errors = perceptron.test(test_input, test_output)
 
     return perceptron, test_errors
 
@@ -88,7 +113,7 @@ def plot_epochs_comparison(
     )
 
 
-def train_with_kfold(inputs, outputs, unnom_outputs, config):
+def train_with_kfold(inputs, outputs, config):
     """Entrena y evalúa el modelo utilizando K-Fold Cross-Validation"""
     kf = KFold(n_splits=5, shuffle=True, random_state=42)
     mse_linear, mse_nonlinear = [], []
@@ -101,10 +126,6 @@ def train_with_kfold(inputs, outputs, unnom_outputs, config):
 
         train_input, test_input = inputs[train_index], inputs[test_index]
         train_output, test_output = outputs[train_index], outputs[test_index]
-        train_unnom_output, test_unnom_output = (
-            unnom_outputs[train_index],
-            unnom_outputs[test_index],
-        )
 
         # Entrenamos y evaluamos el perceptrón lineal
         print("Linear Perceptron")
@@ -113,7 +134,6 @@ def train_with_kfold(inputs, outputs, unnom_outputs, config):
             train_output,
             test_input,
             test_output,
-            test_unnom_output,
             config,
             ActivationFunction.LINEAR,
         )
@@ -129,7 +149,6 @@ def train_with_kfold(inputs, outputs, unnom_outputs, config):
             train_output,
             test_input,
             test_output,
-            test_unnom_output,
             config,
             config.linear_non_linear_activation_function,
         )
@@ -176,24 +195,21 @@ def train_without_kfold(inputs, outputs, config):
     )
 
     # Perceptrón Lineal
-    linear_perceptron = LinearPerceptron(
-        len(train_input[0]),
-        config.learning_rate,
-        ActivationFunction.LINEAR,
-        config.beta,
-        MSE(),
+    linear_perceptron = create_perceptron(
+        ActivationFunction.LINEAR, train_input, config.learning_rate, config.beta
     )
+
     print("Linear Perceptron")
     linear_perceptron.train(train_input, train_output, config.epoch)
 
     # Perceptrón No Lineal
-    non_linear_perceptron = LinearPerceptron(
-        len(train_input[0]),
-        config.learning_rate,
+    non_linear_perceptron = create_perceptron(
         config.linear_non_linear_activation_function,
+        train_input,
+        config.learning_rate,
         config.beta,
-        MSE(),
     )
+
     print("No Linear Perceptron")
     non_linear_perceptron.train(train_input, train_output, config.epoch)
 
@@ -247,11 +263,10 @@ def train_without_kfold(inputs, outputs, config):
 
 def ej2(config: Configuration):
     inputs = config.linear_non_linear_input
-    outputs = config.linear_non_linear_output_norm
-    unnom_outputs = np.array(config.linear_non_linear_output)
+    outputs = np.array(config.linear_non_linear_output)
 
     # Entrenamiento y evaluación usando K-Fold
-    train_with_kfold(inputs, outputs, unnom_outputs, config)
+    train_with_kfold(inputs, outputs, config)
 
     # Entrenamiento sin K-Fold usando train_proportion
     train_without_kfold(inputs, outputs, config)

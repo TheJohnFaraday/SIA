@@ -26,16 +26,21 @@ def ej3(config: Configuration):
     ej3_b(config)
 
 
+def err_handler(type, flag):
+    print("Floating point error (%s), with flag %s" % (type, flag))
+
+
 def main():
     config = read_configuration()
     if config.random_seed:
         random.seed(config.random_seed)
         np.random.seed(config.random_seed)
-
+    saved_handler = np.seterrcall(err_handler)
+    save_err = np.seterr(all='call')
     # ej1(config)
-    # ej2(config)
+    ej2(config)
     # ej3(config)
-    ej4(config)
+    # ej4(config)
 
 
 if __name__ == "__main__":

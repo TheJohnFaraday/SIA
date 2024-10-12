@@ -5,8 +5,8 @@ plot = true
 seed = 20241006
 learning_rate = 0.1
 beta = 0.4
-train_proportion = 1.0
-epoch=100
+train_proportion = 0.99
+epoch=100000
 noise_val=0.4
 
 
