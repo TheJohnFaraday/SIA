@@ -52,11 +52,7 @@ class LinearNonLinearPerceptron:
                 output, prime = self.predict(x)
                 # error
                 error.append(
-                    self.unnormalize(
-                        self.error_function.error(self.normalize(y, min, max), output),
-                        min,
-                        max,
-                    )
+                    self.error_function.error(y, self.unnormalize(output, min, max))
                 )
                 # backward
                 self.weights += (
@@ -85,10 +81,8 @@ class LinearNonLinearPerceptron:
         for x, y_true in zip(input, expected_output):
             y_pred, _ = self.predict(x)
             predictions.append(self.unnormalize(y_pred, min, max))
-            error = self.unnormalize(
-                self.error_function.error(self.normalize(y_true, min, max), y_pred),
-                min,
-                max,
+            error = self.error_function.error(
+                y_true, self.unnormalize(y_pred, min, max)
             )
             errors.append(error)
             # print(f"Entrada: {x}, Predicción: {self.unnormalize(y_pred, np.min(unnom_expected_output), np.max(unnom_expected_output))}, "
@@ -104,16 +98,16 @@ class TanhPerceptron(LinearNonLinearPerceptron):
         super().__init__(input_size, learning_rate, beta, error_function)
 
     def activation_function(self, x, beta):
-        return np.tanh(beta * x)
+        return np.tanh(beta * np.float128(x))
 
     def activation_prime(self, x, beta):
         return beta * (1 - self.activation_function(x, beta) ** 2)
 
     def normalize(self, x, min, max):
-        return (2 * (x - min) / (max - min)) - 1
+        return (2 * (np.float128(x) - min) / (max - min)) - 1
 
     def unnormalize(self, x, min, max):
-        return ((x + 1) * (max - min) / 2) + min
+        return ((np.float128(x) + 1) * (max - min) / 2) + min
 
 
 class LogisticPerceptron(LinearNonLinearPerceptron):
@@ -121,7 +115,7 @@ class LogisticPerceptron(LinearNonLinearPerceptron):
         super().__init__(input_size, learning_rate, beta, error_function)
 
     def activation_function(self, x, beta):
-        return 1 / (1 + np.exp(-2 * beta * x))
+        return 1 / (1 + np.exp(-2 * beta * np.float128(x)))
 
     def activation_prime(self, x, beta):
         return (
@@ -132,17 +126,16 @@ class LogisticPerceptron(LinearNonLinearPerceptron):
         )
 
     def normalize(self, x, min, max):
-        return (x - min) / (max - min)
+        return (np.float128(x) - min) / (max - min)
 
     def unnormalize(self, x, min, max):
-        return x * (max - min) + min
+        return np.float128(x) * (max - min) + min
 
 
 class LinearPerceptron(LinearNonLinearPerceptron):
     def __init__(self, input_size, learning_rate, beta, error_function):
         super().__init__(input_size, learning_rate, beta, error_function)
 
-    '''
     def train(self, input, expected_output, epochs=100):
         total_error = 0
         min = np.min(expected_output)
@@ -154,28 +147,12 @@ class LinearPerceptron(LinearNonLinearPerceptron):
                 # forward
                 output, prime = self.predict(x)
                 # error
-                error.append(
-                    self.unnormalize(
-                        self.error_function.error(
-                            self.normalize(y, min, max),
-                            self.normalize(output, min, max),
-                        ),
-                        min,
-                        max,
-                    )
-                )
+                error.append(self.error_function.error(y, output))
                 # backward
-                self.weights += (
-                    self.learning_rate
-                    * (self.normalize(y, min, max) - self.normalize(output, min, max))
-                    * prime
-                    * x
-                )
-                self.bias += (
-                    self.learning_rate
-                    * (self.normalize(y, min, max) - self.normalize(output, min, max))
-                    * prime
-                )
+                y_norm = self.normalize(y, min, max)
+                output_norm = self.normalize(output, min, max)
+                self.weights += self.learning_rate * (y_norm - output_norm) * prime * x
+                self.bias += self.learning_rate * (y_norm - output_norm) * prime
             total_error = 0.5 * np.sum(error)
             self.train_errors.append(total_error)
             # convergencia:
@@ -188,18 +165,10 @@ class LinearPerceptron(LinearNonLinearPerceptron):
     def test(self, input, expected_output):
         predictions = []
         errors = []
-        min = np.min(expected_output)
-        max = np.max(expected_output)
         for x, y_true in zip(input, expected_output):
             y_pred, _ = self.predict(x)
             predictions.append(y_pred)
-            error = self.unnormalize(
-                self.error_function.error(
-                    self.normalize(y_true, min, max), self.normalize(y_pred, min, max)
-                ),
-                min,
-                max,
-            )
+            error = self.error_function.error(y_true, y_pred)
             errors.append(error)
             # print(f"Entrada: {x}, Predicción: {self.unnormalize(y_pred, np.min(unnom_expected_output), np.max(unnom_expected_output))}, "
             #      f"Valor Esperado: {self.unnormalize(y_true, np.min(unnom_expected_output), np.max(unnom_expected_output))}, Error: {error}")
@@ -207,16 +176,15 @@ class LinearPerceptron(LinearNonLinearPerceptron):
         avg_error = np.mean(errors)
         print(f"Error medio en el conjunto de prueba: {avg_error}")
         return predictions, errors
-    '''
 
     def activation_function(self, x, beta):
-        return x
+        return np.float128(x)
 
     def activation_prime(self, x, beta):
-        return 1
+        return np.float128(1)
 
     def normalize(self, x, min, max):
-        return x
+        return (x - min) / (max - min)
 
     def unnormalize(self, x, min, max):
-        return x
+        return x * (max - min) + min

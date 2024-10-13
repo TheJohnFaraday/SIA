@@ -17,4 +17,8 @@ class MSE(Error):
         return np.mean(np.power((y_true - y_pred), 2))
 
     def error_prime(self, y_true, y_pred):
-        return 2 * (y_pred - y_true) / np.size(y_true)
+        return (
+            2
+            * (y_pred - y_true)
+            / np.size(y_true)
+        )
