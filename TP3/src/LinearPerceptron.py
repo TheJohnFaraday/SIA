@@ -142,6 +142,7 @@ class LinearPerceptron(LinearNonLinearPerceptron):
     def __init__(self, input_size, learning_rate, beta, error_function):
         super().__init__(input_size, learning_rate, beta, error_function)
 
+    '''
     def train(self, input, expected_output, epochs=100):
         total_error = 0
         min = np.min(expected_output)
@@ -206,6 +207,7 @@ class LinearPerceptron(LinearNonLinearPerceptron):
         avg_error = np.mean(errors)
         print(f"Error medio en el conjunto de prueba: {avg_error}")
         return predictions, errors
+    '''
 
     def activation_function(self, x, beta):
         return x
@@ -214,7 +216,7 @@ class LinearPerceptron(LinearNonLinearPerceptron):
         return 1
 
     def normalize(self, x, min, max):
-        return (x - min) / (max - min)
+        return x
 
     def unnormalize(self, x, min, max):
-        return x * (max - min) + min
+        return x

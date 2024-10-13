@@ -93,7 +93,7 @@ def read_configuration():
         linear_non_linear_input = np.array(
             list(
                 map(
-                    lambda row: [row[1]["x1"], row[1]["x2"], row[1]["x3"]],
+                    lambda row: [np.float128(row[1]["x1"]), np.float128(row[1]["x2"]), np.float128(row[1]["x3"])],
                     df.iterrows(),
                 )
             )  # (index, row)
@@ -105,7 +105,7 @@ def read_configuration():
             LinearNonLinearActivationFunction.TANH,
         )
 
-        linear_non_linear_output = list(map(lambda row: row[1]["y"], df.iterrows()))
+        linear_non_linear_output = list(map(lambda row: np.float128(row[1]["y"]), df.iterrows()))
 
         if not linear_non_linear_path or linear_non_linear_path == "":
             print(
