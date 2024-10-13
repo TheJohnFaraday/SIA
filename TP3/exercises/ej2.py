@@ -213,23 +213,6 @@ def train_without_kfold(inputs, outputs, config):
     print("No Linear Perceptron")
     non_linear_perceptron.train(train_input, train_output, config.epoch)
 
-    # Normalización de los errores de entrenamiento para graficar
-    min_train_error = min(
-        min(linear_perceptron.train_errors), min(non_linear_perceptron.train_errors)
-    )
-    max_train_error = max(
-        max(linear_perceptron.train_errors), max(non_linear_perceptron.train_errors)
-    )
-
-    linear_perceptron.train_errors = [
-        (error - min_train_error) / (max_train_error - min_train_error)
-        for error in linear_perceptron.train_errors
-    ]
-    non_linear_perceptron.train_errors = [
-        (error - min_train_error) / (max_train_error - min_train_error)
-        for error in non_linear_perceptron.train_errors
-    ]
-
     # Determinar el mínimo de los final_epochs entre ambos perceptrones
     min_epochs = min(
         len(linear_perceptron.final_epochs), len(non_linear_perceptron.final_epochs)
@@ -238,21 +221,21 @@ def train_without_kfold(inputs, outputs, config):
     # Gráfica de evolución del error de entrenamiento
     plt.figure(figsize=(10, 5))
     plt.plot(
-        linear_perceptron.final_epochs[:min_epochs],
-        linear_perceptron.train_errors[:min_epochs],
+        linear_perceptron.final_epochs,
+        linear_perceptron.train_errors,
         label="Lineal (train_proportion)",
     )
     plt.plot(
-        non_linear_perceptron.final_epochs[:min_epochs],
-        non_linear_perceptron.train_errors[:min_epochs],
+        non_linear_perceptron.final_epochs,
+        non_linear_perceptron.train_errors,
         label="No Lineal (train_proportion)",
     )
     plt.xlabel("Epoch")
     plt.ylabel("Error (MSE)")
     plt.title("Evolution of MSE during training (without K-Fold)")
     plt.legend()
-    plt.xlim(0, min_epochs if min_epochs < 200 else 200)
-    plt.ylim(0, 1)  # Normalizado
+    plt.xlim(0, 5000)
+    plt.ylim(0, 5000)  # Normalizado
     plt.savefig(
         f"plots/ej2_mse_comparison_without_kfold"
         f"_lr-{config.learning_rate}"

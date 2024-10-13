@@ -3,10 +3,10 @@ plot = true
 
 # [Optional] Seed for RNG. Comment it out for randomness, or set an integer for determinism
 seed = 20241006
-learning_rate = 0.1
+learning_rate = 0.01
 beta = 0.4
-train_proportion = 0.99
-epoch=100000
+train_proportion = 0.7
+epoch=10000
 noise_val=0.4
 
 
@@ -21,7 +21,7 @@ output = [1,1,-1,-1]
 [single_layer.linear_non_linear]
 path = "datasets/TP3-ej2-conjunto.csv"
 # Activation function: 'tanh' or 'logistic'
-activation_function = "logistic"
+activation_function = "tanh"
 
 [multi_layer]
 # Choose one between 'online', 'minibatch' and 'batch'
