@@ -85,8 +85,8 @@ class LinearNonLinearPerceptron:
                 y_true, self.unnormalize(y_pred, min, max)
             )
             errors.append(error)
-            # print(f"Entrada: {x}, Predicción: {self.unnormalize(y_pred, np.min(unnom_expected_output), np.max(unnom_expected_output))}, "
-            #      f"Valor Esperado: {self.unnormalize(y_true, np.min(unnom_expected_output), np.max(unnom_expected_output))}, Error: {error}")
+            print(f"Entrada: {x}, Predicción: {self.unnormalize(y_pred, min, max)}, "
+                  f"Valor Esperado: {y_true}, Error: {error}")
 
         avg_error = np.mean(errors)
         print(f"Error medio en el conjunto de prueba: {avg_error}")
@@ -170,8 +170,8 @@ class LinearPerceptron(LinearNonLinearPerceptron):
             predictions.append(y_pred)
             error = self.error_function.error(y_true, y_pred)
             errors.append(error)
-            # print(f"Entrada: {x}, Predicción: {self.unnormalize(y_pred, np.min(unnom_expected_output), np.max(unnom_expected_output))}, "
-            #      f"Valor Esperado: {self.unnormalize(y_true, np.min(unnom_expected_output), np.max(unnom_expected_output))}, Error: {error}")
+            print(f"Entrada: {x}, Predicción: {y_pred}, "
+                  f"Valor Esperado: {y_true}, Error: {error}")
 
         avg_error = np.mean(errors)
         print(f"Error medio en el conjunto de prueba: {avg_error}")
