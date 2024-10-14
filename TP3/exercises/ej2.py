@@ -11,7 +11,9 @@ from src.LinearPerceptron import (
 from src.errors import MSE
 
 
+# === Perceptron Creation ===
 def create_perceptron(activation_function, train_input, learning_rate, beta):
+    """Crea un perceptrón según la función de activación especificada."""
     match activation_function:
         case ActivationFunction.LINEAR:
             return LinearPerceptron(
@@ -38,28 +40,11 @@ def create_perceptron(activation_function, train_input, learning_rate, beta):
             raise RuntimeError("Non valid Activation Function entered")
 
 
-def plot_mse_comparison(folds, mse_linear, mse_nonlinear, title, ylabel, config):
-    """Genera una gráfica de barras para comparar el MSE entre lineal y no lineal"""
-    plt.figure(figsize=(10, 5))
-    plt.bar(folds - 0.15, mse_linear, width=0.3, label="Lineal")
-    plt.bar(folds + 0.15, mse_nonlinear, width=0.3, label="No Lineal")
-    plt.xlabel("Fold")
-    plt.ylabel(ylabel)
-    plt.title(title)
-    plt.legend()
-    plt.savefig(
-        f"plots/ej2_mse_comparison"
-        f"_lr-{config.learning_rate}"
-        f"_activation-{config.linear_non_linear_activation_function}"
-        f".png"
-    )
-
-
+# === Training Functions ===
 def train_with_kfold(inputs, outputs, config):
     """Entrena el modelo utilizando K-Fold Cross-Validation y guarda la información necesaria para testing."""
-    kf = KFold(n_splits=5, shuffle=True, random_state=42)
+    kf = KFold(n_splits=4, shuffle=True, random_state=42)
     fold = 1
-
     linear_perceptrons_data = []
     non_linear_perceptrons_data = []
 
@@ -107,8 +92,8 @@ def train_with_kfold(inputs, outputs, config):
 
 
 def train_without_kfold(inputs, outputs, config):
-    print("\nTrain without kfold\n")
     """Entrena el modelo sin K-Fold usando train_test_split"""
+    print("\nTrain without kfold\n")
     train_input, test_input, train_output, test_output = train_test_split(
         inputs, outputs, train_size=config.train_proportion, random_state=42
     )
@@ -158,24 +143,62 @@ def train_without_kfold(inputs, outputs, config):
     )
 
 
+# === Testing Functions ===
+def test_with_kfold(perceptrons):
+    """Evalúa los perceptrones entrenados con K-Fold."""
+    avg_errors = []
+    fold_data = []
+
+    for i, fold_data_dict in enumerate(perceptrons):
+        perceptron_obj = fold_data_dict["perceptron"]
+        test_input = fold_data_dict["test_input"]
+        test_output = fold_data_dict["test_output"]
+
+        _, fold_errors = perceptron_obj.test(test_input, test_output)
+        avg_error = np.mean(fold_errors)
+        avg_errors.append(avg_error)
+
+        fold_data.append({
+            "fold": i + 1,
+            "avg_error": avg_error,
+            "errors": fold_errors,
+            "input": test_input,
+            "output": test_output,
+            "perceptron": perceptron_obj
+        })
+        print(f"Fold {i + 1} - Error promedio: {avg_error}")
+
+    return fold_data
+
+
+# === Plot Functions ===
+def plot_mse_comparison(folds, mse_linear, mse_nonlinear, title, ylabel, config):
+    """Genera una gráfica de barras para comparar el MSE entre lineal y no lineal"""
+    plt.figure(figsize=(10, 5))
+    plt.bar(folds - 0.15, mse_linear, width=0.3, label="Lineal")
+    plt.bar(folds + 0.15, mse_nonlinear, width=0.3, label="No Lineal")
+    plt.xlabel("Fold")
+    plt.ylabel(ylabel)
+    plt.title(title)
+    plt.legend()
+    plt.savefig(
+        f"plots/ej2_mse_comparison"
+        f"_lr-{config.learning_rate}"
+        f"_activation-{config.linear_non_linear_activation_function}"
+        f".png"
+    )
+
+
 def plot_errors_by_fold(perceptrons, fold, config):
     """Genera un gráfico que muestre el error de entrenamiento en función de las épocas por fold"""
     plt.figure(figsize=(10, 5))
-
-    plt.plot(
-        perceptrons.final_epochs,
-        perceptrons.train_errors,
-        label=f"Fold {fold}",
-    )
-
+    plt.plot(perceptrons.final_epochs, perceptrons.train_errors, label=f"Fold {fold}")
     plt.xlabel("Epochs")
     plt.ylabel("Training Error (MSE)")
     plt.xlim(0, 500)
     plt.ylim(0, 5000)
     plt.title("Training Errors per Epoch for Each Fold")
     plt.legend()
-
-    # Guardar el gráfico en un archivo
     plt.savefig(
         f"plots/ej2_training_errors_fold-{fold}"
         f"_lr-{config.learning_rate}"
@@ -185,34 +208,17 @@ def plot_errors_by_fold(perceptrons, fold, config):
     plt.show()
 
 
-def plot_best_and_worst_folds(best_perceptron, worst_perceptron, config):
+def plot_best_and_worst_folds(best_perceptron, worst_perceptron, best_fold, worst_fold, config):
     """Genera un gráfico comparando el mejor y peor fold basado en el error final"""
     plt.figure(figsize=(10, 5))
-
-    # Graficamos el mejor fold
-    plt.plot(
-        best_perceptron.final_epochs,
-        best_perceptron.train_errors,
-        label="Best Fold",
-        color="green",
-    )
-
-    # Graficamos el peor fold
-    plt.plot(
-        worst_perceptron.final_epochs,
-        worst_perceptron.train_errors,
-        label="Worst Fold",
-        color="red",
-    )
-
+    plt.plot(best_perceptron.final_epochs, best_perceptron.train_errors, label=f"Best Fold ({best_fold})", color="green")
+    plt.plot(worst_perceptron.final_epochs, worst_perceptron.train_errors, label=f"Worst Fold ({worst_fold})", color="red")
     plt.xlabel("Epochs")
     plt.ylabel("Training Error (MSE)")
     plt.xlim(0, 500)
     plt.ylim(0, 5000)
-    plt.title("Comparison of Best and Worst Folds")
+    plt.title(f"Comparison of Best and Worst Folds (Best: {best_fold}, Worst: {worst_fold})")
     plt.legend()
-
-    # Guardar el gráfico
     plt.savefig(
         f"plots/ej2_best_worst_folds_comparison"
         f"_lr-{config.learning_rate}"
@@ -222,39 +228,65 @@ def plot_best_and_worst_folds(best_perceptron, worst_perceptron, config):
     plt.show()
 
 
-def plot_best_and_worst_folds_test_errors(perceptron_best, perceptron_worst, inputs, outputs):
-    """Compara los errores de prueba entre el mejor y peor perceptrón"""
+def plot_fold_test_errors_comparison(perceptron_fold1, perceptron_fold2, inputs_fold1, inputs_fold2,
+                                     outputs_fold1, outputs_fold2, fold1, fold2):
+    """Compara los errores de prueba entre dos folds especificados"""
+    _, fold1_errors = perceptron_fold1.test(inputs_fold1, outputs_fold1)
+    _, fold2_errors = perceptron_fold2.test(inputs_fold2, outputs_fold2)
 
-    # Obtener los errores de test para el mejor perceptrón
-    _, best_errors = perceptron_best.test(inputs, outputs)
-
-    # Obtener los errores de test para el peor perceptrón
-    _, worst_errors = perceptron_worst.test(inputs, outputs)
-
-    # Graficar los errores
     plt.figure(figsize=(10, 5))
-    plt.plot(range(len(best_errors)), best_errors, label="Best Fold", color='green')
-    plt.plot(range(len(worst_errors)), worst_errors, label="Worst Fold", color='red')
-
-    # Añadir detalles al gráfico
-    plt.xlabel("Test Example")
-    plt.ylabel("Test Error (MSE)")
-    plt.title("Test Error per Example: Best vs Worst Fold")
+    index = np.arange(len(fold1_errors))
+    bar_width = 0.35
+    plt.bar(index, fold1_errors, width=bar_width, label=f"Fold {fold1}")
+    plt.bar(index + bar_width, fold2_errors, width=bar_width, label=f"Fold {fold2}")
+    plt.xlabel("Sample")
+    plt.ylabel("Test Error")
+    plt.title(f"Test Error Comparison Between Fold {fold1} and Fold {fold2}")
     plt.legend()
+    plt.savefig(
+        f"plots/ej2_test_error_comparison_folds_{fold1}_vs_{fold2}.png"
+    )
     plt.show()
 
 
-def ej2(config: Configuration):
+def ej2(config):
     inputs = config.linear_non_linear_input
     outputs = np.array(config.linear_non_linear_output)
 
-    # Entrenamiento y evaluación usando K-Fold
     linear_perceptrons_data, non_linear_perceptrons_data = train_with_kfold(inputs, outputs, config)
 
-    best_perceptron = min(non_linear_perceptrons_data, key=lambda p: p["perceptron"].final_error[-1])["perceptron"]
-    worst_perceptron = max(non_linear_perceptrons_data, key=lambda p: p["perceptron"].final_error[-1])["perceptron"]
+    best_perceptron_data = min(non_linear_perceptrons_data, key=lambda p: p["perceptron"].final_error[-1])
+    worst_perceptron_data = max(non_linear_perceptrons_data, key=lambda p: p["perceptron"].final_error[-1])
 
-    plot_best_and_worst_folds(best_perceptron, worst_perceptron, config)
+    best_perceptron = best_perceptron_data["perceptron"]
+    worst_perceptron = worst_perceptron_data["perceptron"]
 
-    # Entrenamiento sin K-Fold usando train_proportion
+    best_fold = non_linear_perceptrons_data.index(best_perceptron_data) + 1
+    worst_fold = non_linear_perceptrons_data.index(worst_perceptron_data) + 1
+
+    plot_best_and_worst_folds(best_perceptron, worst_perceptron, best_fold, worst_fold, config)
+
+    plot_fold_test_errors_comparison(
+        best_perceptron, worst_perceptron,
+        best_perceptron_data["test_input"], worst_perceptron_data["test_input"],
+        best_perceptron_data["test_output"], worst_perceptron_data["test_output"],
+        best_fold, worst_fold
+    )
+
     train_without_kfold(inputs, outputs, config)
+    fold_data = test_with_kfold(non_linear_perceptrons_data)
+
+    best_fold = min(fold_data, key=lambda x: x["avg_error"])
+    worst_fold = max(fold_data, key=lambda x: x["avg_error"])
+
+    plot_fold_test_errors_comparison(
+        perceptron_fold1=best_fold["perceptron"],
+        perceptron_fold2=worst_fold["perceptron"],
+        inputs_fold1=best_fold["input"],
+        inputs_fold2=worst_fold["input"],
+        outputs_fold1=best_fold["output"],
+        outputs_fold2=worst_fold["output"],
+        fold1=best_fold["fold"],
+        fold2=worst_fold["fold"]
+    )
+

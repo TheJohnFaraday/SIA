@@ -170,11 +170,11 @@ class LinearPerceptron(LinearNonLinearPerceptron):
             predictions.append(y_pred)
             error = self.error_function.error(y_true, y_pred)
             errors.append(error)
-            print(f"Entrada: {x}, Predicción: {y_pred}, "
-                  f"Valor Esperado: {y_true}, Error: {error}")
+            #print(f"Entrada: {x}, Predicción: {y_pred}, "
+            #      f"Valor Esperado: {y_true}, Error: {error}")
 
         avg_error = np.mean(errors)
-        print(f"Error medio en el conjunto de prueba: {avg_error}")
+        #print(f"Error medio en el conjunto de prueba: {avg_error}")
         return predictions, errors
 
     def activation_function(self, x, beta):
