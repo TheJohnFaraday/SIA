@@ -111,9 +111,11 @@ def is_odd(config: Configuration):
             case ActivationFunction.TANH:
                 layer1 = Tanh(config.beta)
                 layer2 = Tanh(config.beta)
+                layer3 = Tanh(config.beta)
             case ActivationFunction.LOGISTIC:
                 layer1 = Logistic(config.beta)
                 layer2 = Logistic(config.beta)
+                layer3 = Logistic(config.beta)
             case _:
                 raise RuntimeError("Invalid ActivationFunction")
 
@@ -156,54 +158,68 @@ def is_odd(config: Configuration):
 
         new_network, errors_by_epoch = mlp.train(X, Y)
 
-        X_with_noise = list(
-            map(
-                lambda block: list(
-                    map(
-                        lambda row: list(
-                            map(
-                                lambda x: x + np.random.normal(0, config.noise_val), row
-                            )
-                        ),
-                        block,
-                    )
-                ),
-                train_set.train_input,
-            ),
-        )
 
-        X_with_noise = np.reshape(
-            np.array(
-                list(
-                    map(
-                        lambda block: list(
+
+
+        X_with_noise = np.reshape(config.multilayer.digits_input, (10, 35, 1))
+
+        Xs_with_noise = []
+        for _ in range(32):
+            X_with_noise1 = list(
+                map(
+                    lambda block: list(
+                        map(
+                            lambda row: list(
+                                map(
+                                    lambda x: x + np.random.normal(0, config.noise_val), row
+                                )
+                            ),
+                            block,
+                        )
+                    ),
+                    X_with_noise,
+                ),
+            )
+            Xs_with_noise.append(
+                np.reshape(
+                    np.array(
+                        list(
                             map(
-                                lambda row: list(
+                                lambda block: list(
                                     map(
-                                        lambda x: 0 if x < 0 else (1 if x > 1 else x),
-                                        row,
+                                        lambda row: list(
+                                            map(
+                                                lambda x: (
+                                                    0 if x < 0 else (1 if x > 1 else x)
+                                                ),
+                                                row,
+                                            )
+                                        ),
+                                        block,
                                     )
                                 ),
-                                block,
+                                X_with_noise1,
                             )
-                        ),
-                        X_with_noise,
-                    )
+                        )
+                    ),
+                    (10, 35, 1),
                 )
-            ),
-            (train_set.train_input.shape[0], 35, 1),
-        )
-
-        outputs_with_error: list[NetworkOutput] = []
-        for x, y in zip(X_with_noise, is_odd_output):
-            output = MultiLayerPerceptron.predict(new_network, x)
-            loss = mse.error(y, output)
-            outputs_with_error.append(
-                NetworkOutput(expected=y, output=output, error=loss)
             )
 
-            print(f"Is Odd Expected Output: {y}")
-            print(f"Is Odd Output:\n{output}")
+        outputs_with_error: list[NetworkOutput] = []
+        print(f"Noise: {config.noise_val}")
+
+        for Xs in Xs_with_noise:
+            for x, y in zip(Xs, is_odd_output):
+                output = MultiLayerPerceptron.predict(new_network, x)
+                loss = mse.error(y, output)
+                outputs_with_error.append(
+                    NetworkOutput(expected=y, output=output, error=loss)
+                )
+
+                print(f"Is Odd Expected Output: {y}")
+                print(f"Is Odd Output:\n{output}")
+
 
         outputs_df = pd.DataFrame(
             {
@@ -217,6 +233,9 @@ def is_odd(config: Configuration):
         )
 
         matrix = get_confusion_matrix(outputs_df)
+
+        graph_is_odd_matrix("is_odd", config, outputs_with_error, proportion)
+
         accuracy = sum(matrix["Predicted"]) / (
             sum(matrix["Predicted"]) + sum(matrix["Not Predicted"])
         )
@@ -236,25 +255,36 @@ def which_number(config: Configuration):
         case ActivationFunction.TANH:
             layer1 = Tanh(config.beta)
             layer2 = Tanh(config.beta)
-            # layer3 = Tanh(config.beta)
-            # layer4 = Tanh(config.beta)
+            layer3 = Tanh(config.beta)
+            layer4 = Tanh(config.beta)
+            layer5 = Tanh(config.beta)
+            layer6 = Logistic(config.beta)
         case ActivationFunction.LOGISTIC:
             layer1 = Logistic(config.beta)
             layer2 = Logistic(config.beta)
-            # layer3 = Logistic(config.beta)
-            # layer4 = Logistic(config.beta)
+            layer3 = Logistic(config.beta)
+            layer4 = Logistic(config.beta)
+            layer5 = Logistic(config.beta)
+            layer6 = Logistic(config.beta)
+            layer7 = Logistic(config.beta)
         case _:
             raise RuntimeError("Invalid ActivationFunction")
 
     network = [
         Dense(35, 70, get_optimizer_instance(config)),
         layer1,
-        Dense(70, 10, get_optimizer_instance(config)),
+        Dense(70, 100, get_optimizer_instance(config)),
         layer2,
-        # Dense(35, 5, get_optimizer_instance(config)),
-        # layer3,
-        # Dense(5, 10, get_optimizer_instance(config)),
-        # layer4,
+        Dense(100, 5, get_optimizer_instance(config)),
+        layer5,
+        Dense(5, 10, get_optimizer_instance(config)),
+        layer3,
+        #Dense(35, 20, get_optimizer_instance(config)),
+        #layer7,
+        #Dense(20, 5, get_optimizer_instance(config)),
+        #layer6,
+        #Dense(5, 10, get_optimizer_instance(config)),
+        #layer4,
     ]
 
     match config.multilayer.training_style:
