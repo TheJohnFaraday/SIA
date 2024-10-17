@@ -122,16 +122,16 @@ def train_without_kfold(inputs, outputs, config):
     plt.plot(
         linear_perceptron.final_epochs,
         linear_perceptron.train_errors,
-        label="Lineal (train_proportion)",
+        label="Lineal",
     )
     plt.plot(
         non_linear_perceptron.final_epochs,
         non_linear_perceptron.train_errors,
-        label="No Lineal (train_proportion)",
+        label="No Lineal",
     )
     plt.xlabel("Epoch")
     plt.ylabel("Error (MSE)")
-    plt.title("Evolution of MSE during training (without K-Fold)")
+    plt.title("Evolution of MSE during training")
     plt.legend()
     plt.xlim(0, 5000)
     plt.ylim(0, 5000)  # Normalizado
@@ -207,6 +207,33 @@ def plot_errors_by_fold(perceptrons, fold, config):
     )
     plt.show()
 
+def plot_folds_comparison(perceptron_fold1, perceptron_fold2, fold1, fold2, config):
+    """
+    Genera un gráfico comparando dos folds especificados basado en los errores finales de entrenamiento.
+    """
+    plt.figure(figsize=(10, 5))
+
+    # Comparación de errores de entrenamiento
+    plt.plot(perceptron_fold1.final_epochs, perceptron_fold1.train_errors, label=f"Fold {fold1}", color="blue")
+    plt.plot(perceptron_fold2.final_epochs, perceptron_fold2.train_errors, label=f"Fold {fold2}", color="orange")
+
+    plt.xlabel("Epochs")
+    plt.ylabel("Training Error (MSE)")
+    plt.xlim(0, 500)
+    plt.ylim(0, 5000)  # Ajustar según tus datos si es necesario
+    plt.title(f"Comparison of Fold {fold1} and Fold {fold2}")
+    plt.legend()
+
+    # Guardamos el gráfico
+    plt.savefig(
+        f"plots/ej2_folds_comparison"
+        f"_folds-{fold1}-vs-{fold2}"
+        f"_lr-{config.learning_rate}"
+        f"_activation-{config.linear_non_linear_activation_function}"
+        f".png"
+    )
+    plt.show()
+
 
 def plot_best_and_worst_folds(best_perceptron, worst_perceptron, best_fold, worst_fold, config):
     """Genera un gráfico comparando el mejor y peor fold basado en el error final"""
@@ -272,6 +299,17 @@ def ej2(config):
         best_perceptron_data["test_output"], worst_perceptron_data["test_output"],
         best_fold, worst_fold
     )
+
+    # Suponiendo que ya tienes los perceptrones de los folds 3 y 4
+    fold3_data = non_linear_perceptrons_data[2]  # Fold 3 (índice 2)
+    fold4_data = non_linear_perceptrons_data[3]  # Fold 4 (índice 3)
+
+    # Extraer los perceptrones de los folds correspondientes
+    perceptron_fold3 = fold3_data["perceptron"]
+    perceptron_fold4 = fold4_data["perceptron"]
+
+    # Generar la comparación entre fold 3 y fold 4
+    plot_folds_comparison(perceptron_fold3, perceptron_fold4, 3, 4, config)
 
     train_without_kfold(inputs, outputs, config)
     fold_data = test_with_kfold(non_linear_perceptrons_data)

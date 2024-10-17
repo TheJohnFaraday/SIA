@@ -21,7 +21,7 @@ output = [1,1,-1,-1]
 [single_layer.linear_non_linear]
 path = "datasets/TP3-ej2-conjunto.csv"
 # Activation function: 'tanh' or 'logistic'
-activation_function = "tanh"
+activation_function = "logistic"
 
 [multi_layer]
 # Choose one between 'online', 'minibatch' and 'batch'
