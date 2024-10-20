@@ -6,7 +6,14 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from src.grapher import Coordinates, scatter_pca, boxplot_pca, pc1_pca
+from src.grapher import (
+    Coordinates,
+    Rotation,
+    scatter_pca,
+    boxplot_pca,
+    pc1_pca,
+    three_dimension_pca,
+)
 
 from sklearn.decomposition import PCA
 
@@ -149,13 +156,40 @@ def pca_two(europe: pd.DataFrame, europe_std: pd.DataFrame):
     )
 
 
+def pca_three(europe_std: pd.DataFrame):
+    pca = PCA(n_components=3)
+    pca_data = pca.fit_transform(europe_std)
+    pca_components = pca.components_
+
+    df_pca_dict = {}
+    for idx, component in enumerate(pca_components):
+        df_pca_dict[f"PC{idx+1}"] = component
+
+    df = pd.DataFrame.from_dict(
+        df_pca_dict,
+    )
+    df["Variable"] = europe_std.columns
+    df = df.set_index("Variable")
+
+    three_dimension_pca(
+        "Análisis PCA",
+        "pca",
+        "3d",
+        pca_data,
+        df,
+        europe_input.country,
+        scale_factor=3,
+        text_scale_factor=3.2,
+        arrow_text_offset=Coordinates(x=0, y=0.1, z=0.2),
+        rotation=Rotation(elevation=10, azimuth=-25),
+    )
+
+
 def pca_one(europe_input: EuropeInput, europe_std: pd.DataFrame):
     pca = PCA(n_components=1)
     pca_data = pca.fit_transform(europe_std)
 
-    df_pca_dict = {
-        "PC1": pca_data[:, 0]
-    }
+    df_pca_dict = {"PC1": pca_data[:, 0]}
 
     df_country = pd.DataFrame.from_dict(
         df_pca_dict,
@@ -207,3 +241,4 @@ if __name__ == "__main__":
 
     pca_one(europe_input, europe_std)
     pca_two(europe, europe_std)
+    pca_three(europe_std)

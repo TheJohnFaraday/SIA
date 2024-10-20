@@ -13,6 +13,13 @@ from dataclasses import dataclass
 class Coordinates:
     x: float | int
     y: float | int
+    z: float | int = None
+
+
+@dataclass
+class Rotation:
+    elevation: float
+    azimuth: float
 
 
 CUSTOM_PALETTE = [
@@ -120,6 +127,7 @@ def scatter_pca(
     if subtitle:
         ax.set_title(subtitle)
 
+    plt.tight_layout()
     plt.savefig(f"plots/{exercise}_{plot_name}_biplot.png")
 
 
@@ -145,6 +153,7 @@ def boxplot_pca(
     if subtitle:
         ax.set_title(subtitle)
 
+    plt.tight_layout()
     plt.savefig(f"plots/{exercise}_{plot_name}_boxplot.png")
 
 
@@ -190,4 +199,85 @@ def pc1_pca(
     if subtitle:
         ax.set_title(subtitle)
 
+    plt.tight_layout()
     plt.savefig(f"plots/{exercise}_{plot_name}_pc1.png")
+
+
+def three_dimension_pca(
+    title: str,
+    exercise: str,
+    plot_name: str,
+    data_pca,
+    df: pd.DataFrame,
+    countries: list[str],
+    scale_factor: int | float = 1,
+    text_scale_factor: int | float = 1,
+    arrow_text_offset: Coordinates = Coordinates(0, 0, 0),
+    subtitle: str | None = None,
+    rotation: Rotation = Rotation(elevation=10, azimuth=-25),
+):
+    fig = plt.figure(figsize=(12, 10))
+    ax = fig.add_subplot(1, 1, 1, projection="3d")
+
+    xs = data_pca[:, 0]
+    ys = data_pca[:, 1]
+    zs = data_pca[:, 2]
+
+    ax.scatter(
+        xs,
+        ys,
+        zs,
+        c=[CUSTOM_PALETTE[i % len(CUSTOM_PALETTE)] for i in range(len(xs))],
+        alpha=0.8,
+    )
+
+    for i in range(len(countries)):
+        ax.text(xs[i], ys[i], zs[i] + 0.1, countries[i], ha="center", fontsize=8)
+
+    for idx, variable_label in enumerate(df.index.values):
+        head_x = df.iloc[idx, 0]
+        head_y = df.iloc[idx, 1]
+        head_z = df.iloc[idx, 2]
+        ax.quiver(
+            0,
+            0,
+            0,
+            head_x * scale_factor,
+            head_y * scale_factor,
+            head_z * scale_factor,
+            color=CUSTOM_PALETTE[1],
+            alpha=0.5,
+        )
+
+        right_offset = Coordinates(
+            x=arrow_text_offset.x,
+            y=arrow_text_offset.y if head_y >= 0 else -1 * arrow_text_offset.y,
+            z=arrow_text_offset.z if head_z >= 0 else -1 * arrow_text_offset.z,
+        )
+
+        ax.text(
+            head_x * text_scale_factor + right_offset.x,
+            head_y * text_scale_factor + right_offset.y,
+            head_z * text_scale_factor + right_offset.z,
+            variable_label,
+            color=CUSTOM_PALETTE[1],
+            ha="center",
+            va="center",
+            fontsize=10,
+        )
+
+    # Plot rotation
+    ax.view_init(elev=rotation.elevation, azim=rotation.azimuth)
+
+    ax.set_zlabel(df.columns[2])
+    ax.set_ylabel(df.columns[1])
+    ax.set_xlabel(df.columns[0])
+
+    fig.suptitle(title)
+    if subtitle:
+        ax.set_title(subtitle)
+    else:
+        ax.set_title(f"Elevation: {rotation.elevation} | Azimuth: {rotation.azimuth}")
+
+    plt.tight_layout()
+    plt.savefig(f"plots/{exercise}_{plot_name}_biplot_3d_rot-{rotation.elevation}-{rotation.azimuth}.png")
