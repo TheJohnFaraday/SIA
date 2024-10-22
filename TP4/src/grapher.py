@@ -48,14 +48,15 @@ PLT_THEME = {
     "axes.titlelocation": "center",  # Center the title by default
     "axes.titlecolor": GREY,  # Set title color
     "axes.labelcolor": GREY,  # Set labels color
-    "axes.labelpad": 10,
-    "axes.titlesize": 8,
+    "axes.labelpad": 12,
+    "axes.titlesize": 10,
     "xtick.bottom": False,  # Remove ticks on the X axis
     "ytick.labelcolor": GREY,  # Set Y ticks color
     "ytick.color": GREY,  # Set Y label color
     "savefig.dpi": 128,
     "legend.frameon": False,
     "legend.labelcolor": GREY,
+    "figure.titlesize": 16,  # Set suptitle size
 }
 
 plt.style.use(PLT_THEME)
