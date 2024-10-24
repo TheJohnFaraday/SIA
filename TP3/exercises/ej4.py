@@ -16,7 +16,6 @@ from src.MultiLayerPerceptron import MultiLayerPerceptron
 from src.Optimizer import GradientDescent, Momentum, Adam
 from src.Training import Online, MiniBatch, Batch
 from src.activation_functions import Tanh, Logistic
-from src.utils import normalize_0_1
 
 from exercises.NetworkOutput import NetworkOutput
 from src.grapher import (
@@ -84,27 +83,11 @@ def mnist_digit_clasification(config: Configuration):
         Y_test.append(row)
     Y_test = np.reshape(Y_test, (10000, 10, 1))
 
-    X_norm = np.array(
-        list(
-            map(
-                lambda row: np.array(
-                    list(map(lambda x: normalize_0_1(x, 0, 255), row))
-                ),
-                X,
-            )
-        )
-    )
+    X_norm = X / 255
+    X_norm = np.float128(X_norm)
 
-    X_test_norm = np.array(
-        list(
-            map(
-                lambda row: np.array(
-                    list(map(lambda x: normalize_0_1(x, 0, 255), row))
-                ),
-                X_test,
-            )
-        )
-    )
+    X_test_norm = X_test / 255
+    X_test_norm = np.float128(X_test_norm)
 
     match config.multilayer.parity_discrimination_activation_function:
         case ActivationFunction.TANH:
@@ -121,10 +104,14 @@ def mnist_digit_clasification(config: Configuration):
     mse = MSE()
     network = [
         # layer1,
-        Dense(784, 10, get_optimizer_instance(config)),
+        Dense(784, 128, get_optimizer_instance(config)),
+        layer1,
+        Dense(128, 64, get_optimizer_instance(config)),
         layer2,
-        # Dense(196, 28, GradientDescent(config.learning_rate)),
-        # layer3,
+        Dense(64, 32, get_optimizer_instance(config)),
+        layer3,
+        Dense(32, 10, get_optimizer_instance(config)),
+        layer4,
         # Dense(28, 10, GradientDescent(config.learning_rate)),
         # layer4,
     ]

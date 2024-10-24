@@ -6,7 +6,7 @@ import numpy as np
 class Tanh(Activation):
     def __init__(self, beta: float = 0.4):
         def tanh(x, beta: float):
-            return np.tanh(x * beta)
+            return np.tanh(np.float128(x) * beta)
 
         def tanh_prime(x, beta: float):
             return 1 - tanh(x, beta) ** 2
@@ -17,7 +17,7 @@ class Tanh(Activation):
 class Logistic(Activation):
     def __init__(self, beta: float = 0.4):
         def logistic(x, beta: float):
-            return 1 / (1 + np.exp(-2 * beta * x))
+            return 1 / (1 + np.exp(-2 * beta * np.float128(x)))
 
         def logistic_prime(x, beta: float):
             return 2 * beta * logistic(x, beta) * (1 - logistic(x, beta))
