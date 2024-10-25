@@ -1,4 +1,5 @@
 import numpy as np
+from src.Hopfield import Hopfield
 
 FONT = [
     [0x7C, 0x44, 0x44, 0x7C, 0x44],
@@ -44,15 +45,16 @@ def create_pattern():
         patterns.append(np.array(pattern))
 
     patterns = np.array(patterns)
-    print(f"Pattern:\n{patterns}")
 
     noisy_patterns = np.copy(patterns)
     for p in noisy_patterns:
         for i in range(0, 5):
             if np.random.normal(0.5, 0.2) > 0.5:
                 p[i] *= -1
-    print(f"Noisy Pattern:\n{noisy_patterns}")
+
+    return (patterns, noisy_patterns)
 
 
 if __name__ == "__main__":
-    create_pattern()
+    patterns, noisy_patterns = create_pattern()
+    print(Hopfield(patterns))
