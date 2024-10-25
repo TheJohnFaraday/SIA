@@ -5,6 +5,7 @@ import pandas as pd
 import copy
 import random
 from sklearn.preprocessing import StandardScaler
+import matplotlib.pyplot as plt
 
 
 class Neuron:
@@ -97,7 +98,76 @@ def process_input(output_neuron_mtx, entry, radius, eta_f, it):
     update_neighbours(output_neuron_mtx, (best_i, best_j), entry, radius, eta_f, it)
 
 
-def kohonen(epochs, entries, k, initial_radius, dataset, eta_f):
+def display_results(output_neuron_mtx):
+    k = len(output_neuron_mtx)
+    a = np.zeros((k, k))
+    for i in range(0, k):
+        for j in range(0, k):
+            a[i, j] = output_neuron_mtx[i][j].hit_count
+
+    fig, ax = plt.subplots()
+    k = len(output_neuron_mtx)
+    ax.set_title(f'Entries per node with k={k}')
+    im = plt.imshow(a, cmap='hot', interpolation='nearest')
+    ax.set_xticks(np.arange(k))
+    ax.set_yticks(np.arange(k))
+    ax.set_xticklabels(range(k))
+    ax.set_yticklabels(range(k))
+
+    # Loop over data dimensions and create text annotations.
+    max_val = np.amax(np.array(a))
+
+    for i in range(k):
+        for j in range(k):
+            if a[i][j] > max_val/2:
+                color = "k"
+            else:
+                color = "w"
+            text = ax.text(j, i, f'{int(a[i][j])}', ha="center", va="center", color=color)
+
+    plt.colorbar(im)
+    plt.show()
+
+
+def display_u_matrix(output_neuron_mtx, radius):  # grey matrix
+    k = len(output_neuron_mtx)
+    a = np.zeros((k, k))
+    for i in range(0, k):
+        for j in range(0, k):
+            ne = get_neighbours(output_neuron_mtx, (i, j), radius)
+            # print(ne)
+            d = 0.0
+            cant = len(ne)
+            for (ne_i, ne_j) in ne:
+                d += get_distance(output_neuron_mtx[i][j].weights, output_neuron_mtx[ne_i][ne_j].weights)
+            a[i, j] = d/cant
+
+    fig, ax = plt.subplots()
+    k = len(output_neuron_mtx)
+    ax.set_title(f'U Matrix with k={k}')
+    im = plt.imshow(a, cmap='Greys', interpolation='nearest')
+    ax.set_xticks(np.arange(k))
+    ax.set_yticks(np.arange(k))
+    ax.set_xticklabels(range(k))
+    ax.set_yticklabels(range(k))
+
+    # Loop over data dimensions and create text annotations.
+    max_val = np.amax(np.array(a))
+
+    for i in range(k):
+        for j in range(k):
+            if a[i][j] > max_val/2:
+                color = "w"
+            else:
+                color = "k"
+            text = ax.text(j, i, f'{a[i][j]:.3f}', ha="center", va="center", color=color)
+
+    plt.colorbar(im)
+    plt.show()
+
+
+def kohonen(epochs_mlt, entries, k, initial_radius, dataset, eta_f):
+    epochs = epochs_mlt * entries.shape[0]
     radius = initial_radius
 
     # Inicializamos los weights (k * inputs)
@@ -113,11 +183,62 @@ def kohonen(epochs, entries, k, initial_radius, dataset, eta_f):
         if (radius - 1) > 1:
             radius -= 1
 
+    display_results(output_neuron_mtx)
+    display_u_matrix(output_neuron_mtx, radius)
+
     return output_neuron_mtx
 
 
 def standardize_data(data):
     return StandardScaler().fit_transform(data)
+
+
+def display_final_assignments(data, std_data, output_neuron_mtx):
+    k = len(output_neuron_mtx)
+    names = [[[] for j in range(0, k)] for i in range(0, k)]
+    a = np.zeros((k, k))
+    # print(data)
+    countries_list = data['Country'].values.tolist()
+
+    for i in range(0, std_data.shape[0]):
+        entry = std_data[i]
+        (x, y) = find_bmu(output_neuron_mtx, entry)
+        a[x, y] += 1
+        names[x][y].append(countries_list[i])
+
+    fig, ax = plt.subplots()
+    k = len(output_neuron_mtx)
+    ax.set_title(f'Final entries per node with k={k}')
+    im = plt.imshow(a, cmap='hot', interpolation='nearest')
+    ax.set_xticks(np.arange(k))
+    ax.set_yticks(np.arange(k))
+    ax.set_xticklabels(range(k))
+    ax.set_yticklabels(range(k))
+
+    # Loop over data dimensions and create text annotations.
+
+    max_val = np.amax(np.array(a))
+
+    for l in range(0, len(names)):
+        for t in range(0, len(names[l])):
+            countries = names[l][t]
+
+            s = ''
+            for country in countries:
+                s += country + '\n'
+
+            names[l][t] = s
+
+    for i in range(k):
+        for j in range(k):
+            if a[i][j] > max_val/2:
+                color = "k"
+            else:
+                color = "w"
+            text = ax.text(j, i, f'{names[i][j]}', ha="center", va="center", color=color)
+
+    plt.colorbar(im)
+    plt.show()
 
 
 if __name__ == '__main__':
@@ -132,4 +253,5 @@ if __name__ == '__main__':
     def eta_f(i):
         return 1.0/i
 
-    output_neuron_mtx = kohonen(100, data, k, radius, init_with_dataset, eta_f)
+    output_neuron_mtx = kohonen(25, data, k, radius, init_with_dataset, eta_f)
+    display_final_assignments(df, data, output_neuron_mtx)
