@@ -1,0 +1,4 @@
+[kohonen]
+k = 2
+initial_radius = 1.414
+epochs_multiplier = 25

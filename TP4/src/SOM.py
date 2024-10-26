@@ -5,6 +5,7 @@ import pandas as pd
 import copy
 import random
 from sklearn.preprocessing import StandardScaler
+from configuration import read_configuration
 import matplotlib.pyplot as plt
 
 
@@ -246,12 +247,14 @@ if __name__ == '__main__':
     data = df.drop(columns=["Country"]).values  # Eliminamos la columna de países
     data = standardize_data(data)  # Estandarización
 
-    k = 2
-    radius = math.sqrt(2)
+    config = read_configuration()
+
+    k = config.k
+    radius = config.initial_radius
     init_with_dataset = True
 
     def eta_f(i):
         return 1.0/i
 
-    output_neuron_mtx = kohonen(25, data, k, radius, init_with_dataset, eta_f)
+    output_neuron_mtx = kohonen(config.epochs_multiplier, data, k, radius, init_with_dataset, eta_f)
     display_final_assignments(df, data, output_neuron_mtx)
