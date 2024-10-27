@@ -20,7 +20,7 @@ class Neuron:
         self.weights = copy.copy(entry)
 
     def init_weights_random(self, length):
-        np.random.uniform(low=-1, high=1, size=(length,))
+        self.weights = np.random.uniform(low=-1, high=1, size=(length,))
 
 
 def init_output_neuron_matrix(k, entries, dataset):
