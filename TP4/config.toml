@@ -2,6 +2,7 @@
 k = 3
 initial_radius = 3
 epochs_multiplier = 1000
+set_initial_weights_from_dataset = true
 
 [oja]
 epochs = 10000

@@ -15,6 +15,7 @@ class KohonenConfig:
     k: int
     initial_radius: float
     epochs_multiplier: int
+    set_initial_weights_from_dataset: bool
 
 
 @dataclass(frozen=True)
@@ -29,9 +30,11 @@ def read_kohonen_configuration(data: dict[str, Any]):
     k = int(data.get("k", 2))
     initial_radius = float(data.get("initial_radius", 1.414))
     epochs_multiplier = int(data.get("epochs_multiplier", 25))
+    set_initial_weights_from_dataset = bool(data.get("set_initial_weights_from_dataset", True))
 
     return KohonenConfig(
-        k=k, initial_radius=initial_radius, epochs_multiplier=epochs_multiplier
+        k=k, initial_radius=initial_radius, epochs_multiplier=epochs_multiplier,
+        set_initial_weights_from_dataset=set_initial_weights_from_dataset
     )
 
 

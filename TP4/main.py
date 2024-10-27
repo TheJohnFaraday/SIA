@@ -231,7 +231,7 @@ def ej_kohonen():
 
     k = config.k
     radius = config.initial_radius
-    init_with_dataset = True
+    init_with_dataset = config.set_initial_weights_from_dataset
 
     def eta_f(i):
         return 1.0/i
