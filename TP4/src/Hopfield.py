@@ -11,7 +11,7 @@ class Hopfield:
         self.t = []  # Steps
 
     def set_patterns(self, input_pattern):
-        w = np.outer(input_pattern, input_pattern) / self.N
+        w = np.outer(input_pattern, input_pattern.T) / self.N
         np.fill_diagonal(w, 0)
         self.w += w
         self.xi = np.column_stack((self.xi, input_pattern))
@@ -22,15 +22,16 @@ class Hopfield:
         self.S = pattern
 
     def train(self):
-        prior_state = np.array([])
-        while not np.array_equal(prior_state, self.S):
-            prior_state = np.copy(self.S)
-            self.S = self.sign_0(np.dot(self.w, self.S))
-            self.t.append(self.S)
-
-        print('Trained Successfully!!')
-        print(f'Number of Iterations: {len(self.t)}')
-        print(f'Final Pattern: {self.S}')
+        while True:
+            second_last_state = np.copy(self.S)
+            for i in range(2):
+                last_state = np.copy(self.S)
+                self.S = self.sign_0(np.dot(self.w, self.S))
+                if np.array_equal(last_state, self.S):
+                    return (self.S, self.t)
+                self.t.append(self.S)
+            if np.array_equal(second_last_state, self.S):
+                return (self.S, self.t)
 
     def sign_0(self, arr):
         return np.where(arr >= -1e-15, 1, -1)
