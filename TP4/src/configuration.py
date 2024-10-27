@@ -3,6 +3,7 @@ import tomllib
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any
+from src.SOM import DistanceType
 
 
 class ConfigurationToRead(Enum):
@@ -16,6 +17,7 @@ class KohonenConfig:
     initial_radius: float
     epochs_multiplier: int
     set_initial_weights_from_dataset: bool
+    distance: DistanceType
 
 
 @dataclass(frozen=True)
@@ -31,10 +33,16 @@ def read_kohonen_configuration(data: dict[str, Any]):
     initial_radius = float(data.get("initial_radius", 1.414))
     epochs_multiplier = int(data.get("epochs_multiplier", 25))
     set_initial_weights_from_dataset = bool(data.get("set_initial_weights_from_dataset", True))
+    distance_str = data.get("distance", "euclidean")
+
+    try:
+        distance = DistanceType(distance_str)
+    except ValueError:
+        raise ValueError(f"Invalid distance type '{distance_str}' in config")
 
     return KohonenConfig(
         k=k, initial_radius=initial_radius, epochs_multiplier=epochs_multiplier,
-        set_initial_weights_from_dataset=set_initial_weights_from_dataset
+        set_initial_weights_from_dataset=set_initial_weights_from_dataset, distance=distance
     )
 
 

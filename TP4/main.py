@@ -232,12 +232,13 @@ def ej_kohonen():
     k = config.k
     radius = config.initial_radius
     init_with_dataset = config.set_initial_weights_from_dataset
+    distance_type = config.distance
 
     def eta_f(i):
-        return 1.0/i
+        return 1.0 / i
 
-    output_neuron_mtx = kohonen(config.epochs_multiplier, data, k, radius, init_with_dataset, eta_f)
-    display_final_assignments(df, data, output_neuron_mtx)
+    output_neuron_mtx = kohonen(config.epochs_multiplier, data, k, radius, init_with_dataset, eta_f, distance_type)
+    display_final_assignments(df, data, output_neuron_mtx, distance_type)
 
 
 def ej_pca():

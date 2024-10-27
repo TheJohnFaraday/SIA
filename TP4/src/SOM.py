@@ -5,6 +5,14 @@ import copy
 import random
 import matplotlib.pyplot as plt
 
+from src.utils import get_euclidean_distance, get_exponential_distance
+from enum import Enum
+
+
+class DistanceType(Enum):
+    EUCLIDEAN = "euclidean"
+    EXPONENTIAL = "exponential"
+
 
 class Neuron:
     def __init__(self, dataset, use_dataset=False):
@@ -33,20 +41,22 @@ def init_output_neuron_matrix(k, entries, dataset):
     return output_neuron_mtx
 
 
-def get_distance(arr1, arr2):
-    dist = 0
-    for i in range(0, arr1.shape[0]):
-        dist += (arr1[i] - arr2[i])**2
-    return math.sqrt(dist)
+def calculate_distance(distance_type: DistanceType, arr1, arr2):
+    if distance_type == DistanceType.EUCLIDEAN:
+        return get_euclidean_distance(arr1, arr2)
+    elif distance_type == DistanceType.EXPONENTIAL:
+        return get_exponential_distance(arr1, arr2)
+    else:
+        raise ValueError(f"Unknown distance type: {distance_type}")
 
 
-def find_bmu(output_neuron_mtx, entry):
+def find_bmu(output_neuron_mtx, entry, distance_type: DistanceType):
     min_i = 0
     min_j = 0
     min_dist = math.inf
     for i in range(0, len(output_neuron_mtx)):
         for j in range(0, len(output_neuron_mtx[0])):
-            d = get_distance(output_neuron_mtx[i][j].weights, entry)
+            d = calculate_distance(distance_type, output_neuron_mtx[i][j].weights, entry)
             if d < min_dist:
                 min_i = i
                 min_j = j
@@ -90,8 +100,8 @@ def update_neighbours(output_neuron_mtx, best_match_idx, entry, radius, eta_f, i
         update_neuron(output_neuron_mtx, (i, j), entry, eta_f, it)
 
 
-def process_input(output_neuron_mtx, entry, radius, eta_f, it):
-    (best_i, best_j) = find_bmu(output_neuron_mtx, entry)
+def process_input(output_neuron_mtx, entry, radius, eta_f, it, distance_type: DistanceType):
+    (best_i, best_j) = find_bmu(output_neuron_mtx, entry, distance_type)
     output_neuron_mtx[best_i][best_j].hit_count += 1
     update_neighbours(output_neuron_mtx, (best_i, best_j), entry, radius, eta_f, it)
 
@@ -127,7 +137,7 @@ def display_results(output_neuron_mtx):
     plt.show()
 
 
-def display_u_matrix(output_neuron_mtx, radius):  # grey matrix
+def display_u_matrix(output_neuron_mtx, radius, distance_type: DistanceType):  # grey matrix
     k = len(output_neuron_mtx)
     a = np.zeros((k, k))
     for i in range(0, k):
@@ -137,7 +147,7 @@ def display_u_matrix(output_neuron_mtx, radius):  # grey matrix
             d = 0.0
             cant = len(ne)
             for (ne_i, ne_j) in ne:
-                d += get_distance(output_neuron_mtx[i][j].weights, output_neuron_mtx[ne_i][ne_j].weights)
+                d += calculate_distance(distance_type, output_neuron_mtx[i][j].weights, output_neuron_mtx[ne_i][ne_j].weights)
             a[i, j] = d/cant
 
     fig, ax = plt.subplots()
@@ -164,7 +174,7 @@ def display_u_matrix(output_neuron_mtx, radius):  # grey matrix
     plt.show()
 
 
-def kohonen(epochs_mlt, entries, k, initial_radius, dataset, eta_f):
+def kohonen(epochs_mlt, entries, k, initial_radius, dataset, eta_f, distance_type: DistanceType):
     epochs = epochs_mlt * entries.shape[0]
     radius = initial_radius
 
@@ -177,17 +187,17 @@ def kohonen(epochs_mlt, entries, k, initial_radius, dataset, eta_f):
         random.shuffle(aux_entries)
         for i in range(0, aux_entries.shape[0]):
             entry = aux_entries[i, :]
-            process_input(output_neuron_mtx, entry, radius, eta_f, epoch+1)
+            process_input(output_neuron_mtx, entry, radius, eta_f, epoch+1, distance_type)
         if (radius - 1) > 1:
             radius -= 1
 
     display_results(output_neuron_mtx)
-    display_u_matrix(output_neuron_mtx, radius)
+    display_u_matrix(output_neuron_mtx, radius, distance_type)
 
     return output_neuron_mtx
 
 
-def display_final_assignments(data, std_data, output_neuron_mtx):
+def display_final_assignments(data, std_data, output_neuron_mtx, distance_type: DistanceType):
     k = len(output_neuron_mtx)
     names = [[[] for j in range(0, k)] for i in range(0, k)]
     a = np.zeros((k, k))
@@ -196,7 +206,7 @@ def display_final_assignments(data, std_data, output_neuron_mtx):
 
     for i in range(0, std_data.shape[0]):
         entry = std_data[i]
-        (x, y) = find_bmu(output_neuron_mtx, entry)
+        (x, y) = find_bmu(output_neuron_mtx, entry, distance_type)
         a[x, y] += 1
         names[x][y].append(countries_list[i])
 
