@@ -5,7 +5,7 @@ import pandas as pd
 import copy
 import random
 from sklearn.preprocessing import StandardScaler
-from configuration import read_configuration
+from configuration import read_configuration, ConfigurationToRead
 import matplotlib.pyplot as plt
 
 
@@ -247,7 +247,7 @@ if __name__ == '__main__':
     data = df.drop(columns=["Country"]).values  # Eliminamos la columna de países
     data = standardize_data(data)  # Estandarización
 
-    config = read_configuration()
+    config = read_configuration(ConfigurationToRead.KOHONEN)
 
     k = config.k
     radius = config.initial_radius

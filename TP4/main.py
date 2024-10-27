@@ -17,6 +17,9 @@ from src.grapher import (
 
 from sklearn.decomposition import PCA
 
+from src.configuration import read_configuration, ConfigurationToRead, OjaConfig
+from src.OjaPerceptron import OjaSimplePerceptron
+
 
 @dataclass(frozen=True)
 class EuropeInput:
@@ -111,7 +114,7 @@ def standardize_dataframe(df: pd.DataFrame):
     return df.apply(lambda x: (x - x.mean()) / x.std(), axis=0)
 
 
-def pca_two(europe: pd.DataFrame, europe_std: pd.DataFrame):
+def pca_two(europe_input: EuropeInput, europe: pd.DataFrame, europe_std: pd.DataFrame):
     pca = PCA(n_components=2)
     pca_data = pca.fit_transform(europe_std)
     pca_components = pca.components_
@@ -156,7 +159,7 @@ def pca_two(europe: pd.DataFrame, europe_std: pd.DataFrame):
     )
 
 
-def pca_three(europe_std: pd.DataFrame):
+def pca_three(europe_input: EuropeInput, europe_std: pd.DataFrame):
     pca = PCA(n_components=3)
     pca_data = pca.fit_transform(europe_std)
     pca_components = pca.components_
@@ -230,7 +233,7 @@ def pca_one(europe_input: EuropeInput, europe_std: pd.DataFrame):
     )
 
 
-if __name__ == "__main__":
+def ej_pca():
     europe_input = load_csv("./dataset/europe.csv")
     if not europe_input:
         logging.error("No Input parsed. Is the filepath OK?")
@@ -240,5 +243,30 @@ if __name__ == "__main__":
     europe_std = standardize_dataframe(europe)
 
     pca_one(europe_input, europe_std)
-    pca_two(europe, europe_std)
-    pca_three(europe_std)
+    pca_two(europe_input, europe, europe_std)
+    pca_three(europe_input, europe_std)
+
+
+def ej_oja():
+    configuration: OjaConfig = read_configuration(ConfigurationToRead.OJA)
+
+    europe_input = load_csv("./dataset/europe.csv")
+    if not europe_input:
+        logging.error("No Input parsed. Is the filepath OK?")
+        sys.exit(1)
+
+    europe = europe_input_to_dataframe(europe_input)
+    europe_std = standardize_dataframe(europe)
+
+    oja_perceptron = OjaSimplePerceptron(
+        configuration=configuration,
+        input_data=europe_std
+    )
+
+    oja_perceptron.train()
+    print(f"Oja weights: {oja_perceptron.weights}")
+
+
+if __name__ == "__main__":
+    # ej_pca()
+    ej_oja()
