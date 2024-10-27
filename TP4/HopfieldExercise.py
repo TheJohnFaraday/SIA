@@ -34,7 +34,7 @@ FONT = [
 def create_pattern():
     mask = [0, 0, 4, 8, 16, 32, 64, 0, 0]
     patterns = []
-    for f in FONT:
+    for f in FONT[0:4]:
         pattern = []
         for row in f:
             for i in range(2, 7):
@@ -49,7 +49,7 @@ def create_pattern():
     noisy_patterns = np.copy(patterns)
     for p in noisy_patterns:
         for i in range(0, 5):
-            if np.random.normal(0.5, 0.2) > 0.5:
+            if np.random.normal(0.5, 0.6) > 0.5:
                 p[i] *= -1
 
     return (patterns, noisy_patterns)
@@ -57,4 +57,9 @@ def create_pattern():
 
 if __name__ == "__main__":
     patterns, noisy_patterns = create_pattern()
-    print(Hopfield(patterns))
+    hopfield = Hopfield(len(patterns[0]))
+    for p in patterns:
+        hopfield.set_patterns(p)
+    print(f'Noisy Pattern to train:\n{noisy_patterns[0]}')
+    hopfield.set_initial_state(noisy_patterns[0])
+    hopfield.train()
