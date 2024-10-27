@@ -69,21 +69,6 @@ def load_csv(path: str):
 
 
 def europe_input_to_dataframe(europe_input: EuropeInput):
-    # return pd.DataFrame(
-    #     np.array(
-    #         [
-    #             europe_input.area,
-    #             europe_input.gdp,
-    #             europe_input.inflation,
-    #             europe_input.life_expectancy,
-    #             europe_input.military,
-    #             europe_input.population_growth,
-    #             europe_input.unemployment,
-    #         ]
-    #     ),
-    #     columns=europe_input.country,
-    # )
-
     matrix = np.array(
         [
             europe_input.area,
@@ -201,7 +186,7 @@ def pca_one(europe_input: EuropeInput, europe_std: pd.DataFrame):
     df_country = df_country.set_index("Country")
 
     pc1_pca(
-        "Análisis PC1",
+        "Análisis PC1 - PCA",
         "pca",
         "pc1_countries",
         df_country.index.values,
@@ -223,7 +208,7 @@ def pca_one(europe_input: EuropeInput, europe_std: pd.DataFrame):
     df_variables = df_variables.set_index("Variable")
 
     pc1_pca(
-        "Análisis PC1",
+        "Análisis PC1 - PCA",
         "pca",
         "pc1_vars",
         df_variables.index.values,
@@ -231,6 +216,8 @@ def pca_one(europe_input: EuropeInput, europe_std: pd.DataFrame):
         "Variables",
         "PC1",
     )
+
+    return pca.components_[0]
 
 
 def ej_pca():
@@ -264,7 +251,38 @@ def ej_oja():
     )
 
     oja_perceptron.train()
+
+    # PCA
+    pca_values = pca_one(europe_input, europe_std)
+
     print(f"Oja weights: {oja_perceptron.weights}")
+
+    # Errors
+    weights_avg_errors = np.average(np.abs(pca_values-oja_perceptron.weights))
+    print(f"Average weights error: {weights_avg_errors}")
+
+    # Add country names to DataFrame
+    europe_std_countries = pd.DataFrame.copy(europe_std)
+    europe_std_countries["Country"] = europe_input.country
+    europe_std_countries = europe_std_countries.set_index("Country")
+
+    oja_pca_values = []
+    for variable, data in europe_std_countries.iterrows():
+        oja_pca1 = 0
+        oja_pca1 = oja_perceptron.predict(data)
+        oja_pca1 *= -1
+        oja_pca_values.append(oja_pca1)
+        print(f"{variable}: {oja_pca1}")
+
+    pc1_pca(
+        "Análisis PC1 - Oja",
+        "oja",
+        "oja_pc1_countries",
+        europe_std_countries.index.values,
+        oja_pca_values,
+        "País",
+        "PC1",
+    )
 
 
 if __name__ == "__main__":
