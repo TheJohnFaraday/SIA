@@ -2,6 +2,7 @@ import csv
 import logging
 import sys
 from dataclasses import dataclass
+from src.utils import standardize_data
 
 import numpy as np
 import pandas as pd
@@ -19,6 +20,7 @@ from sklearn.decomposition import PCA
 
 from src.configuration import read_configuration, ConfigurationToRead, OjaConfig
 from src.OjaPerceptron import OjaSimplePerceptron
+from src.SOM import kohonen, display_final_assignments
 
 
 @dataclass(frozen=True)
@@ -220,6 +222,24 @@ def pca_one(europe_input: EuropeInput, europe_std: pd.DataFrame):
     return pca.components_[0]
 
 
+def ej_kohonen():
+    df = pd.read_csv('./dataset/europe.csv')
+    data = df.drop(columns=["Country"]).values  # Eliminamos la columna de países
+    data = standardize_data(data)  # Estandarización
+
+    config = read_configuration(ConfigurationToRead.KOHONEN)
+
+    k = config.k
+    radius = config.initial_radius
+    init_with_dataset = True
+
+    def eta_f(i):
+        return 1.0/i
+
+    output_neuron_mtx = kohonen(config.epochs_multiplier, data, k, radius, init_with_dataset, eta_f)
+    display_final_assignments(df, data, output_neuron_mtx)
+
+
 def ej_pca():
     europe_input = load_csv("./dataset/europe.csv")
     if not europe_input:
@@ -287,4 +307,5 @@ def ej_oja():
 
 if __name__ == "__main__":
     # ej_pca()
-    ej_oja()
+    # ej_oja()
+    ej_kohonen()

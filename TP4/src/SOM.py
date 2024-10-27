@@ -1,11 +1,8 @@
 import math
 
 import numpy as np
-import pandas as pd
 import copy
 import random
-from sklearn.preprocessing import StandardScaler
-from configuration import read_configuration, ConfigurationToRead
 import matplotlib.pyplot as plt
 
 
@@ -190,10 +187,6 @@ def kohonen(epochs_mlt, entries, k, initial_radius, dataset, eta_f):
     return output_neuron_mtx
 
 
-def standardize_data(data):
-    return StandardScaler().fit_transform(data)
-
-
 def display_final_assignments(data, std_data, output_neuron_mtx):
     k = len(output_neuron_mtx)
     names = [[[] for j in range(0, k)] for i in range(0, k)]
@@ -241,20 +234,3 @@ def display_final_assignments(data, std_data, output_neuron_mtx):
     plt.colorbar(im)
     plt.show()
 
-
-if __name__ == '__main__':
-    df = pd.read_csv('../dataset/europe.csv')
-    data = df.drop(columns=["Country"]).values  # Eliminamos la columna de países
-    data = standardize_data(data)  # Estandarización
-
-    config = read_configuration(ConfigurationToRead.KOHONEN)
-
-    k = config.k
-    radius = config.initial_radius
-    init_with_dataset = True
-
-    def eta_f(i):
-        return 1.0/i
-
-    output_neuron_mtx = kohonen(config.epochs_multiplier, data, k, radius, init_with_dataset, eta_f)
-    display_final_assignments(df, data, output_neuron_mtx)

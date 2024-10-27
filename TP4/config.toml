@@ -1,7 +1,7 @@
 [kohonen]
-k = 2
-initial_radius = 1.414
-epochs_multiplier = 25
+k = 3
+initial_radius = 3
+epochs_multiplier = 1000
 
 [oja]
 epochs = 10000
