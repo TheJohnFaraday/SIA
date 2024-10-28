@@ -100,6 +100,15 @@ def update_neighbours(output_neuron_mtx, best_match_idx, entry, radius, eta_f, i
         update_neuron(output_neuron_mtx, (i, j), entry, eta_f, it)
 
 
+def update_radius(initial_radius, min_radius, current_epoch, total_epochs, stable_radius):
+    # Si el radio es menor que el radio estable, mantenlo constante
+    if initial_radius - (initial_radius - min_radius) * (current_epoch / total_epochs) <= stable_radius:
+        return stable_radius
+    else:
+        # Disminuye linealmente hasta el radio estable
+        return initial_radius - (initial_radius - min_radius) * (current_epoch / total_epochs)
+
+
 def process_input(output_neuron_mtx, entry, radius, eta_f, it, distance_type: DistanceType):
     (best_i, best_j) = find_bmu(output_neuron_mtx, entry, distance_type)
     output_neuron_mtx[best_i][best_j].hit_count += 1
@@ -188,8 +197,11 @@ def kohonen(epochs_mlt, entries, k, initial_radius, dataset, eta_f, distance_typ
         for i in range(0, aux_entries.shape[0]):
             entry = aux_entries[i, :]
             process_input(output_neuron_mtx, entry, radius, eta_f, epoch+1, distance_type)
-        if (radius - 1) > 1:
-            radius -= 1
+            # if (radius - 1) > 1:
+            #    radius -= 1
+
+        radius = update_radius(initial_radius, 1, epoch, epochs, 1)
+        print("epoch: {} radius: {}".format(epoch, radius))
 
     display_results(output_neuron_mtx)
     display_u_matrix(output_neuron_mtx, radius, distance_type)

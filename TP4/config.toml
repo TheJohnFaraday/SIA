@@ -1,6 +1,6 @@
 [kohonen]
 k = 3
-initial_radius = 3
+initial_radius = 9
 epochs_multiplier = 1000
 set_initial_weights_from_dataset = true
 distance = "euclidean"  # O "exponential"
