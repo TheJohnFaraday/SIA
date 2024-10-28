@@ -201,7 +201,6 @@ def display_final_assignments(data, std_data, output_neuron_mtx, distance_type: 
     k = len(output_neuron_mtx)
     names = [[[] for j in range(0, k)] for i in range(0, k)]
     a = np.zeros((k, k))
-    # print(data)
     countries_list = data['Country'].values.tolist()
 
     for i in range(0, std_data.shape[0]):
@@ -210,8 +209,7 @@ def display_final_assignments(data, std_data, output_neuron_mtx, distance_type: 
         a[x, y] += 1
         names[x][y].append(countries_list[i])
 
-    fig, ax = plt.subplots()
-    k = len(output_neuron_mtx)
+    fig, ax = plt.subplots(figsize=(10, 10))  # Ajustar el tamaño de la figura aquí
     ax.set_title(f'Final entries per node with k={k}')
     im = plt.imshow(a, cmap='hot', interpolation='nearest')
     ax.set_xticks(np.arange(k))
@@ -220,7 +218,6 @@ def display_final_assignments(data, std_data, output_neuron_mtx, distance_type: 
     ax.set_yticklabels(range(k))
 
     # Loop over data dimensions and create text annotations.
-
     max_val = np.amax(np.array(a))
 
     for l in range(0, len(names)):
@@ -239,8 +236,10 @@ def display_final_assignments(data, std_data, output_neuron_mtx, distance_type: 
                 color = "k"
             else:
                 color = "w"
-            text = ax.text(j, i, f'{names[i][j]}', ha="center", va="center", color=color)
+            text = ax.text(j, i, f'{names[i][j]}', ha="center", va="center", color=color, fontsize=10)  # Ajustar el tamaño de la fuente aquí
 
     plt.colorbar(im)
+    plt.tight_layout()  # Asegura que los elementos no se solapen
     plt.show()
+
 
