@@ -256,6 +256,7 @@ def ej_oja():
     pca_values = pca_one(europe_input, europe_std)
 
     print(f"Oja weights: {oja_perceptron.weights}")
+    print(f"PCA weights: {pca_values}")
 
     # Errors
     weights_avg_errors = np.average(np.abs(pca_values-oja_perceptron.weights))
@@ -270,14 +271,14 @@ def ej_oja():
     for variable, data in europe_std_countries.iterrows():
         oja_pca1 = 0
         oja_pca1 = oja_perceptron.predict(data)
-        oja_pca1 *= -1
+        # oja_pca1 *= -1
         oja_pca_values.append(oja_pca1)
         print(f"{variable}: {oja_pca1}")
 
     pc1_pca(
         "Análisis PC1 - Oja",
         "oja",
-        "oja_pc1_countries",
+        f"oja_pc1_countries_lr-{configuration.learning_rate}_e-{configuration.max_epochs}",
         europe_std_countries.index.values,
         oja_pca_values,
         "País",
