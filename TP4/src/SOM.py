@@ -1,12 +1,17 @@
 import math
 
 import numpy as np
-import pandas as pd
 import copy
 import random
-from sklearn.preprocessing import StandardScaler
-from configuration import read_configuration, ConfigurationToRead
 import matplotlib.pyplot as plt
+
+from src.utils import get_euclidean_distance, get_exponential_distance
+from enum import Enum
+
+
+class DistanceType(Enum):
+    EUCLIDEAN = "euclidean"
+    EXPONENTIAL = "exponential"
 
 
 class Neuron:
@@ -23,7 +28,7 @@ class Neuron:
         self.weights = copy.copy(entry)
 
     def init_weights_random(self, length):
-        np.random.uniform(low=-1, high=1, size=(length,))
+        self.weights = np.random.uniform(low=-1, high=1, size=(length,))
 
 
 def init_output_neuron_matrix(k, entries, dataset):
@@ -36,20 +41,22 @@ def init_output_neuron_matrix(k, entries, dataset):
     return output_neuron_mtx
 
 
-def get_distance(arr1, arr2):
-    dist = 0
-    for i in range(0, arr1.shape[0]):
-        dist += (arr1[i] - arr2[i])**2
-    return math.sqrt(dist)
+def calculate_distance(distance_type: DistanceType, arr1, arr2):
+    if distance_type == DistanceType.EUCLIDEAN:
+        return get_euclidean_distance(arr1, arr2)
+    elif distance_type == DistanceType.EXPONENTIAL:
+        return get_exponential_distance(arr1, arr2)
+    else:
+        raise ValueError(f"Unknown distance type: {distance_type}")
 
 
-def find_bmu(output_neuron_mtx, entry):
+def find_bmu(output_neuron_mtx, entry, distance_type: DistanceType):
     min_i = 0
     min_j = 0
     min_dist = math.inf
     for i in range(0, len(output_neuron_mtx)):
         for j in range(0, len(output_neuron_mtx[0])):
-            d = get_distance(output_neuron_mtx[i][j].weights, entry)
+            d = calculate_distance(distance_type, output_neuron_mtx[i][j].weights, entry)
             if d < min_dist:
                 min_i = i
                 min_j = j
@@ -93,8 +100,17 @@ def update_neighbours(output_neuron_mtx, best_match_idx, entry, radius, eta_f, i
         update_neuron(output_neuron_mtx, (i, j), entry, eta_f, it)
 
 
-def process_input(output_neuron_mtx, entry, radius, eta_f, it):
-    (best_i, best_j) = find_bmu(output_neuron_mtx, entry)
+def update_radius(initial_radius, min_radius, current_epoch, total_epochs, stable_radius):
+    # Si el radio es menor que el radio estable, mantenlo constante
+    if initial_radius - (initial_radius - min_radius) * (current_epoch / total_epochs) <= stable_radius:
+        return stable_radius
+    else:
+        # Disminuye linealmente hasta el radio estable
+        return initial_radius - (initial_radius - min_radius) * (current_epoch / total_epochs)
+
+
+def process_input(output_neuron_mtx, entry, radius, eta_f, it, distance_type: DistanceType):
+    (best_i, best_j) = find_bmu(output_neuron_mtx, entry, distance_type)
     output_neuron_mtx[best_i][best_j].hit_count += 1
     update_neighbours(output_neuron_mtx, (best_i, best_j), entry, radius, eta_f, it)
 
@@ -130,7 +146,7 @@ def display_results(output_neuron_mtx):
     plt.show()
 
 
-def display_u_matrix(output_neuron_mtx, radius):  # grey matrix
+def display_u_matrix(output_neuron_mtx, radius, distance_type: DistanceType):  # grey matrix
     k = len(output_neuron_mtx)
     a = np.zeros((k, k))
     for i in range(0, k):
@@ -140,7 +156,7 @@ def display_u_matrix(output_neuron_mtx, radius):  # grey matrix
             d = 0.0
             cant = len(ne)
             for (ne_i, ne_j) in ne:
-                d += get_distance(output_neuron_mtx[i][j].weights, output_neuron_mtx[ne_i][ne_j].weights)
+                d += calculate_distance(distance_type, output_neuron_mtx[i][j].weights, output_neuron_mtx[ne_i][ne_j].weights)
             a[i, j] = d/cant
 
     fig, ax = plt.subplots()
@@ -167,7 +183,7 @@ def display_u_matrix(output_neuron_mtx, radius):  # grey matrix
     plt.show()
 
 
-def kohonen(epochs_mlt, entries, k, initial_radius, dataset, eta_f):
+def kohonen(epochs_mlt, entries, k, initial_radius, dataset, eta_f, distance_type: DistanceType):
     epochs = epochs_mlt * entries.shape[0]
     radius = initial_radius
 
@@ -180,35 +196,32 @@ def kohonen(epochs_mlt, entries, k, initial_radius, dataset, eta_f):
         random.shuffle(aux_entries)
         for i in range(0, aux_entries.shape[0]):
             entry = aux_entries[i, :]
-            process_input(output_neuron_mtx, entry, radius, eta_f, epoch+1)
-        if (radius - 1) > 1:
-            radius -= 1
+            process_input(output_neuron_mtx, entry, radius, eta_f, epoch+1, distance_type)
+            # if (radius - 1) > 1:
+            #    radius -= 1
+
+        radius = update_radius(initial_radius, 1, epoch, epochs, 1)
+        print("epoch: {} radius: {}".format(epoch, radius))
 
     display_results(output_neuron_mtx)
-    display_u_matrix(output_neuron_mtx, radius)
+    display_u_matrix(output_neuron_mtx, radius, distance_type)
 
     return output_neuron_mtx
 
 
-def standardize_data(data):
-    return StandardScaler().fit_transform(data)
-
-
-def display_final_assignments(data, std_data, output_neuron_mtx):
+def display_final_assignments(data, std_data, output_neuron_mtx, distance_type: DistanceType):
     k = len(output_neuron_mtx)
     names = [[[] for j in range(0, k)] for i in range(0, k)]
     a = np.zeros((k, k))
-    # print(data)
     countries_list = data['Country'].values.tolist()
 
     for i in range(0, std_data.shape[0]):
         entry = std_data[i]
-        (x, y) = find_bmu(output_neuron_mtx, entry)
+        (x, y) = find_bmu(output_neuron_mtx, entry, distance_type)
         a[x, y] += 1
         names[x][y].append(countries_list[i])
 
-    fig, ax = plt.subplots()
-    k = len(output_neuron_mtx)
+    fig, ax = plt.subplots(figsize=(10, 10))  # Ajustar el tamaño de la figura aquí
     ax.set_title(f'Final entries per node with k={k}')
     im = plt.imshow(a, cmap='hot', interpolation='nearest')
     ax.set_xticks(np.arange(k))
@@ -217,7 +230,6 @@ def display_final_assignments(data, std_data, output_neuron_mtx):
     ax.set_yticklabels(range(k))
 
     # Loop over data dimensions and create text annotations.
-
     max_val = np.amax(np.array(a))
 
     for l in range(0, len(names)):
@@ -236,25 +248,10 @@ def display_final_assignments(data, std_data, output_neuron_mtx):
                 color = "k"
             else:
                 color = "w"
-            text = ax.text(j, i, f'{names[i][j]}', ha="center", va="center", color=color)
+            text = ax.text(j, i, f'{names[i][j]}', ha="center", va="center", color=color, fontsize=10)  # Ajustar el tamaño de la fuente aquí
 
     plt.colorbar(im)
+    plt.tight_layout()  # Asegura que los elementos no se solapen
     plt.show()
 
 
-if __name__ == '__main__':
-    df = pd.read_csv('../dataset/europe.csv')
-    data = df.drop(columns=["Country"]).values  # Eliminamos la columna de países
-    data = standardize_data(data)  # Estandarización
-
-    config = read_configuration(ConfigurationToRead.KOHONEN)
-
-    k = config.k
-    radius = config.initial_radius
-    init_with_dataset = True
-
-    def eta_f(i):
-        return 1.0/i
-
-    output_neuron_mtx = kohonen(config.epochs_multiplier, data, k, radius, init_with_dataset, eta_f)
-    display_final_assignments(df, data, output_neuron_mtx)
