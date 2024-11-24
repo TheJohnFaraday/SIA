@@ -3,11 +3,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from dataset.font_data import Font3
 from src.Dense import Dense
-from src.activation_functions import ReLU, Logistic
+from src.activation_functions import ReLU, Logistic, Tanh, Sigmoid, Linear
 from src.MultiLayerPerceptron import MultiLayerPerceptron
 from src.errors import MSE
 from src.Optimizer import GradientDescent
-from src.Training import MiniBatch
+from src.Training import MiniBatch, Batch
 
 
 def convert_fonts_to_binary_matrix(font_array):
@@ -26,8 +26,8 @@ def display_comparison_heatmaps(input_matrix, autoencoder_output, rows=4, cols=8
     fig, axes = plt.subplots(2, rows * cols, figsize=(16, 8))  # Two rows: one for input, one for output
     fig.suptitle("Input vs Autoencoder Output Heatmaps", fontsize=16)
 
-    # Monochrome for binary input, continuous for autoencoder output
-    input_cmap = plt.cm.colors.ListedColormap(['white', 'black'])  # Binary colormap
+    # Use 'gray_r' for binary input visualization
+    input_cmap = 'gray_r'  # Monochrome inverted colormap
     output_cmap = 'coolwarm'  # Continuous colormap for autoencoder output
 
     for i in range(num_chars):
@@ -90,39 +90,41 @@ if __name__ == '__main__':
     binary_matrix = convert_fonts_to_binary_matrix(Font3)
     binary_matrix = np.reshape(binary_matrix, (32, 35, 1))  # Reshape input to (32, 35, 1) for compatibility
 
+    # Seleccionar un subconjunto de dos caracteres (e.g., índices 0 y 1)
+    subset_indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # Cambia los índices según los caracteres que quieras usar
+    subset_binary_matrix = binary_matrix[subset_indices]
+
     input_size = binary_matrix.shape[1] * binary_matrix.shape[2]  # 35 (flattened)
 
-    # Define encoder layers
     encoder_layers = [
-        Dense(input_size=input_size, output_size=128, optimizer=GradientDescent(learning_rate=0.0001)),
-        Logistic(beta=0.4),
-        Dense(input_size=128, output_size=64, optimizer=GradientDescent(learning_rate=0.0001)),
-        Logistic(beta=0.4),
-        Dense(input_size=64, output_size=32, optimizer=GradientDescent(learning_rate=0.0001)),
-        Logistic(beta=0.4),
-        Dense(input_size=32, output_size=16, optimizer=GradientDescent(learning_rate=0.0001)),
-        Logistic(beta=0.4)
+        Dense(input_size=input_size, output_size=20, optimizer=GradientDescent(learning_rate=0.3)),
+        Tanh(beta=0.4),
+        Dense(input_size=20, output_size=15, optimizer=GradientDescent(learning_rate=0.3)),
+        Tanh(beta=0.4),
+        Dense(input_size=15, output_size=2, optimizer=GradientDescent(learning_rate=0.3)),  # Espacio latente de dimensión 2
+        Tanh(beta=0.4),
     ]
 
-    # Define decoder layers
     decoder_layers = [
-        Dense(input_size=16, output_size=32, optimizer=GradientDescent(learning_rate=0.0001)),
-        Logistic(beta=0.4),
-        Dense(input_size=32, output_size=64, optimizer=GradientDescent(learning_rate=0.0001)),
-        Logistic(beta=0.4),
-        Dense(input_size=64, output_size=128, optimizer=GradientDescent(learning_rate=0.0001)),
-        Logistic(beta=0.4),
-        Dense(input_size=128, output_size=input_size, optimizer=GradientDescent(learning_rate=0.0001)),
+        Dense(input_size=2, output_size=15, optimizer=GradientDescent(learning_rate=0.3)),
+        Tanh(beta=0.4),
+        Dense(input_size=15, output_size=20, optimizer=GradientDescent(learning_rate=0.3)),
+        Tanh(beta=0.4),
+        Dense(input_size=20, output_size=input_size, optimizer=GradientDescent(learning_rate=0.3)),
+        Tanh(beta=0.4)
     ]
 
     error_function = MSE()
 
     # Define the autoencoder model
-    autoencoder = MultiLayerPerceptron(training_method=MiniBatch(
+    autoencoder = MultiLayerPerceptron(training_method=Batch(
         MultiLayerPerceptron.predict,
-        batch_size=10000,
+        batch_size=10,  # Batch size igual al número de caracteres del subset
         epsilon=0.0000001,
-    ), neural_network=encoder_layers + decoder_layers, error=error_function, epochs=25000, learning_rate=0.0001)
+    ), neural_network=encoder_layers + decoder_layers, error=error_function, epochs=25000, learning_rate=0.3)
+
+    # Normalización opcional
+    normalized_input = 2 * subset_binary_matrix - 1
 
     # Train the autoencoder
     new_network, _ = autoencoder.train(binary_matrix, binary_matrix)
@@ -133,8 +135,13 @@ if __name__ == '__main__':
         for x in binary_matrix
     ])
 
-    # Reshape binary_matrix for the display function (to match reconstructed_output)
+    # Reshape input for the display function (to match reconstructed_output)
     reshaped_input = np.array([x.reshape(7, 5) for x in binary_matrix])
+
+    print("INPUT")
+    print(reshaped_input)
+    print("OUTPUT")
+    print(reconstructed_output)
 
     # Display comparison heatmaps
     display_comparison_heatmaps(reshaped_input, reconstructed_output)
