@@ -88,6 +88,19 @@ def display_single_character_heatmap(binary_matrix, index):
     plt.show()
 
 
+def plot_training_error(errors):
+    epochs = range(1, len(errors) + 1)  # Crear un rango para las épocas (comienza en 1)
+    plt.figure(figsize=(10, 6))
+    plt.plot(epochs, errors, label='Training Error', color='blue')
+    plt.title("Error durante el entrenamiento del Autoencoder")
+    plt.xlabel("Época")
+    plt.ylabel("Error")
+    plt.grid(True, linestyle='--', alpha=0.6)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+
 if __name__ == '__main__':
     configuration: Configuration = read_configuration("config.toml")
     if configuration.seed:
@@ -135,7 +148,7 @@ if __name__ == '__main__':
     normalized_input = 2 * subset_binary_matrix - 1
 
     # Train the autoencoder
-    new_network, _ = autoencoder.train(binary_matrix, binary_matrix)
+    new_network, errors = autoencoder.train(binary_matrix, binary_matrix)
 
     # Generate predictions for each input
     reconstructed_output = np.array([
@@ -153,3 +166,4 @@ if __name__ == '__main__':
 
     if configuration.plot:
         display_comparison_heatmaps(reshaped_input, reconstructed_output)
+        plot_training_error(errors)
