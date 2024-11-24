@@ -9,7 +9,7 @@ from src.Dense import Dense
 from src.activation_functions import ReLU, Logistic, Tanh, Sigmoid, Linear
 from src.MultiLayerPerceptron import MultiLayerPerceptron
 from src.errors import MSE
-from src.Optimizer import GradientDescent
+from src.Optimizer import GradientDescent, Adam
 from src.Training import MiniBatch, Batch
 
 
@@ -118,20 +118,20 @@ if __name__ == '__main__':
     input_size = binary_matrix.shape[1] * binary_matrix.shape[2]  # 35 (flattened)
 
     encoder_layers = [
-        Dense(input_size=input_size, output_size=20, optimizer=GradientDescent(learning_rate=configuration.learning_rate)),
+        Dense(input_size=input_size, output_size=20, optimizer=Adam(learning_rate=configuration.learning_rate, beta1=configuration.adam.beta1, beta2=configuration.adam.beta2, epsilon=configuration.epsilon)),
         Tanh(beta=configuration.beta),
-        Dense(input_size=20, output_size=15, optimizer=GradientDescent(learning_rate=configuration.learning_rate)),
+        Dense(input_size=20, output_size=15, optimizer=Adam(learning_rate=configuration.learning_rate, beta1=configuration.adam.beta1, beta2=configuration.adam.beta2, epsilon=configuration.epsilon)),
         Tanh(beta=configuration.beta),
-        Dense(input_size=15, output_size=2, optimizer=GradientDescent(learning_rate=configuration.learning_rate)),  # Espacio latente de dimensión 2
+        Dense(input_size=15, output_size=2, optimizer=Adam(learning_rate=configuration.learning_rate, beta1=configuration.adam.beta1, beta2=configuration.adam.beta2, epsilon=configuration.epsilon)),  # Espacio latente de dimensión 2
         Tanh(beta=configuration.beta),
     ]
 
     decoder_layers = [
-        Dense(input_size=2, output_size=15, optimizer=GradientDescent(learning_rate=configuration.learning_rate)),
+        Dense(input_size=2, output_size=15, optimizer=Adam(learning_rate=configuration.learning_rate, beta1=configuration.adam.beta1, beta2=configuration.adam.beta2, epsilon=configuration.epsilon)),
         Tanh(beta=configuration.beta),
-        Dense(input_size=15, output_size=20, optimizer=GradientDescent(learning_rate=configuration.learning_rate)),
+        Dense(input_size=15, output_size=20, optimizer=Adam(learning_rate=configuration.learning_rate, beta1=configuration.adam.beta1, beta2=configuration.adam.beta2, epsilon=configuration.epsilon)),
         Tanh(beta=configuration.beta),
-        Dense(input_size=20, output_size=input_size, optimizer=GradientDescent(learning_rate=configuration.learning_rate)),
+        Dense(input_size=20, output_size=input_size, optimizer=Adam(learning_rate=configuration.learning_rate, beta1=configuration.adam.beta1, beta2=configuration.adam.beta2, epsilon=configuration.epsilon)),
         Tanh(beta=configuration.beta)
     ]
 
