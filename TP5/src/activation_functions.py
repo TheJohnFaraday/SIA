@@ -35,3 +35,27 @@ class Logistic(Activation):
             return 2 * beta * logistic(x, beta) * (1 - logistic(x, beta))
 
         super().__init__(logistic, logistic_prime, beta)
+
+
+class Sigmoid(Activation):
+    def __init__(self, beta: float = 1.0):
+        def sigmoid(x, beta: float):
+            return 1 / (1 + np.exp(-beta * np.float128(x)))
+
+        def sigmoid_prime(x, beta: float):
+            sig = sigmoid(x, beta)
+            return beta * sig * (1 - sig)
+
+        super().__init__(sigmoid, sigmoid_prime, beta)
+
+
+class Linear(Activation):
+    def __init__(self, beta: float = 1.0):
+        def linear(x, beta: float):
+            return beta * np.float128(x)
+
+        def linear_prime(x, beta: float):
+            return beta * np.ones_like(np.float128(x))
+
+        super().__init__(linear, linear_prime, beta)
+
