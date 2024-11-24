@@ -1,7 +1,10 @@
+import random
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from dataset.font_data import Font3
+from src.Configuration import Configuration
+from src.parse_configuration import read_configuration
 from src.Dense import Dense
 from src.activation_functions import ReLU, Logistic, Tanh, Sigmoid, Linear
 from src.MultiLayerPerceptron import MultiLayerPerceptron
@@ -86,6 +89,11 @@ def display_single_character_heatmap(binary_matrix, index):
 
 
 if __name__ == '__main__':
+    configuration: Configuration = read_configuration("config.toml")
+    if configuration.seed:
+        random.seed(configuration.seed)
+        np.random.seed(configuration.seed)
+
     # Convert font data to binary matrix and reshape
     binary_matrix = convert_fonts_to_binary_matrix(Font3)
     binary_matrix = np.reshape(binary_matrix, (32, 35, 1))  # Reshape input to (32, 35, 1) for compatibility
@@ -97,21 +105,21 @@ if __name__ == '__main__':
     input_size = binary_matrix.shape[1] * binary_matrix.shape[2]  # 35 (flattened)
 
     encoder_layers = [
-        Dense(input_size=input_size, output_size=20, optimizer=GradientDescent(learning_rate=0.3)),
-        Tanh(beta=0.4),
-        Dense(input_size=20, output_size=15, optimizer=GradientDescent(learning_rate=0.3)),
-        Tanh(beta=0.4),
-        Dense(input_size=15, output_size=2, optimizer=GradientDescent(learning_rate=0.3)),  # Espacio latente de dimensión 2
-        Tanh(beta=0.4),
+        Dense(input_size=input_size, output_size=20, optimizer=GradientDescent(learning_rate=configuration.learning_rate)),
+        Tanh(beta=configuration.beta),
+        Dense(input_size=20, output_size=15, optimizer=GradientDescent(learning_rate=configuration.learning_rate)),
+        Tanh(beta=configuration.beta),
+        Dense(input_size=15, output_size=2, optimizer=GradientDescent(learning_rate=configuration.learning_rate)),  # Espacio latente de dimensión 2
+        Tanh(beta=configuration.beta),
     ]
 
     decoder_layers = [
-        Dense(input_size=2, output_size=15, optimizer=GradientDescent(learning_rate=0.3)),
-        Tanh(beta=0.4),
-        Dense(input_size=15, output_size=20, optimizer=GradientDescent(learning_rate=0.3)),
-        Tanh(beta=0.4),
-        Dense(input_size=20, output_size=input_size, optimizer=GradientDescent(learning_rate=0.3)),
-        Tanh(beta=0.4)
+        Dense(input_size=2, output_size=15, optimizer=GradientDescent(learning_rate=configuration.learning_rate)),
+        Tanh(beta=configuration.beta),
+        Dense(input_size=15, output_size=20, optimizer=GradientDescent(learning_rate=configuration.learning_rate)),
+        Tanh(beta=configuration.beta),
+        Dense(input_size=20, output_size=input_size, optimizer=GradientDescent(learning_rate=configuration.learning_rate)),
+        Tanh(beta=configuration.beta)
     ]
 
     error_function = MSE()
@@ -119,9 +127,9 @@ if __name__ == '__main__':
     # Define the autoencoder model
     autoencoder = MultiLayerPerceptron(training_method=Batch(
         MultiLayerPerceptron.predict,
-        batch_size=10,  # Batch size igual al número de caracteres del subset
-        epsilon=0.0000001,
-    ), neural_network=encoder_layers + decoder_layers, error=error_function, epochs=25000, learning_rate=0.3)
+        batch_size=len(subset_indices),  # Batch size igual al número de caracteres del subset
+        epsilon=configuration.epsilon,
+    ), neural_network=encoder_layers + decoder_layers, error=error_function, epochs=configuration.epochs, learning_rate=configuration.learning_rate)
 
     # Normalización opcional
     normalized_input = 2 * subset_binary_matrix - 1
