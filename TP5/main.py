@@ -151,8 +151,5 @@ if __name__ == '__main__':
     print("OUTPUT")
     print(reconstructed_output)
 
-    # Display comparison heatmaps
-    display_comparison_heatmaps(reshaped_input, reconstructed_output)
-
-
-
+    if configuration.plot:
+        display_comparison_heatmaps(reshaped_input, reconstructed_output)
