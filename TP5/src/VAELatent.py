@@ -1,8 +1,8 @@
 import numpy as np
 
-from .Layer import Layer
-from .Dense import Dense
-from .Optimizer import Optimizer
+from src.Layer import Layer
+from src.Dense import Dense
+from src.Optimizer import Optimizer
 
 
 class VAELatent(Layer):

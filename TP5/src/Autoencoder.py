@@ -7,6 +7,7 @@ from src.Dense import Dense
 from src.activation_functions import Tanh
 from src.MultiLayerPerceptron import MultiLayerPerceptron
 from src.Training import Batch
+from src.VAELatent import VAELatent
 
 
 class Autoencoder:
@@ -45,7 +46,19 @@ class Autoencoder:
             )
             encoder_layers.append(Tanh(beta=beta))
             prior_layer = layer
-        latent_dim = Dense(
+        if is_variational:
+            latent_dim = VAELatent(
+                input_size=prior_layer,
+                output_size=latent_space_dim,
+                optimizer=Adam(
+                    learning_rate=learning_rate,
+                    beta1=beta1,
+                    beta2=beta2,
+                    epsilon=epsilon,
+                ),
+            )
+        else:
+            latent_dim = Dense(
                 input_size=prior_layer,
                 output_size=latent_space_dim,
                 optimizer=Adam(
