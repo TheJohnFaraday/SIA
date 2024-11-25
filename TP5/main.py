@@ -160,11 +160,29 @@ if __name__ == "__main__":
     # Reshape input for the display function (to match reconstructed_output)
     reshaped_input = np.array([x.reshape(7, 5) for x in binary_matrix])
 
-    print("INPUT")
-    print(reshaped_input)
-    print("OUTPUT")
-    print(reconstructed_output)
+    # print("INPUT")
+    # print(reshaped_input)
+    # print("OUTPUT")
+    # print(reconstructed_output)
+
+    a_encoded_value = autoencoder.encode(binary_matrix[1])
+    b_encoded_value = autoencoder.encode(binary_matrix[2])
+    print(a_encoded_value)
+    print(b_encoded_value)
+    delta_x = abs(b_encoded_value[0] - a_encoded_value[0]) / 5
+    delta_y = abs(b_encoded_value[1] - a_encoded_value[1]) / 5
+    new_x = a_encoded_value[0]
+    new_y = a_encoded_value[1]
+    new_letters = []
+    for i in range(6):
+        new_letters.append(autoencoder.decode([new_x, new_y]))
+        new_x += delta_x
+        new_y += delta_y
+    new_letters = np.array(new_letters).reshape(len(range(6)), 7, 5)
+    print(new_letters)
 
     if configuration.plot:
         display_comparison_heatmaps(reshaped_input, reconstructed_output)
+        for i in range(6):
+            display_single_character_heatmap(new_letters, i)
         plot_training_error(errors)
