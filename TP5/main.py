@@ -19,30 +19,52 @@ def convert_fonts_to_binary_matrix(font_array):
     for character in font_array:
         char_matrix = []
         for hex_value in character:
-            binary_value = bin(hex_value)[2:].zfill(8)[
-                -5:
-            ]  # Convert to binary and get last 5 bits
-            char_matrix.append([int(bit) for bit in binary_value])
+            binary_value = bin(hex_value)[2:].zfill(8)[-5:]
+            # Reemplazo 0 por -1
+            char_matrix.append([1 if bit == '1' else -1 for bit in binary_value])
         binary_matrix.append(char_matrix)
     return np.array(binary_matrix)
 
+def plot_latent_space(autoencoder, input_data, labels):
 
-def display_comparison_heatmaps(input_matrix, autoencoder_output, rows=4, cols=8):
+    latent_points = []
+
+    for i, pattern in enumerate(input_data):
+        encoded = autoencoder.encode(pattern)
+        encoded = encoded.flatten()
+        latent_points.append(encoded)
+
+    latent_points = np.array(latent_points)
+
+    plt.figure(figsize=(12, 10))
+    for i, (x, y) in enumerate(latent_points):
+        plt.scatter(x, y, label=labels[i])
+        plt.text(x+ 0.001, y+0.03, labels[i], fontsize=18, weight='bold', color='darkblue')
+
+    plt.title("Espacio Latente del Autoencoder", fontsize=16, weight='bold')
+    plt.xlabel("Nodo 1", fontsize=14)
+    plt.ylabel("Nodo 2", fontsize=14)
+    plt.grid(True)
+    plt.show()
+
+
+def display_comparison_heatmaps(input_matrix, autoencoder_output):
     num_chars = input_matrix.shape[0]
+    half = num_chars // 2
     fig, axes = plt.subplots(
-        2, rows * cols, figsize=(32, 16)
-    )  # Two rows: one for input, one for output
-    fig.suptitle("Input vs Autoencoder Output Heatmaps", fontsize=40)
+        4, half, figsize=(16, 8)
+    )  # 2 filas por mitad: Input y Output
 
-    # Use 'gray_r' for binary input visualization
-    input_cmap = "gray_r"  # Monochrome inverted colormap
-    output_cmap = "coolwarm"  # Continuous colormap for autoencoder output
+    fig.suptitle("Input vs Autoencoder Output Heatmaps", fontsize=20)
+
+    input_cmap = "gray_r"  # Monochrome
+    output_cmap = "Blues"  # Continuous colormap para Output
 
     for i in range(num_chars):
-        row, col = divmod(i, cols)
+        row, col = divmod(i, half)
 
-        # Display input character
-        ax_input = axes[0, row * cols + col]
+        # Primera fila
+        ax_input = axes[row * 2, col]
         sns.heatmap(
             input_matrix[i],
             linewidths=0.2,
@@ -54,9 +76,9 @@ def display_comparison_heatmaps(input_matrix, autoencoder_output, rows=4, cols=8
         )
         ax_input.axis("off")
 
-        # Display autoencoder output character
-        ax_output = axes[1, row * cols + col]
-        reshaped_output = autoencoder_output[i].reshape(7, 5)  # Reshape output to (7,5)
+        # Segunda fila
+        ax_output = axes[row * 2 + 1, col]
+        reshaped_output = autoencoder_output[i].reshape(7, 5)  # Ajuste a (7,5)
         sns.heatmap(
             reshaped_output,
             linewidths=0.2,
@@ -70,6 +92,8 @@ def display_comparison_heatmaps(input_matrix, autoencoder_output, rows=4, cols=8
 
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     plt.savefig("./plots/comparison-heatmaps.png")
+    plt.show()
+
 
 
 def display_single_character_heatmap(binary_matrix, index):
@@ -116,6 +140,12 @@ if __name__ == "__main__":
         binary_matrix, (32, 35, 1)
     )  # Reshape input to (32, 35, 1) for compatibility
 
+    labels = [
+        '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i',
+        'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
+        't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|', '}', '~', 'DEL'
+    ]
+
     # Seleccionar un subconjunto de dos caracteres (e.g., índices 0 y 1)
     subset_indices = [
         0,
@@ -134,7 +164,9 @@ if __name__ == "__main__":
 
     input_size = binary_matrix.shape[1] * binary_matrix.shape[2]  # 35 (flattened)
 
-    layers = [20, 15]
+    # layers = [60, 50, 30, 10, 5]
+    layers = [60, 50, 40, 30, 20, 10, 5]
+    # layers = [70, 60, 50, 40, 30, 20, 15, 10, 5]
     latent_space_dim = 2
     print(binary_matrix.shape[0])
     print(input_size)
@@ -193,3 +225,5 @@ if __name__ == "__main__":
         for i in range(6):
             display_single_character_heatmap(new_letters, i)
         plot_training_error(errors)
+
+    plot_latent_space(autoencoder, binary_matrix, labels)
