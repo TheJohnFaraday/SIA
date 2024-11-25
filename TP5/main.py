@@ -30,9 +30,9 @@ def convert_fonts_to_binary_matrix(font_array):
 def display_comparison_heatmaps(input_matrix, autoencoder_output, rows=4, cols=8):
     num_chars = input_matrix.shape[0]
     fig, axes = plt.subplots(
-        2, rows * cols, figsize=(16, 8)
+        2, rows * cols, figsize=(32, 16)
     )  # Two rows: one for input, one for output
-    fig.suptitle("Input vs Autoencoder Output Heatmaps", fontsize=16)
+    fig.suptitle("Input vs Autoencoder Output Heatmaps", fontsize=40)
 
     # Use 'gray_r' for binary input visualization
     input_cmap = "gray_r"  # Monochrome inverted colormap
@@ -52,7 +52,6 @@ def display_comparison_heatmaps(input_matrix, autoencoder_output, rows=4, cols=8
             linecolor="k",
             ax=ax_input,
         )
-        ax_input.set_title(f"Input {i + 1}")
         ax_input.axis("off")
 
         # Display autoencoder output character
@@ -67,7 +66,6 @@ def display_comparison_heatmaps(input_matrix, autoencoder_output, rows=4, cols=8
             linecolor="k",
             ax=ax_output,
         )
-        ax_output.set_title(f"Output {i + 1}")
         ax_output.axis("off")
 
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
