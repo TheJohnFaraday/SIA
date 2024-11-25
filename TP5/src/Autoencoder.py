@@ -45,9 +45,7 @@ class Autoencoder:
             )
             encoder_layers.append(Tanh(beta=beta))
             prior_layer = layer
-
-        encoder_layers.append(
-            Dense(
+        latent_dim = Dense(
                 input_size=prior_layer,
                 output_size=latent_space_dim,
                 optimizer=Adam(
@@ -57,8 +55,10 @@ class Autoencoder:
                     epsilon=epsilon,
                 ),
             )
-        )
+        encoder_layers.append(latent_dim)
         encoder_layers.append(Tanh(beta=beta))
+
+        self.latent_dim = latent_dim if is_variational else None
         self.encoder_layers = encoder_layers
 
         prior_layer = latent_space_dim
@@ -124,4 +124,5 @@ class Autoencoder:
         return self.autoencoder.train(
             input_matrix,
             expected_output,
+            self.latent_dim
         )

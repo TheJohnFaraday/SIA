@@ -28,6 +28,7 @@ class Training(ABC):
         expected_output_matrix: np.array,
         epochs: int = 10_000,
         learning_rate: float = 0.1,
+        latent_dim=None
     ) -> NeuralNetwork:
         pass
 
@@ -52,6 +53,7 @@ class Batch(Training):
         expected_output_matrix: np.array,
         epochs: int = 10_000,
         learning_rate: float = 0.1,
+        latent_dim=None
     ):
         errors = []
         for epoch in range(epochs):
@@ -105,6 +107,7 @@ class MiniBatch(Training):
         expected_output_matrix: np.array,
         epochs: int = 10_000,
         learning_rate: float = 0.1,
+        latent_dim=None
     ):
         errors = []
         for epoch in range(epochs):
@@ -158,6 +161,7 @@ class Online(Training):
         expected_output_matrix: np.array,
         epochs: int = 10_000,
         learning_rate: float = 0.1,
+        latent_dim=None
     ):
         errors = []
         for epoch in range(epochs):
