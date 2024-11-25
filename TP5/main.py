@@ -134,8 +134,15 @@ if __name__ == "__main__":
 
     input_size = binary_matrix.shape[1] * binary_matrix.shape[2]  # 35 (flattened)
 
+    layers = [20, 15]
+    latent_space_dim = 2
+    print(binary_matrix.shape[0])
+    print(input_size)
     autoencoder = Autoencoder(
         input_size,
+        binary_matrix.shape[0],
+        layers,
+        latent_space_dim,
         MSE(),
         configuration.epochs,
         configuration.beta,
