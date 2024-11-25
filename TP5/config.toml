@@ -4,10 +4,10 @@ plot = true
 # [Optional] Seed for RNG. Comment it out for randomness, or set an integer for determinism
 seed = 20241001
 
-learning_rate = 0.1
+learning_rate = 0.15
 beta = 0.2
 epsilon=0.00000001
-epochs = 100000
+epochs = 125000
 
 batch_size = 10
 
