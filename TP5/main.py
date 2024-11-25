@@ -26,6 +26,30 @@ def convert_fonts_to_binary_matrix(font_array):
         binary_matrix.append(char_matrix)
     return np.array(binary_matrix)
 
+def plot_latent_space(autoencoder, input_data, labels):
+
+    latent_points = []
+
+    for i, pattern in enumerate(input_data):
+        encoded = autoencoder.encode(pattern)
+        encoded = encoded.flatten()
+        latent_points.append(encoded)
+
+    latent_points = np.array(latent_points)
+
+    plt.figure(figsize=(12, 10))
+    for i, (x, y) in enumerate(latent_points):
+        plt.scatter(x, y, label=labels[i])
+        plt.text(x+ 0.001, y+0.03, labels[i], fontsize=18, weight='bold', color='darkblue')  # Letras más grandes y resaltadas
+
+    plt.title("Espacio Latente del Autoencoder", fontsize=16, weight='bold')
+    plt.xlabel("Nodo 1", fontsize=14)
+    plt.ylabel("Nodo 2", fontsize=14)
+    plt.grid(True)
+    plt.show()
+
+
+
 
 def display_comparison_heatmaps(input_matrix, autoencoder_output, rows=4, cols=8):
     num_chars = input_matrix.shape[0]
@@ -116,6 +140,12 @@ if __name__ == "__main__":
         binary_matrix, (32, 35, 1)
     )  # Reshape input to (32, 35, 1) for compatibility
 
+    labels = [
+        '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i',
+        'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
+        't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|', '}', '~', 'DEL'
+    ]
+
     # Seleccionar un subconjunto de dos caracteres (e.g., índices 0 y 1)
     subset_indices = [
         0,
@@ -186,3 +216,5 @@ if __name__ == "__main__":
         for i in range(6):
             display_single_character_heatmap(new_letters, i)
         plot_training_error(errors)
+
+    plot_latent_space(autoencoder, binary_matrix, labels)
