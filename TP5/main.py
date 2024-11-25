@@ -9,7 +9,7 @@ from src.Dense import Dense
 from src.activation_functions import ReLU, Logistic, Tanh, Sigmoid, Linear
 from src.MultiLayerPerceptron import MultiLayerPerceptron
 from src.errors import MSE
-from src.Optimizer import GradientDescent
+from src.Optimizer import GradientDescent, Adam
 from src.Training import MiniBatch, Batch
 
 
@@ -66,7 +66,7 @@ def display_comparison_heatmaps(input_matrix, autoencoder_output, rows=4, cols=8
         ax_output.axis('off')
 
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-    plt.show()
+    plt.savefig("./plots/comparison-heatmaps.png")
 
 
 def display_single_character_heatmap(binary_matrix, index):
@@ -85,7 +85,7 @@ def display_single_character_heatmap(binary_matrix, index):
     )
     ax.axis('off')
     plt.title(f"Character {index}")
-    plt.show()
+    plt.savefig(f"./plots/single-character-comparison-heatmap-{index}.png")
 
 
 def plot_training_error(errors):
@@ -98,7 +98,7 @@ def plot_training_error(errors):
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.legend()
     plt.tight_layout()
-    plt.show()
+    plt.savefig("./plots/training-error.png")
 
 
 if __name__ == '__main__':
@@ -118,20 +118,20 @@ if __name__ == '__main__':
     input_size = binary_matrix.shape[1] * binary_matrix.shape[2]  # 35 (flattened)
 
     encoder_layers = [
-        Dense(input_size=input_size, output_size=20, optimizer=GradientDescent(learning_rate=configuration.learning_rate)),
+        Dense(input_size=input_size, output_size=20, optimizer=Adam(learning_rate=configuration.learning_rate, beta1=configuration.adam.beta1, beta2=configuration.adam.beta2, epsilon=configuration.epsilon)),
         Tanh(beta=configuration.beta),
-        Dense(input_size=20, output_size=15, optimizer=GradientDescent(learning_rate=configuration.learning_rate)),
+        Dense(input_size=20, output_size=15, optimizer=Adam(learning_rate=configuration.learning_rate, beta1=configuration.adam.beta1, beta2=configuration.adam.beta2, epsilon=configuration.epsilon)),
         Tanh(beta=configuration.beta),
-        Dense(input_size=15, output_size=2, optimizer=GradientDescent(learning_rate=configuration.learning_rate)),  # Espacio latente de dimensión 2
+        Dense(input_size=15, output_size=2, optimizer=Adam(learning_rate=configuration.learning_rate, beta1=configuration.adam.beta1, beta2=configuration.adam.beta2, epsilon=configuration.epsilon)),  # Espacio latente de dimensión 2
         Tanh(beta=configuration.beta),
     ]
 
     decoder_layers = [
-        Dense(input_size=2, output_size=15, optimizer=GradientDescent(learning_rate=configuration.learning_rate)),
+        Dense(input_size=2, output_size=15, optimizer=Adam(learning_rate=configuration.learning_rate, beta1=configuration.adam.beta1, beta2=configuration.adam.beta2, epsilon=configuration.epsilon)),
         Tanh(beta=configuration.beta),
-        Dense(input_size=15, output_size=20, optimizer=GradientDescent(learning_rate=configuration.learning_rate)),
+        Dense(input_size=15, output_size=20, optimizer=Adam(learning_rate=configuration.learning_rate, beta1=configuration.adam.beta1, beta2=configuration.adam.beta2, epsilon=configuration.epsilon)),
         Tanh(beta=configuration.beta),
-        Dense(input_size=20, output_size=input_size, optimizer=GradientDescent(learning_rate=configuration.learning_rate)),
+        Dense(input_size=20, output_size=input_size, optimizer=Adam(learning_rate=configuration.learning_rate, beta1=configuration.adam.beta1, beta2=configuration.adam.beta2, epsilon=configuration.epsilon)),
         Tanh(beta=configuration.beta)
     ]
 
