@@ -23,6 +23,7 @@ class Autoencoder:
         beta2: float,
         epsilon: float,
         learning_rate: float,
+        is_variational: bool = False,
     ):
         self.error = error
         self.learning_rate = learning_rate
@@ -100,6 +101,7 @@ class Autoencoder:
                 MultiLayerPerceptron.predict,
                 batch_size=list_size,  # Batch size igual al número de caracteres del subset
                 epsilon=epsilon,
+                is_variational=is_variational,
             ),
             neural_network=self.encoder_layers + self.decoder_layers,
             error=error,

@@ -10,10 +10,14 @@ class Training(ABC):
     type NeuralNetwork = list[Layer]
 
     def __init__(
-        self, predict: Callable[[NeuralNetwork, np.array], np.array], epsilon: float
+        self,
+        predict: Callable[[NeuralNetwork, np.array], np.array],
+        epsilon: float,
+        is_variational: bool = False,
     ):
         self.predict = predict
         self.epsilon = epsilon
+        self.is_variational = is_variational
 
     @abstractmethod
     def train(
@@ -35,8 +39,9 @@ class Batch(Training):
         predict: Callable[[Training.NeuralNetwork, np.array], np.array],
         epsilon: float,
         batch_size: int,
+        is_variational: bool = False,
     ):
-        super().__init__(predict, epsilon)
+        super().__init__(predict, epsilon, is_variational)
         self.batch_size = batch_size
 
     def train(
@@ -87,8 +92,9 @@ class MiniBatch(Training):
         predict: Callable[[Training.NeuralNetwork, np.array], np.array],
         epsilon: float,
         batch_size: int,
+        is_variational: bool = False,
     ):
-        super().__init__(predict, epsilon)
+        super().__init__(predict, epsilon, is_variational)
         self.batch_size = batch_size
 
     def train(
@@ -140,8 +146,9 @@ class Online(Training):
         self,
         predict: Callable[[Training.NeuralNetwork, np.array], np.array],
         epsilon: float,
+        is_variational: bool = False,
     ):
-        super().__init__(predict, epsilon)
+        super().__init__(predict, epsilon, is_variational)
 
     def train(
         self,
