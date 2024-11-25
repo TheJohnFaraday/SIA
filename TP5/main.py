@@ -164,7 +164,9 @@ if __name__ == "__main__":
 
     input_size = binary_matrix.shape[1] * binary_matrix.shape[2]  # 35 (flattened)
 
-    layers = [20, 15]
+    # layers = [60, 50, 30, 10, 5]
+    layers = [60, 50, 40, 30, 20, 10, 5]
+    # layers = [70, 60, 50, 40, 30, 20, 15, 10, 5]
     latent_space_dim = 2
     print(binary_matrix.shape[0])
     print(input_size)
