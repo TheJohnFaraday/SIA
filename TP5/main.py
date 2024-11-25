@@ -11,6 +11,7 @@ from src.MultiLayerPerceptron import MultiLayerPerceptron
 from src.errors import MSE
 from src.Optimizer import GradientDescent, Adam
 from src.Training import MiniBatch, Batch
+from src.Autoencoder import Autoencoder
 
 
 def convert_fonts_to_binary_matrix(font_array):
@@ -18,7 +19,9 @@ def convert_fonts_to_binary_matrix(font_array):
     for character in font_array:
         char_matrix = []
         for hex_value in character:
-            binary_value = bin(hex_value)[2:].zfill(8)[-5:]  # Convert to binary and get last 5 bits
+            binary_value = bin(hex_value)[2:].zfill(8)[
+                -5:
+            ]  # Convert to binary and get last 5 bits
             char_matrix.append([int(bit) for bit in binary_value])
         binary_matrix.append(char_matrix)
     return np.array(binary_matrix)
@@ -26,12 +29,14 @@ def convert_fonts_to_binary_matrix(font_array):
 
 def display_comparison_heatmaps(input_matrix, autoencoder_output, rows=4, cols=8):
     num_chars = input_matrix.shape[0]
-    fig, axes = plt.subplots(2, rows * cols, figsize=(16, 8))  # Two rows: one for input, one for output
+    fig, axes = plt.subplots(
+        2, rows * cols, figsize=(16, 8)
+    )  # Two rows: one for input, one for output
     fig.suptitle("Input vs Autoencoder Output Heatmaps", fontsize=16)
 
     # Use 'gray_r' for binary input visualization
-    input_cmap = 'gray_r'  # Monochrome inverted colormap
-    output_cmap = 'coolwarm'  # Continuous colormap for autoencoder output
+    input_cmap = "gray_r"  # Monochrome inverted colormap
+    output_cmap = "coolwarm"  # Continuous colormap for autoencoder output
 
     for i in range(num_chars):
         row, col = divmod(i, cols)
@@ -44,11 +49,11 @@ def display_comparison_heatmaps(input_matrix, autoencoder_output, rows=4, cols=8
             cbar=False,
             square=True,
             cmap=input_cmap,
-            linecolor='k',
-            ax=ax_input
+            linecolor="k",
+            ax=ax_input,
         )
         ax_input.set_title(f"Input {i + 1}")
-        ax_input.axis('off')
+        ax_input.axis("off")
 
         # Display autoencoder output character
         ax_output = axes[1, row * cols + col]
@@ -59,11 +64,11 @@ def display_comparison_heatmaps(input_matrix, autoencoder_output, rows=4, cols=8
             cbar=False,
             square=True,
             cmap=output_cmap,
-            linecolor='k',
-            ax=ax_output
+            linecolor="k",
+            ax=ax_output,
         )
         ax_output.set_title(f"Output {i + 1}")
-        ax_output.axis('off')
+        ax_output.axis("off")
 
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     plt.savefig("./plots/comparison-heatmaps.png")
@@ -72,7 +77,7 @@ def display_comparison_heatmaps(input_matrix, autoencoder_output, rows=4, cols=8
 def display_single_character_heatmap(binary_matrix, index):
     fig, ax = plt.subplots(figsize=(2, 3))
 
-    monochromatic_cmap = plt.cm.colors.ListedColormap(['white', 'black'])
+    monochromatic_cmap = plt.cm.colors.ListedColormap(["white", "black"])
 
     sns.heatmap(
         binary_matrix[index],
@@ -80,10 +85,10 @@ def display_single_character_heatmap(binary_matrix, index):
         cbar=False,
         square=True,
         cmap=monochromatic_cmap,
-        linecolor='k',
-        ax=ax
+        linecolor="k",
+        ax=ax,
     )
-    ax.axis('off')
+    ax.axis("off")
     plt.title(f"Character {index}")
     plt.savefig(f"./plots/single-character-comparison-heatmap-{index}.png")
 
@@ -91,17 +96,17 @@ def display_single_character_heatmap(binary_matrix, index):
 def plot_training_error(errors):
     epochs = range(1, len(errors) + 1)  # Crear un rango para las épocas (comienza en 1)
     plt.figure(figsize=(10, 6))
-    plt.plot(epochs, errors, label='Training Error', color='blue')
+    plt.plot(epochs, errors, label="Training Error", color="blue")
     plt.title("Error durante el entrenamiento del Autoencoder")
     plt.xlabel("Época")
     plt.ylabel("Error")
-    plt.grid(True, linestyle='--', alpha=0.6)
+    plt.grid(True, linestyle="--", alpha=0.6)
     plt.legend()
     plt.tight_layout()
     plt.savefig("./plots/training-error.png")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     configuration: Configuration = read_configuration("config.toml")
     if configuration.seed:
         random.seed(configuration.seed)
@@ -109,52 +114,50 @@ if __name__ == '__main__':
 
     # Convert font data to binary matrix and reshape
     binary_matrix = convert_fonts_to_binary_matrix(Font3)
-    binary_matrix = np.reshape(binary_matrix, (32, 35, 1))  # Reshape input to (32, 35, 1) for compatibility
+    binary_matrix = np.reshape(
+        binary_matrix, (32, 35, 1)
+    )  # Reshape input to (32, 35, 1) for compatibility
 
     # Seleccionar un subconjunto de dos caracteres (e.g., índices 0 y 1)
-    subset_indices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # Cambia los índices según los caracteres que quieras usar
+    subset_indices = [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+    ]  # Cambia los índices según los caracteres que quieras usar
     subset_binary_matrix = binary_matrix[subset_indices]
 
     input_size = binary_matrix.shape[1] * binary_matrix.shape[2]  # 35 (flattened)
 
-    encoder_layers = [
-        Dense(input_size=input_size, output_size=20, optimizer=Adam(learning_rate=configuration.learning_rate, beta1=configuration.adam.beta1, beta2=configuration.adam.beta2, epsilon=configuration.epsilon)),
-        Tanh(beta=configuration.beta),
-        Dense(input_size=20, output_size=15, optimizer=Adam(learning_rate=configuration.learning_rate, beta1=configuration.adam.beta1, beta2=configuration.adam.beta2, epsilon=configuration.epsilon)),
-        Tanh(beta=configuration.beta),
-        Dense(input_size=15, output_size=2, optimizer=Adam(learning_rate=configuration.learning_rate, beta1=configuration.adam.beta1, beta2=configuration.adam.beta2, epsilon=configuration.epsilon)),  # Espacio latente de dimensión 2
-        Tanh(beta=configuration.beta),
-    ]
+    autoencoder = Autoencoder(
+        input_size,
+        MSE(),
+        configuration.epochs,
+        configuration.beta,
+        configuration.adam.beta1,
+        configuration.adam.beta2,
+        configuration.epsilon,
+        configuration.learning_rate,
+    )
 
-    decoder_layers = [
-        Dense(input_size=2, output_size=15, optimizer=Adam(learning_rate=configuration.learning_rate, beta1=configuration.adam.beta1, beta2=configuration.adam.beta2, epsilon=configuration.epsilon)),
-        Tanh(beta=configuration.beta),
-        Dense(input_size=15, output_size=20, optimizer=Adam(learning_rate=configuration.learning_rate, beta1=configuration.adam.beta1, beta2=configuration.adam.beta2, epsilon=configuration.epsilon)),
-        Tanh(beta=configuration.beta),
-        Dense(input_size=20, output_size=input_size, optimizer=Adam(learning_rate=configuration.learning_rate, beta1=configuration.adam.beta1, beta2=configuration.adam.beta2, epsilon=configuration.epsilon)),
-        Tanh(beta=configuration.beta)
-    ]
-
-    error_function = MSE()
-
-    # Define the autoencoder model
-    autoencoder = MultiLayerPerceptron(training_method=Batch(
-        MultiLayerPerceptron.predict,
-        batch_size=len(subset_indices),  # Batch size igual al número de caracteres del subset
-        epsilon=configuration.epsilon,
-    ), neural_network=encoder_layers + decoder_layers, error=error_function, epochs=configuration.epochs, learning_rate=configuration.learning_rate)
-
-    # Normalización opcional
-    normalized_input = 2 * subset_binary_matrix - 1
-
-    # Train the autoencoder
     new_network, errors = autoencoder.train(binary_matrix, binary_matrix)
 
     # Generate predictions for each input
-    reconstructed_output = np.array([
-        MultiLayerPerceptron.predict(new_network, x).reshape(7, 5)  # Reshape each output to 7x5 for visualization
-        for x in binary_matrix
-    ])
+    reconstructed_output = np.array(
+        [
+            autoencoder.predict(x).reshape(
+                7, 5
+            )  # Reshape each output to 7x5 for visualization
+            for x in binary_matrix
+        ]
+    )
 
     # Reshape input for the display function (to match reconstructed_output)
     reshaped_input = np.array([x.reshape(7, 5) for x in binary_matrix])
