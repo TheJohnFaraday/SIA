@@ -127,13 +127,7 @@ def plot_training_error(errors):
     plt.tight_layout()
     plt.savefig("./plots/training-error.png")
 
-
-if __name__ == "__main__":
-    configuration: Configuration = read_configuration("config.toml")
-    if configuration.seed:
-        random.seed(configuration.seed)
-        np.random.seed(configuration.seed)
-
+def ej_1_a(configuration: Configuration):
     # Convert font data to binary matrix and reshape
     binary_matrix = convert_fonts_to_binary_matrix(Font3)
     binary_matrix = np.reshape(
@@ -218,3 +212,16 @@ if __name__ == "__main__":
         plot_training_error(errors)
 
     plot_latent_space(autoencoder, binary_matrix, labels)
+
+
+def ej_1_b(configuration: Configuration):
+    pass
+
+if __name__ == "__main__":
+    configuration: Configuration = read_configuration("config.toml")
+    if configuration.seed:
+        random.seed(configuration.seed)
+        np.random.seed(configuration.seed)
+
+    ej_1_a(configuration)
+    # ej_1_b(configuration)
