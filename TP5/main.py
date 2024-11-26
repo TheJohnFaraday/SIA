@@ -8,13 +8,12 @@ import seaborn as sns
 
 from dataset.font_data import Font3
 from src.Autoencoder import Autoencoder
-import os
-from PIL import Image
 from src.Configuration import Configuration
 from src.Layer import Layer
 from src.Letters import get_letters, get_letters_labels, convert_fonts_to_binary_matrix
 from src.errors import MSE
 from src.parse_configuration import read_configuration
+from src.MCCreatures import mc_matrix
 
 
 @dataclass
@@ -260,36 +259,6 @@ def ej_1_a(configuration: Configuration, trained: TrainedAutoencoder):
         )
 
 
-def mc_matrix():
-    images_folder = "dataset/minecraft-faces"
-    images_shape = (64, 64)
-    x = []
-
-    images = [f for f in os.listdir(images_folder) if f.endswith(".png")]
-    processed = 0
-
-    for image in images:
-        full_path = os.path.join(images_folder, image)
-        img = Image.open(full_path)
-
-        if len(img.split()) >= 3:
-            img = img.convert("RGB")
-            img = img.resize(images_shape)
-            img = np.asarray(img, dtype=np.float32) / 255
-            img = img[:, :, :3]
-            x.append(img)
-            processed += 1
-
-    print(f"Loaded {processed} out of {len(images)} images with shape {images_shape}")
-
-    if len(x) > 0:
-        plt.imshow(x[0])
-        plt.axis("off")
-        plt.show()
-    else:
-        print("No images to display.")
-
-
 def ej_1_b(configuration: Configuration, trained: TrainedAutoencoder):
     if not configuration.noise:
         raise RuntimeError(
@@ -315,7 +284,11 @@ if __name__ == "__main__":
         random.seed(configuration.seed)
         np.random.seed(configuration.seed)
 
-    trained = train_predictor(configuration)
+    mc_mx = mc_matrix()
+    print(mc_mx)
 
-    ej_1_a(configuration, trained)
-    ej_1_b(configuration, trained)
+    # trained = train_predictor(configuration)
+
+    # ej_1_a(configuration, trained)
+    # ej_1_b(configuration, trained)
+
