@@ -328,7 +328,7 @@ def ej2(configuration: Configuration):
     vae = train_vae(configuration)
     grid_size = 2
 
-    fig, axes = plt.subplots(grid_size, grid_size*2, figsize=(12, 24))
+    fig, axes = plt.subplots(grid_size, grid_size*2, figsize=(24, 12))
 
     fig.subplots_adjust(wspace=0.2, hspace=0.2)
     output = vae.trained_output

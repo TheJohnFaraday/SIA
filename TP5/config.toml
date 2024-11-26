@@ -7,7 +7,7 @@ seed = 20241001
 learning_rate = 0.005
 beta = 0.1
 epsilon = 0.000000000001
-epochs = 2000
+epochs = 1500
 
 batch_size = 10
 
