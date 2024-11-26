@@ -1,31 +1,55 @@
 import random
-import numpy as np
+from dataclasses import dataclass
+from typing import Union
+
 import matplotlib.pyplot as plt
+import numpy as np
 import seaborn as sns
+
 from dataset.font_data import Font3
-from src.Configuration import Configuration
-from src.parse_configuration import read_configuration
-from src.Dense import Dense
-from src.activation_functions import ReLU, Logistic, Tanh, Sigmoid, Linear
-from src.MultiLayerPerceptron import MultiLayerPerceptron
-from src.errors import MSE
-from src.Optimizer import GradientDescent, Adam
-from src.Training import MiniBatch, Batch
 from src.Autoencoder import Autoencoder
+from src.Configuration import Configuration
+from src.Layer import Layer
+from src.Letters import get_letters, get_letters_labels, convert_fonts_to_binary_matrix
+from src.errors import MSE
+from src.parse_configuration import read_configuration
 
 
-def convert_fonts_to_binary_matrix(font_array):
-    binary_matrix = []
-    for character in font_array:
-        char_matrix = []
-        for hex_value in character:
-            binary_value = bin(hex_value)[2:].zfill(8)[-5:]
-            # Reemplazo 0 por -1
-            char_matrix.append([1 if bit == '1' else -1 for bit in binary_value])
-        binary_matrix.append(char_matrix)
-    return np.array(binary_matrix)
+@dataclass
+class TrainedAutoencoder:
+    autoencoder: Autoencoder
+    network: Layer
+    errors: Union[Layer, np.array, list[float]]
+    trained_input: np.array
+    trained_output: np.array
+    used_letters_matrix: np.array
 
-def plot_latent_space(autoencoder, input_data, labels):
+
+def add_noise_to_letters(letters_matrix, intensity: float, spread: int):
+    def add_noise_to_single_letter(letter):
+        noise_matrix = np.array(letter).astype(float).reshape(7, 5)
+
+        def add_noise_around(row: int, column: int):
+            for y_offset in range(-spread, spread + 1):
+                for x_offset in range(-spread, spread + 1):
+                    if noise_matrix.shape[0] > y_offset + row >= 0 \
+                            and noise_matrix.shape[1] > x_offset + column >= 0:
+                        noise_matrix[row + y_offset][column + x_offset] += np.random.normal(1, 1) * intensity / 2
+
+        for i in range(noise_matrix.shape[0]):
+            for j in range(noise_matrix.shape[1]):
+                if noise_matrix[i][j] != 1:
+                    continue
+
+                add_noise_around(i, j)
+
+        maximum_cell_value = max(cell for row in noise_matrix for cell in row)
+        return [cell / maximum_cell_value for row in noise_matrix for cell in row]
+
+    return np.array([add_noise_to_single_letter(letter) for letter in letters_matrix])
+
+
+def plot_latent_space(autoencoder, input_data, labels, suffix_filename: str):
 
     latent_points = []
 
@@ -45,10 +69,11 @@ def plot_latent_space(autoencoder, input_data, labels):
     plt.xlabel("Nodo 1", fontsize=14)
     plt.ylabel("Nodo 2", fontsize=14)
     plt.grid(True)
-    plt.show()
+    # plt.show()
+    plt.savefig(f"./plots/latent_space-{suffix_filename}.png")
 
 
-def display_comparison_heatmaps(input_matrix, autoencoder_output):
+def display_comparison_heatmaps(input_matrix, autoencoder_output, suffix_filename: str):
     num_chars = input_matrix.shape[0]
     half = num_chars // 2
     fig, axes = plt.subplots(
@@ -91,12 +116,12 @@ def display_comparison_heatmaps(input_matrix, autoencoder_output):
         ax_output.axis("off")
 
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-    plt.savefig("./plots/comparison-heatmaps.png")
-    plt.show()
+    plt.savefig(f"./plots/comparison-heatmaps-{suffix_filename}.png")
+    # plt.show()
 
 
 
-def display_single_character_heatmap(binary_matrix, index):
+def display_single_character_heatmap(binary_matrix, index, suffix_filename: str):
     fig, ax = plt.subplots(figsize=(2, 3))
 
     monochromatic_cmap = plt.cm.colors.ListedColormap(["white", "black"])
@@ -112,10 +137,10 @@ def display_single_character_heatmap(binary_matrix, index):
     )
     ax.axis("off")
     plt.title(f"Character {index}")
-    plt.savefig(f"./plots/single-character-comparison-heatmap-{index}.png")
+    plt.savefig(f"./plots/single-character-comparison-heatmap-{index}-{suffix_filename}.png")
 
 
-def plot_training_error(errors):
+def plot_training_error(errors, suffix_filename: str):
     epochs = range(1, len(errors) + 1)  # Crear un rango para las épocas (comienza en 1)
     plt.figure(figsize=(10, 6))
     plt.plot(epochs, errors, label="Training Error", color="blue")
@@ -125,27 +150,50 @@ def plot_training_error(errors):
     plt.grid(True, linestyle="--", alpha=0.6)
     plt.legend()
     plt.tight_layout()
-    plt.savefig("./plots/training-error.png")
+    plt.savefig(f"./plots/training-error-{suffix_filename}.png")
 
 
-if __name__ == "__main__":
-    configuration: Configuration = read_configuration("config.toml")
-    if configuration.seed:
-        random.seed(configuration.seed)
-        np.random.seed(configuration.seed)
+def train_predictor(configuration: Configuration):
+    letters_matrix = get_letters()
+    # layers = [60, 50, 30, 10, 5]
+    layers = [60, 50, 40, 30, 20, 10, 5]
+    # layers = [70, 60, 50, 40, 30, 20, 15, 10, 5]
+    latent_space_dim = 2
+    autoencoder = Autoencoder(
+        letters_matrix.shape[1] * letters_matrix.shape[2],  # 35 (flattened)
+        letters_matrix.shape[0],
+        layers,
+        latent_space_dim,
+        MSE(),
+        configuration.epochs,
+        configuration.beta,
+        configuration.adam.beta1,
+        configuration.adam.beta2,
+        configuration.epsilon,
+        configuration.learning_rate,
+        )
 
-    # Convert font data to binary matrix and reshape
-    binary_matrix = convert_fonts_to_binary_matrix(Font3)
-    binary_matrix = np.reshape(
-        binary_matrix, (32, 35, 1)
-    )  # Reshape input to (32, 35, 1) for compatibility
+    new_network, errors = autoencoder.train(letters_matrix, letters_matrix)
 
-    labels = [
-        '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i',
-        'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
-        't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|', '}', '~', 'DEL'
-    ]
+    # Generate predictions for each input
+    reconstructed_output = np.array(
+        [
+            autoencoder.predict(x).reshape(
+                7, 5
+            )  # Reshape each output to 7x5 for visualization
+            for x in letters_matrix
+        ]
+    )
 
+    # Reshape input for the display function (to match reconstructed_output)
+    reshaped_input = np.array([x.reshape(7, 5) for x in letters_matrix])
+
+    return TrainedAutoencoder(autoencoder=autoencoder, network=new_network, errors=errors, trained_input=reshaped_input,
+                              trained_output=reconstructed_output, used_letters_matrix=letters_matrix)
+
+
+
+def ej_1_a(configuration: Configuration, trained: TrainedAutoencoder):
     # Seleccionar un subconjunto de dos caracteres (e.g., índices 0 y 1)
     subset_indices = [
         0,
@@ -160,52 +208,15 @@ if __name__ == "__main__":
         9,
         10,
     ]  # Cambia los índices según los caracteres que quieras usar
-    subset_binary_matrix = binary_matrix[subset_indices]
-
-    input_size = binary_matrix.shape[1] * binary_matrix.shape[2]  # 35 (flattened)
-
-    # layers = [60, 50, 30, 10, 5]
-    layers = [60, 50, 40, 30, 20, 10, 5]
-    # layers = [70, 60, 50, 40, 30, 20, 15, 10, 5]
-    latent_space_dim = 2
-    print(binary_matrix.shape[0])
-    print(input_size)
-    autoencoder = Autoencoder(
-        input_size,
-        binary_matrix.shape[0],
-        layers,
-        latent_space_dim,
-        MSE(),
-        configuration.epochs,
-        configuration.beta,
-        configuration.adam.beta1,
-        configuration.adam.beta2,
-        configuration.epsilon,
-        configuration.learning_rate,
-    )
-
-    new_network, errors = autoencoder.train(binary_matrix, binary_matrix)
-
-    # Generate predictions for each input
-    reconstructed_output = np.array(
-        [
-            autoencoder.predict(x).reshape(
-                7, 5
-            )  # Reshape each output to 7x5 for visualization
-            for x in binary_matrix
-        ]
-    )
-
-    # Reshape input for the display function (to match reconstructed_output)
-    reshaped_input = np.array([x.reshape(7, 5) for x in binary_matrix])
+    subset_binary_matrix = get_letters()[subset_indices]
 
     # print("INPUT")
     # print(reshaped_input)
     # print("OUTPUT")
     # print(reconstructed_output)
 
-    a_encoded_value = autoencoder.encode(binary_matrix[1])
-    b_encoded_value = autoencoder.encode(binary_matrix[2])
+    a_encoded_value = trained.autoencoder.encode(trained.used_letters_matrix[1])
+    b_encoded_value = trained.autoencoder.encode(trained.used_letters_matrix[2])
     print(a_encoded_value)
     print(b_encoded_value)
     delta_x = abs(b_encoded_value[0] - a_encoded_value[0]) / 5
@@ -214,16 +225,39 @@ if __name__ == "__main__":
     new_y = a_encoded_value[1]
     new_letters = []
     for i in range(6):
-        new_letters.append(autoencoder.decode([new_x, new_y]))
+        new_letters.append(trained.autoencoder.decode([new_x, new_y]))
         new_x += delta_x
         new_y += delta_y
     new_letters = np.array(new_letters).reshape(len(range(6)), 7, 5)
     print(new_letters)
 
     if configuration.plot:
-        display_comparison_heatmaps(reshaped_input, reconstructed_output)
+        display_comparison_heatmaps(trained.trained_input, trained.trained_output, suffix_filename="ej_1a")
         for i in range(6):
-            display_single_character_heatmap(new_letters, i)
-        plot_training_error(errors)
+            display_single_character_heatmap(new_letters, i, suffix_filename="ej_1a")
+        plot_training_error(trained.errors, suffix_filename="ej_1a")
+        plot_latent_space(trained.autoencoder, trained.used_letters_matrix, get_letters_labels(), suffix_filename="ej_1a")
 
-    plot_latent_space(autoencoder, binary_matrix, labels)
+
+def ej_1_b(configuration: Configuration, trained: TrainedAutoencoder):
+    if not configuration.noise:
+        raise RuntimeError("'noise' configuration is needed for this item to be executed")
+
+    letters_with_noise = add_noise_to_letters(convert_fonts_to_binary_matrix(Font3), configuration.noise.intensity,
+                                              configuration.noise.spread)
+
+    if configuration.plot:
+        display_comparison_heatmaps(trained.trained_output, letters_with_noise, suffix_filename="ej_1b")
+        plot_training_error(trained.errors, suffix_filename="ej_1b")
+
+
+if __name__ == "__main__":
+    configuration: Configuration = read_configuration("config.toml")
+    if configuration.seed:
+        random.seed(configuration.seed)
+        np.random.seed(configuration.seed)
+
+    trained = train_predictor(configuration)
+
+    ej_1_a(configuration, trained)
+    ej_1_b(configuration, trained)
