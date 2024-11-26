@@ -15,6 +15,7 @@ from src.Layer import Layer
 from src.Letters import get_letters, get_letters_labels, convert_fonts_to_binary_matrix
 from src.errors import MSE
 from src.parse_configuration import read_configuration
+from src.MCCreatures import mc_matrix
 
 CUSTOM_PALETTE = [
     "#508fbe",  # blue
@@ -587,6 +588,117 @@ def run_ej_1_b(
         )
 
 
+def train_vae(configuration: Configuration, subset, mc_m):
+    # layers = [1200, 1000, 800, 600, 400, 200, 100, 50, 25, 10]
+    layers = [300, 200, 100, 50]
+    latent_space_dim = 2
+    autoencoder = Autoencoder(
+        mc_m.shape[1],  # 400 (flattened)
+        subset,
+        layers,
+        latent_space_dim,
+        MSE(),
+        configuration.epochs,
+        configuration.beta,
+        configuration.adam.beta1,
+        configuration.adam.beta2,
+        configuration.epsilon,
+        configuration.learning_rate,
+        True,
+    )
+
+    new_network, errors = autoencoder.train(mc_m[:subset], mc_m[:subset])
+
+    # Generate predictions for each input
+    reconstructed_output = np.array(
+        [
+            autoencoder.predict(x).reshape(
+                20, 20
+            )  # Reshape each output to 20x20 for visualization
+            for x in mc_m
+        ]
+    )
+
+    # Reshape input for the display function (to match reconstructed_output)
+    reshaped_input = np.array([x.reshape(20, 20) for x in mc_m])
+
+    return TrainedAutoencoder(
+        autoencoder=autoencoder,
+        network=new_network,
+        errors=errors,
+        trained_input=reshaped_input,
+        trained_output=reconstructed_output,
+        binary_letters_matrix=mc_m,
+    )
+
+
+
+def ej2(configuration: Configuration):
+
+    subset = 8
+    mc_m = mc_matrix(subset)
+    mc_m = np.reshape(np.array(mc_m), (8, 400, 1))
+
+    vae = train_vae(configuration, subset, mc_m)
+    grid_size = 2
+
+    fig, axes = plt.subplots(grid_size, grid_size * 2, figsize=(24, 12))
+
+    fig.subplots_adjust(wspace=0.2, hspace=0.2)
+    output = vae.trained_output
+    output = np.reshape(output, (grid_size, grid_size * 2, 20, 20))
+    print(output)
+    for i in range(grid_size):
+        for j in range(grid_size * 2):
+            ax = axes[i, j]
+            matrix = output[i][j]
+            ax.imshow(matrix, cmap="Blues", vmin=-1, vmax=1)
+
+            ax.set_xticks([])
+            ax.set_yticks([])
+            ax.set_aspect("auto")
+
+    plt.savefig("./plots/kjawdkanwdkaw.png")
+
+    print(len(mc_m[0]))
+
+    output_1 = vae.autoencoder.encode(mc_m[6])
+    output_2 = vae.autoencoder.encode(mc_m[7])
+
+    print("OUTPUTS")
+
+    print(output_1)
+    print(output_2)
+
+    new_output = 0.5 * (output_1 + output_2)
+    new_output = vae.autoencoder.decode(new_output)
+
+    new_output_matrix = new_output.reshape(20, 20)
+    fig, axes = plt.subplots(1, 1, figsize=(4, 4))
+    fig.subplots_adjust(wspace=0.2, hspace=0.2)
+    plt.imshow(new_output_matrix, cmap="Blues", vmin=-1, vmax=1)
+    plt.axis("off")
+    plt.savefig("./plots/new-output-matrix.png")
+
+    latent_space_map = []
+    for i in range(-1, 1, 0.2):
+        for j in range(-1, 1, 0.2):
+            latent_space_map.append(vae.autoencoder.decode([i, j]))
+
+    latent_space_map = np.reshape(latent_space_map, (10, 10, 20, 20))
+
+    for i in range(10):
+        for j in range(10):
+            ax = axes[i, j]
+            matrix = latent_space_map[i][j]
+            ax.imshow(matrix, cmap="Blues", vmin=-1, vmax=1)
+
+            ax.set_xticks([])
+            ax.set_yticks([])
+            ax.set_aspect("auto")
+    plt.savefig("./plots/latent-space-map.png")
+
+
 if __name__ == "__main__":
     config: Configuration = read_configuration("config.toml")
     if config.seed:
@@ -617,3 +729,5 @@ if __name__ == "__main__":
 
     process_ej_1_a.join()
     process_ej_1_b.join()
+
+    ej2(config)

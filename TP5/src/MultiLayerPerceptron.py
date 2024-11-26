@@ -28,7 +28,7 @@ class MultiLayerPerceptron:
 
         return output
 
-    def train(self, input_matrix, expected_output):
+    def train(self, input_matrix, expected_output, latent_dim = None):
         return self.training_method.train(
             self.neural_network,
             self.error,
@@ -36,4 +36,5 @@ class MultiLayerPerceptron:
             expected_output,
             self.epochs,
             self.learning_rate,
+            latent_dim
         )

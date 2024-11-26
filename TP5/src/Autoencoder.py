@@ -7,6 +7,7 @@ from src.Dense import Dense
 from src.activation_functions import Tanh
 from src.MultiLayerPerceptron import MultiLayerPerceptron
 from src.Training import Batch
+from src.VAELatent import VAELatent
 
 
 class Autoencoder:
@@ -23,13 +24,13 @@ class Autoencoder:
         beta2: float,
         epsilon: float,
         learning_rate: float,
+        is_variational: bool = False,
     ):
         self.error = error
         self.learning_rate = learning_rate
         encoder_layers = []
         prior_layer = input_size
         for layer in layers:
-            print(f"prior layer {prior_layer} -> layer {layer}")
             encoder_layers.append(
                 Dense(
                     input_size=prior_layer,
@@ -44,9 +45,8 @@ class Autoencoder:
             )
             encoder_layers.append(Tanh(beta=beta))
             prior_layer = layer
-
-        encoder_layers.append(
-            Dense(
+        if is_variational:
+            latent_dim = VAELatent(
                 input_size=prior_layer,
                 output_size=latent_space_dim,
                 optimizer=Adam(
@@ -56,15 +56,27 @@ class Autoencoder:
                     epsilon=epsilon,
                 ),
             )
-        )
-        encoder_layers.append(Tanh(beta=beta))
+        else:
+            latent_dim = Dense(
+                input_size=prior_layer,
+                output_size=latent_space_dim,
+                optimizer=Adam(
+                    learning_rate=learning_rate,
+                    beta1=beta1,
+                    beta2=beta2,
+                    epsilon=epsilon,
+                ),
+            )
+        encoder_layers.append(latent_dim)
+        #encoder_layers.append(Tanh(beta=beta))
+
+        self.latent_dim = latent_dim if is_variational else None
         self.encoder_layers = encoder_layers
 
         prior_layer = latent_space_dim
         decoder_layers = []
 
         for layer in layers[::-1]:
-            print(f"prior layer {prior_layer} -> layer {layer}")
             decoder_layers.append(
                 Dense(
                     input_size=prior_layer,
@@ -100,6 +112,7 @@ class Autoencoder:
                 MultiLayerPerceptron.predict,
                 batch_size=list_size,  # Batch size igual al número de caracteres del subset
                 epsilon=epsilon,
+                is_variational=is_variational,
             ),
             neural_network=self.encoder_layers + self.decoder_layers,
             error=error,
@@ -122,4 +135,5 @@ class Autoencoder:
         return self.autoencoder.train(
             input_matrix,
             expected_output,
+            self.latent_dim
         )

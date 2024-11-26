@@ -5,9 +5,9 @@ plot = true
 seed = 20241001
 
 learning_rate = 0.005
-beta = 0.2
-epsilon = 0.00000000001
-epochs = 10000
+beta = 0.1
+epsilon = 0.000000000001
+epochs = 1500
 
 batch_size = 10
 
