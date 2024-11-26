@@ -68,7 +68,7 @@ class Autoencoder:
                 ),
             )
         encoder_layers.append(latent_dim)
-        encoder_layers.append(Tanh(beta=beta))
+        #encoder_layers.append(Tanh(beta=beta))
 
         self.latent_dim = latent_dim if is_variational else None
         self.encoder_layers = encoder_layers
