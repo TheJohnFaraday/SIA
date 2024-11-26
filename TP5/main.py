@@ -1,6 +1,7 @@
 import hashlib
 import random
 from dataclasses import dataclass
+from multiprocessing import Process
 from typing import Union
 
 import matplotlib.pyplot as plt
@@ -95,8 +96,24 @@ def add_noise_to_letters(letters_matrix, intensity: float, spread: int):
     return np.array([add_noise_to_single_letter(letter) for letter in letters_matrix])
 
 
+def generate_letters_with_noise(noise_configuration):
+    letters_with_noise = add_noise_to_letters(
+        convert_fonts_to_binary_matrix(Font3),
+        noise_configuration.intensity,
+        noise_configuration.spread,
+    )
+
+    letters_with_noise_for_autoencoder = np.reshape(letters_with_noise, (32, 35, 1))
+    return letters_with_noise, letters_with_noise_for_autoencoder
+
+
 def plot_latent_space(
-    configuration: Configuration, autoencoder, input_data, labels, suffix_filename: str
+    configuration: Configuration,
+    autoencoder,
+    input_data,
+    labels,
+    suffix_filename: str,
+    architecture,
 ):
     latent_points = []
 
@@ -125,7 +142,7 @@ def plot_latent_space(
         f"-beta-{configuration.beta}"
         f"-epsilon-{configuration.epsilon}"
         f"-epochs-{configuration.epochs}"
-        f"-{str(trained.architecture)}"
+        f"-{str(architecture)}"
         f"-{suffix_filename}.png"
     )
     plt.clf()
@@ -137,6 +154,7 @@ def display_comparison_heatmaps(
     input_matrix,
     autoencoder_output,
     suffix_filename: str,
+    architecture,
     middle_row=None,
 ):
     num_chars = input_matrix.shape[0]
@@ -236,7 +254,7 @@ def display_comparison_heatmaps(
         f"-epsilon-{configuration.epsilon}"
         f"-epochs-{configuration.epochs}"
         f"-{noise}"
-        f"-{str(trained.architecture)}"
+        f"-{str(architecture)}"
         f"-{suffix_filename}.png"
     )
     # plt.show()
@@ -245,7 +263,11 @@ def display_comparison_heatmaps(
 
 
 def display_single_character_heatmap(
-    configuration: Configuration, binary_matrix, index, suffix_filename: str
+    configuration: Configuration,
+    binary_matrix,
+    index,
+    suffix_filename: str,
+    architecture,
 ):
     fig, ax = plt.subplots(figsize=(2, 3))
 
@@ -268,7 +290,7 @@ def display_single_character_heatmap(
         f"-beta-{configuration.beta}"
         f"-epsilon-{configuration.epsilon}"
         f"-epochs-{configuration.epochs}"
-        f"-{str(trained.architecture)}"
+        f"-{str(architecture)}"
         f"-{suffix_filename}.png"
     )
     plt.clf()
@@ -337,12 +359,16 @@ def plot_training_error(
     plt.close()
 
 
-def train_predictor(configuration: Configuration, architecture: list[int]):
-    letters_matrix = get_letters()
+def train_predictor(
+    configuration: Configuration,
+    architecture: list[int],
+    training_input: np.array = None,
+    expected_output: np.array = None,
+):
     latent_space_dim = 2
     autoencoder = Autoencoder(
-        letters_matrix.shape[1] * letters_matrix.shape[2],  # 35 (flattened)
-        letters_matrix.shape[0],
+        training_input.shape[1] * training_input.shape[2],  # 35 (flattened)
+        training_input.shape[0],
         architecture,
         latent_space_dim,
         MSE(),
@@ -354,7 +380,7 @@ def train_predictor(configuration: Configuration, architecture: list[int]):
         configuration.learning_rate,
     )
 
-    new_network, errors = autoencoder.train(letters_matrix, letters_matrix)
+    new_network, errors = autoencoder.train(training_input, expected_output)
 
     # Generate predictions for each input
     reconstructed_output = np.array(
@@ -362,12 +388,12 @@ def train_predictor(configuration: Configuration, architecture: list[int]):
             autoencoder.predict(x).reshape(
                 7, 5
             )  # Reshape each output to 7x5 for visualization
-            for x in letters_matrix
+            for x in expected_output
         ]
     )
 
     # Reshape input for the display function (to match reconstructed_output)
-    reshaped_input = np.array([x.reshape(7, 5) for x in letters_matrix])
+    reshaped_input = np.array([x.reshape(7, 5) for x in training_input])
 
     return TrainedAutoencoder(
         autoencoder=autoencoder,
@@ -376,7 +402,7 @@ def train_predictor(configuration: Configuration, architecture: list[int]):
         errors=errors,
         trained_input=reshaped_input,
         trained_output=reconstructed_output,
-        binary_letters_matrix=letters_matrix,
+        binary_letters_matrix=training_input,
     )
 
 
@@ -423,11 +449,16 @@ def ej_1_a(configuration: Configuration, trained: TrainedAutoencoder):
             configuration,
             trained.trained_input,
             trained.trained_output,
+            architecture=trained.architecture,
             suffix_filename="ej_1a",
         )
         for i in range(6):
             display_single_character_heatmap(
-                configuration, new_letters, i, suffix_filename="ej_1a"
+                configuration,
+                new_letters,
+                i,
+                suffix_filename="ej_1a",
+                architecture=trained.architecture,
             )
         plot_training_error(configuration, trained.errors, suffix_filename="ej_1a")
         plot_latent_space(
@@ -436,6 +467,7 @@ def ej_1_a(configuration: Configuration, trained: TrainedAutoencoder):
             trained.binary_letters_matrix,
             get_letters_labels(),
             suffix_filename="ej_1a",
+            architecture=trained.architecture,
         )
 
 
@@ -445,13 +477,10 @@ def ej_1_b(configuration: Configuration, trained: TrainedAutoencoder):
             "'noise' configuration is needed for this item to be executed"
         )
 
-    letters_with_noise = add_noise_to_letters(
-        convert_fonts_to_binary_matrix(Font3),
-        configuration.noise.intensity,
-        configuration.noise.spread,
+    # Generate new noised letters
+    letters_with_noise, letters_with_noise_for_autoencoder = (
+        generate_letters_with_noise(configuration.noise)
     )
-
-    letters_with_noise_for_autoencoder = np.reshape(letters_with_noise, (32, 35, 1))
 
     predicted = []
     for letter in letters_with_noise_for_autoencoder:
@@ -463,33 +492,80 @@ def ej_1_b(configuration: Configuration, trained: TrainedAutoencoder):
             configuration,
             trained.trained_output,
             predicted,
-            suffix_filename="ej_1b",
+            architecture=trained.architecture,
+            suffix_filename="denoiser-data-ej_1b",
             middle_row=letters_with_noise,
         )
-        plot_training_error(configuration, trained.errors, suffix_filename="ej_1b")
+        plot_training_error(
+            configuration, trained.errors, suffix_filename="denoiser-data-ej_1b"
+        )
 
 
-if __name__ == "__main__":
-    configuration: Configuration = read_configuration("config.toml")
-    if configuration.seed:
-        random.seed(configuration.seed)
-        np.random.seed(configuration.seed)
-
-    architecture_layers = [
-        [20, 15, 10, 5, 1],
-        [30, 20, 15, 10, 5],
-        [60, 50, 30, 10, 5],
-        [60, 50, 40, 30, 20, 10, 5],
-        [70, 60, 50, 40, 30, 20, 15, 10, 5],
-    ]
-
+def run_ej_1_a(
+    configuration: Configuration,
+    architecture_layers: list[list[int]],
+    letters_binary_matrix: list,
+):
     trained_architectures = []
     for architecture in architecture_layers:
-        trained = train_predictor(configuration, architecture)
+        trained = train_predictor(
+            configuration,
+            architecture,
+            training_input=letters_binary_matrix,
+            expected_output=letters_binary_matrix,
+        )
         trained_architectures.append(trained)
 
         ej_1_a(configuration, trained)
+
+    if configuration.plot:
+        errors = []
+        labels = []
+        for arch in trained_architectures:
+            errors.append(arch.errors)
+            labels.append(f"Error {str(arch.architecture)}")
+        plot_training_error(
+            configuration, errors, suffix_filename="ej_1a", labels=labels
+        )
+
+
+def run_ej_1_b(
+    configuration: Configuration,
+    architecture_layers: list[list[int]],
+    letters_binary_matrix: list,
+):
+    if not configuration.noise:
+        raise RuntimeError(
+            "'noise' configuration is needed for this item to be executed"
+        )
+
+    trained_architectures = []
+    for architecture in architecture_layers:
+        letters_with_noise, letters_with_noise_for_autoencoder = (
+            generate_letters_with_noise(configuration.noise)
+        )
+
+        trained = train_predictor(
+            configuration,
+            architecture,
+            training_input=letters_with_noise_for_autoencoder,
+            expected_output=letters_binary_matrix,
+        )
+        trained_architectures.append(trained)
+
         ej_1_b(configuration, trained)
+
+        if configuration.plot:
+            display_comparison_heatmaps(
+                configuration,
+                trained.trained_input,
+                trained.trained_output,
+                architecture=trained.architecture,
+                suffix_filename="autoencoder-data-ej_1b",
+            )
+            plot_training_error(
+                configuration, trained.errors, suffix_filename="autoencoder-data-ej_1b"
+            )
 
     if configuration.plot:
         errors = []
@@ -500,3 +576,35 @@ if __name__ == "__main__":
         plot_training_error(
             configuration, errors, suffix_filename="ej_1b", labels=labels
         )
+
+
+if __name__ == "__main__":
+    configuration: Configuration = read_configuration("config.toml")
+    if configuration.seed:
+        random.seed(configuration.seed)
+        np.random.seed(configuration.seed)
+
+    architecture_layers = [
+        # [20, 15, 10, 5, 1],
+        [30, 20, 15, 10, 5],
+        [60, 50, 30, 10, 5],
+        # [60, 50, 40, 30, 20, 10, 5],
+        # [70, 60, 50, 40, 30, 20, 15, 10, 5],
+    ]
+
+    letters_binary_matrix = get_letters()
+
+    process_ej_1_a = Process(
+        target=run_ej_1_a,
+        args=(configuration, architecture_layers, letters_binary_matrix),
+    )
+    process_ej_1_b = Process(
+        target=run_ej_1_b,
+        args=(configuration, architecture_layers, letters_binary_matrix),
+    )
+
+    process_ej_1_a.start()
+    process_ej_1_b.start()
+
+    process_ej_1_a.join()
+    process_ej_1_b.join()
