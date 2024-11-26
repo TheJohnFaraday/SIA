@@ -331,14 +331,14 @@ def ej2(configuration: Configuration):
     vae = train_vae(configuration, subset, mc_m)
     grid_size = 2
 
-    fig, axes = plt.subplots(grid_size, grid_size*2, figsize=(24, 12))
+    fig, axes = plt.subplots(grid_size, grid_size * 2, figsize=(24, 12))
 
     fig.subplots_adjust(wspace=0.2, hspace=0.2)
     output = vae.trained_output
-    output = np.reshape(output, (grid_size, grid_size*2, 20, 20))
+    output = np.reshape(output, (grid_size, grid_size * 2, 20, 20))
     print(output)
     for i in range(grid_size):
-        for j in range(grid_size*2):
+        for j in range(grid_size * 2):
             ax = axes[i, j]
             matrix = output[i][j]
             ax.imshow(matrix, cmap="Blues", vmin=-1, vmax=1)
@@ -351,21 +351,41 @@ def ej2(configuration: Configuration):
 
     print(len(mc_m[0]))
 
-    output_1 = vae.autoencoder.encode(mc_m[0])
-    output_2 = vae.autoencoder.encode(mc_m[1])
+    output_1 = vae.autoencoder.encode(mc_m[6])
+    output_2 = vae.autoencoder.encode(mc_m[7])
 
     print("OUTPUTS")
 
     print(output_1)
     print(output_2)
 
-    new_output = 0.5*(output_1 + output_2)
+    new_output = 0.5 * (output_1 + output_2)
     new_output = vae.autoencoder.decode(new_output)
 
     new_output_matrix = new_output.reshape(20, 20)
+    fig, axes = plt.subplots(1, 1, figsize=(4, 4))
+    fig.subplots_adjust(wspace=0.2, hspace=0.2)
     plt.imshow(new_output_matrix, cmap="Blues", vmin=-1, vmax=1)
     plt.axis("off")
-    plt.show()
+    plt.savefig("./plots/new-output-matrix.png")
+
+    latent_space_map = []
+    for i in range(-1, 1, 0.2):
+        for j in range(-1, 1, 0.2):
+            latent_space_map.append(vae.autoencoder.decode([i, j]))
+
+    latent_space_map = np.reshape(latent_space_map, (10, 10, 20, 20))
+
+    for i in range(10):
+        for j in range(10):
+            ax = axes[i, j]
+            matrix = latent_space_map[i][j]
+            ax.imshow(matrix, cmap="Blues", vmin=-1, vmax=1)
+
+            ax.set_xticks([])
+            ax.set_yticks([])
+            ax.set_aspect("auto")
+    plt.savefig("./plots/latent-space-map.png")
 
 
 if __name__ == "__main__":
