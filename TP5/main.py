@@ -278,17 +278,82 @@ def ej_1_b(configuration: Configuration, trained: TrainedAutoencoder):
         plot_training_error(trained.errors, suffix_filename="ej_1b")
 
 
+def train_vae(configuration: Configuration):
+    subset = 16
+    mc_m = mc_matrix()
+    layers = [400, 300, 200, 100, 50, 25]
+    latent_space_dim = 5
+    autoencoder = Autoencoder(
+        mc_m.shape[1],  # 289 (flattened)
+        subset,
+        layers,
+        latent_space_dim,
+        MSE(),
+        configuration.epochs,
+        configuration.beta,
+        configuration.adam.beta1,
+        configuration.adam.beta2,
+        configuration.epsilon,
+        configuration.learning_rate,
+        True,
+    )
+
+    new_network, errors = autoencoder.train(mc_m[:subset], mc_m[:subset])
+
+    # Generate predictions for each input
+    reconstructed_output = np.array(
+        [
+            autoencoder.predict(x).reshape(
+                17, 17
+            )  # Reshape each output to 7x5 for visualization
+            for x in mc_m[:subset]
+        ]
+    )
+
+    # Reshape input for the display function (to match reconstructed_output)
+    reshaped_input = np.array([x.reshape(17, 17) for x in mc_m[:subset]])
+
+    return TrainedAutoencoder(
+        autoencoder=autoencoder,
+        network=new_network,
+        errors=errors,
+        trained_input=reshaped_input,
+        trained_output=reconstructed_output,
+        binary_letters_matrix=mc_m[subset],
+    )
+
+
+def ej2(configuration: Configuration):
+    vae = train_vae(configuration)
+    grid_size = 4
+
+    fig, axes = plt.subplots(grid_size, grid_size, figsize=(12, 12))
+
+    fig.subplots_adjust(wspace=0.2, hspace=0.2)
+    output = vae.trained_output
+    print(output)
+    for i in range(grid_size):
+        for j in range(grid_size):
+            ax = axes[i, j]
+            matrix = output[j*i]
+            ax.imshow(matrix, cmap="Blues", vmin=-1, vmax=1)
+
+            ax.set_xticks([])
+            ax.set_yticks([])
+            ax.set_aspect("auto")
+
+    plt.savefig("./plots/kjawdkanwdkaw.png")
+
+
 if __name__ == "__main__":
     configuration: Configuration = read_configuration("config.toml")
     if configuration.seed:
         random.seed(configuration.seed)
         np.random.seed(configuration.seed)
 
-    mc_mx = mc_matrix()
-    print(mc_mx)
+    ej2(configuration)
 
     # trained = train_predictor(configuration)
 
     # ej_1_a(configuration, trained)
     # ej_1_b(configuration, trained)
-

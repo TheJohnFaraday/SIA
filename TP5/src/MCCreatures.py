@@ -31,3 +31,6 @@ def mc_matrix():
         plt.axis("off")
         plt.savefig(f"./plots/example-fig-{i}.png")
         i += 1
+
+    x = np.reshape(x, (processed, images_shape[0] * images_shape[1], 1))
+    return x

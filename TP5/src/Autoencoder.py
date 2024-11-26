@@ -31,7 +31,6 @@ class Autoencoder:
         encoder_layers = []
         prior_layer = input_size
         for layer in layers:
-            print(f"prior layer {prior_layer} -> layer {layer}")
             encoder_layers.append(
                 Dense(
                     input_size=prior_layer,
@@ -78,7 +77,6 @@ class Autoencoder:
         decoder_layers = []
 
         for layer in layers[::-1]:
-            print(f"prior layer {prior_layer} -> layer {layer}")
             decoder_layers.append(
                 Dense(
                     input_size=prior_layer,
