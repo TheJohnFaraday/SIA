@@ -8,7 +8,7 @@ from PIL import Image
 
 def mc_matrix():
     images_folder = "./dataset/minecraft-faces"
-    images_shape = (17, 17)
+    images_shape = (20, 20)
     x = []
 
     images = [f for f in os.listdir(images_folder) if f.endswith(".png")]

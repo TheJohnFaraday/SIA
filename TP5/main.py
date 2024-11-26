@@ -279,10 +279,10 @@ def ej_1_b(configuration: Configuration, trained: TrainedAutoencoder):
 
 
 def train_vae(configuration: Configuration):
-    subset = 16
+    subset = 4
     mc_m = mc_matrix()
-    layers = [400, 300, 200, 100, 50, 25]
-    latent_space_dim = 5
+    layers = [800, 500, 300, 100, 50, 25, 10]
+    latent_space_dim = 2
     autoencoder = Autoencoder(
         mc_m.shape[1],  # 289 (flattened)
         subset,
@@ -304,14 +304,14 @@ def train_vae(configuration: Configuration):
     reconstructed_output = np.array(
         [
             autoencoder.predict(x).reshape(
-                17, 17
+                20, 20
             )  # Reshape each output to 7x5 for visualization
             for x in mc_m[:subset]
         ]
     )
 
     # Reshape input for the display function (to match reconstructed_output)
-    reshaped_input = np.array([x.reshape(17, 17) for x in mc_m[:subset]])
+    reshaped_input = np.array([x.reshape(20, 20) for x in mc_m[:subset]])
 
     return TrainedAutoencoder(
         autoencoder=autoencoder,
@@ -325,7 +325,7 @@ def train_vae(configuration: Configuration):
 
 def ej2(configuration: Configuration):
     vae = train_vae(configuration)
-    grid_size = 4
+    grid_size = 2
 
     fig, axes = plt.subplots(grid_size, grid_size, figsize=(12, 12))
 
