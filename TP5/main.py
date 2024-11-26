@@ -590,7 +590,7 @@ def run_ej_1_b(
 
 def train_vae(configuration: Configuration, subset, mc_m):
     # layers = [1200, 1000, 800, 600, 400, 200, 100, 50, 25, 10]
-    layers = [300, 200, 100, 50]
+    layers = [200, 100, 50]
     latent_space_dim = 2
     autoencoder = Autoencoder(
         mc_m.shape[1],  # 400 (flattened)
@@ -663,8 +663,8 @@ def ej2(configuration: Configuration):
 
     print(len(mc_m[0]))
 
-    output_1 = vae.autoencoder.encode(mc_m[6])
-    output_2 = vae.autoencoder.encode(mc_m[7])
+    output_1 = vae.autoencoder.encode(mc_m[5])
+    output_2 = vae.autoencoder.encode(mc_m[6])
 
     print("OUTPUTS")
 
@@ -682,17 +682,25 @@ def ej2(configuration: Configuration):
     plt.savefig("./plots/new-output-matrix.png")
 
     latent_space_map = []
-    for i in range(-1, 1, 0.2):
-        for j in range(-1, 1, 0.2):
-            latent_space_map.append(vae.autoencoder.decode([i, j]))
+    i_x = -1
+    i_y = -1
+    for i in range(11):
+        for j in range(11):
+            latent_space = np.array([[i_x], [i_y]])
+            mat = vae.autoencoder.decode(latent_space)
+            latent_space_map.append(mat.reshape(20, 20))
+            i_y += 0.1
+        i_y = -1
+        i_x += 0.1
 
-    latent_space_map = np.reshape(latent_space_map, (10, 10, 20, 20))
+    latent_space_map = np.reshape(latent_space_map, (11, 11, 20, 20))
 
-    for i in range(10):
-        for j in range(10):
+    fig, axes = plt.subplots(11, 11, figsize=(50, 50))
+    for i in range(11):
+        for j in range(11):
             ax = axes[i, j]
-            matrix = latent_space_map[i][j]
-            ax.imshow(matrix, cmap="Blues", vmin=-1, vmax=1)
+            m = latent_space_map[i][j]
+            ax.imshow(m, cmap="Blues", vmin=-1, vmax=1)
 
             ax.set_xticks([])
             ax.set_yticks([])
