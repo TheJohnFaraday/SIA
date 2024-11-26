@@ -245,9 +245,17 @@ def ej_1_b(configuration: Configuration, trained: TrainedAutoencoder):
 
     letters_with_noise = add_noise_to_letters(convert_fonts_to_binary_matrix(Font3), configuration.noise.intensity,
                                               configuration.noise.spread)
+    letters_with_noise = np.reshape(
+        letters_with_noise, (32, 35, 1)
+    )
+
+    predicted = []
+    for letter in letters_with_noise:
+        predicted_letter = trained.autoencoder.predict(letter).reshape(7,5)
+        predicted.append(predicted_letter)
 
     if configuration.plot:
-        display_comparison_heatmaps(trained.trained_output, letters_with_noise, suffix_filename="ej_1b")
+        display_comparison_heatmaps(trained.trained_output, predicted, suffix_filename="ej_1b")
         plot_training_error(trained.errors, suffix_filename="ej_1b")
 
 
