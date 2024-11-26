@@ -9,6 +9,12 @@ class AdamConfiguration:
 
 
 @dataclass(frozen=True)
+class NoiseConfiguration:
+    intensity: float
+    spread: int
+
+
+@dataclass(frozen=True)
 class Configuration:
     plot: bool
     seed: Optional[int]
@@ -18,3 +24,4 @@ class Configuration:
     batch_size: int
     epochs: int
     adam: Optional[AdamConfiguration]
+    noise: Optional[NoiseConfiguration]
