@@ -278,14 +278,12 @@ def ej_1_b(configuration: Configuration, trained: TrainedAutoencoder):
         plot_training_error(trained.errors, suffix_filename="ej_1b")
 
 
-def train_vae(configuration: Configuration):
-    subset = 8
-    mc_m = mc_matrix(subset)
+def train_vae(configuration: Configuration, subset, mc_m):
     # layers = [1200, 1000, 800, 600, 400, 200, 100, 50, 25, 10]
     layers = [300, 200, 100, 50]
     latent_space_dim = 2
     autoencoder = Autoencoder(
-        mc_m.shape[1],  # 289 (flattened)
+        mc_m.shape[1],  # 400 (flattened)
         subset,
         layers,
         latent_space_dim,
@@ -325,7 +323,12 @@ def train_vae(configuration: Configuration):
 
 
 def ej2(configuration: Configuration):
-    vae = train_vae(configuration)
+
+    subset = 8
+    mc_m = mc_matrix(subset)
+    mc_m = np.reshape(np.array(mc_m), (8, 400, 1))
+
+    vae = train_vae(configuration, subset, mc_m)
     grid_size = 2
 
     fig, axes = plt.subplots(grid_size, grid_size*2, figsize=(24, 12))
@@ -345,6 +348,26 @@ def ej2(configuration: Configuration):
             ax.set_aspect("auto")
 
     plt.savefig("./plots/kjawdkanwdkaw.png")
+
+
+
+    print(len(mc_m[0]))
+
+    output_1 = vae.autoencoder.encode([mc_m[0]])
+    output_2 = vae.autoencoder.encode([mc_m[1]])
+
+    print("OUTPUTS")
+
+    print(output_1)
+    print(output_2)
+
+    new_output = 0.5*(output_1 + output_2)
+    new_output = vae.autoencoder.decode(new_output)
+
+    new_output_matrix = new_output.reshape(20, 20)
+    plt.imshow(new_output_matrix, cmap="Blues", vmin=-1, vmax=1)
+    plt.axis("off")
+    plt.show()
 
 
 if __name__ == "__main__":
