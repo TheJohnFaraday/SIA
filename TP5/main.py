@@ -333,6 +333,7 @@ def plot_training_error(
     plt.ylabel("Error")
     plt.grid(True, linestyle="--", alpha=0.6)
     plt.legend()
+    plt.ylim(0, 1.45)
     plt.tight_layout(rect=[0, 0, 1, 0.95])
 
     noise = (
@@ -460,7 +461,11 @@ def ej_1_a(configuration: Configuration, trained: TrainedAutoencoder):
                 suffix_filename="ej_1a",
                 architecture=trained.architecture,
             )
-        plot_training_error(configuration, trained.errors, suffix_filename="ej_1a")
+        plot_training_error(
+            configuration,
+            trained.errors,
+            suffix_filename=f"{trained.architecture}-ej_1a",
+        )
         plot_latent_space(
             configuration,
             trained.autoencoder,
@@ -497,7 +502,9 @@ def ej_1_b(configuration: Configuration, trained: TrainedAutoencoder):
             middle_row=letters_with_noise,
         )
         plot_training_error(
-            configuration, trained.errors, suffix_filename="denoiser-data-ej_1b"
+            configuration,
+            trained.errors,
+            suffix_filename=f"{trained.architecture}-denoiser-data-ej_1b",
         )
 
 
@@ -564,7 +571,9 @@ def run_ej_1_b(
                 suffix_filename="autoencoder-data-ej_1b",
             )
             plot_training_error(
-                configuration, trained.errors, suffix_filename="autoencoder-data-ej_1b"
+                configuration,
+                trained.errors,
+                suffix_filename=f"{trained.architecture}-autoencoder-data-ej_1b",
             )
 
     if configuration.plot:
