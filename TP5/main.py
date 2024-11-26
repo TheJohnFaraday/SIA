@@ -12,6 +12,8 @@ from src.errors import MSE
 from src.Optimizer import GradientDescent, Adam
 from src.Training import MiniBatch, Batch
 from src.Autoencoder import Autoencoder
+import os
+from PIL import Image
 
 
 def convert_fonts_to_binary_matrix(font_array):
@@ -128,13 +130,13 @@ def plot_training_error(errors):
     plt.savefig("./plots/training-error.png")
 
 
-if __name__ == "__main__":
+def main():
     configuration: Configuration = read_configuration("config.toml")
     if configuration.seed:
         random.seed(configuration.seed)
         np.random.seed(configuration.seed)
 
-    # Convert font data to binary matrix and reshape
+        # Convert font data to binary matrix and reshape
     binary_matrix = convert_fonts_to_binary_matrix(Font3)
     binary_matrix = np.reshape(
         binary_matrix, (32, 35, 1)
@@ -227,3 +229,36 @@ if __name__ == "__main__":
         plot_training_error(errors)
 
     plot_latent_space(autoencoder, binary_matrix, labels)
+
+
+if __name__ == "__main__":
+    images_folder = 'dataset/minecraft-faces'
+    images_shape = (64, 64)
+    x = []
+
+    images = [f for f in os.listdir(images_folder) if f.endswith('.png')]
+    processed = 0
+
+    for image in images:
+        full_path = os.path.join(images_folder, image)
+        img = Image.open(full_path)
+
+        if len(img.split()) >= 3:
+            img = img.convert("RGB")
+            img = img.resize(images_shape)
+            img = np.asarray(img, dtype=np.float32) / 255
+            img = img[:, :, :3]
+            x.append(img)
+            processed += 1
+
+    print(f"Loaded {processed} out of {len(images)} images with shape {images_shape}")
+
+    if len(x) > 0:
+        plt.imshow(x[0])
+        plt.axis('off')
+        plt.show()
+    else:
+        print("No images to display.")
+
+
+
