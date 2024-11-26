@@ -1,3 +1,4 @@
+import hashlib
 import random
 from dataclasses import dataclass
 from typing import Union
@@ -13,8 +14,6 @@ from src.Layer import Layer
 from src.Letters import get_letters, get_letters_labels, convert_fonts_to_binary_matrix
 from src.errors import MSE
 from src.parse_configuration import read_configuration
-
-ARCHITECTURE_LAYERS = [60, 50, 40, 30, 20, 10, 5]
 
 CUSTOM_PALETTE = [
     "#508fbe",  # blue
@@ -58,6 +57,7 @@ sns.set_style(PLT_THEME)
 
 @dataclass
 class TrainedAutoencoder:
+    architecture: list[int]
     autoencoder: Autoencoder
     network: Layer
     errors: Union[Layer, np.array, list[float]]
@@ -115,8 +115,10 @@ def plot_latent_space(configuration: Configuration, autoencoder, input_data, lab
                 f"-beta-{configuration.beta}"
                 f"-epsilon-{configuration.epsilon}"
                 f"-epochs-{configuration.epochs}"
-                f"-{str(ARCHITECTURE_LAYERS)}"
+                f"-{str(trained.architecture)}"
                 f"-{suffix_filename}.png")
+    plt.clf()
+    plt.close()
 
 
 def display_comparison_heatmaps(configuration: Configuration, input_matrix, autoencoder_output, suffix_filename: str,  middle_row=None):
@@ -213,9 +215,11 @@ def display_comparison_heatmaps(configuration: Configuration, input_matrix, auto
                 f"-epsilon-{configuration.epsilon}"
                 f"-epochs-{configuration.epochs}"
                 f"-{noise}"
-                f"-{str(ARCHITECTURE_LAYERS)}"
+                f"-{str(trained.architecture)}"
                 f"-{suffix_filename}.png")
     # plt.show()
+    plt.cla()
+    plt.close("all")
 
 
 def display_single_character_heatmap(configuration: Configuration, binary_matrix, index, suffix_filename: str):
@@ -239,14 +243,23 @@ def display_single_character_heatmap(configuration: Configuration, binary_matrix
                 f"-beta-{configuration.beta}"
                 f"-epsilon-{configuration.epsilon}"
                 f"-epochs-{configuration.epochs}"
-                f"-{str(ARCHITECTURE_LAYERS)}"
+                f"-{str(trained.architecture)}"
                 f"-{suffix_filename}.png")
+    plt.clf()
+    plt.close()
 
 
-def plot_training_error(configuration: Configuration, errors, suffix_filename: str):
-    epochs = range(1, len(errors) + 1)  # Crear un rango para las épocas (comienza en 1)
+def plot_training_error(configuration: Configuration, errors, suffix_filename: str, labels=None):
     plt.figure(figsize=(12, 6))
-    plt.plot(epochs, errors, label="Training Error", color="blue")
+
+    if isinstance(errors[0], list):
+        for idx, error_line in enumerate(errors):
+            epochs = range(1, len(error_line) + 1)
+            plt.plot(epochs, error_line, label=labels[idx])
+    else:
+        epochs = range(1, len(errors) + 1)  # Crear un rango para las épocas (comienza en 1)
+        plt.plot(epochs, errors, label="Training Error", color="blue")
+
     plt.suptitle("Error durante el entrenamiento del Autoencoder")
     plt.gcf().text(0.5, 0.92,
                    f"Learning Rate = {configuration.learning_rate}"
@@ -269,23 +282,26 @@ def plot_training_error(configuration: Configuration, errors, suffix_filename: s
     plt.tight_layout(rect=[0, 0, 1, 0.95])
 
     noise = f"noise-intensity-{configuration.noise.intensity}-noise-spread-{configuration.noise.spread}" if configuration.noise else "noise-0"
+    arch_label = f"-{hashlib.md5("".join(labels).encode("utf-8")).hexdigest()}" if labels is not None else ""
     plt.savefig(f"./plots/training-error"
                 f"-lr-{configuration.learning_rate}"
                 f"-beta-{configuration.beta}"
                 f"-epsilon-{configuration.epsilon}"
                 f"-epochs-{configuration.epochs}"
                 f"-{noise}"
-                f"-{str(ARCHITECTURE_LAYERS)}"
+                f"-{arch_label}"
                 f"-{suffix_filename}.png")
+    plt.clf()
+    plt.close()
 
 
-def train_predictor(configuration: Configuration):
+def train_predictor(configuration: Configuration, architecture: list[int]):
     letters_matrix = get_letters()
     latent_space_dim = 2
     autoencoder = Autoencoder(
         letters_matrix.shape[1] * letters_matrix.shape[2],  # 35 (flattened)
         letters_matrix.shape[0],
-        ARCHITECTURE_LAYERS,
+        architecture,
         latent_space_dim,
         MSE(),
         configuration.epochs,
@@ -311,7 +327,8 @@ def train_predictor(configuration: Configuration):
     # Reshape input for the display function (to match reconstructed_output)
     reshaped_input = np.array([x.reshape(7, 5) for x in letters_matrix])
 
-    return TrainedAutoencoder(autoencoder=autoencoder, network=new_network, errors=errors, trained_input=reshaped_input,
+    return TrainedAutoencoder(autoencoder=autoencoder, architecture=architecture, network=new_network, errors=errors,
+                              trained_input=reshaped_input,
                               trained_output=reconstructed_output, binary_letters_matrix=letters_matrix)
 
 
@@ -390,7 +407,27 @@ if __name__ == "__main__":
         random.seed(configuration.seed)
         np.random.seed(configuration.seed)
 
-    trained = train_predictor(configuration)
+    architecture_layers = [
+        [20, 15, 10, 5, 1],
+        [30, 20, 15, 10, 5],
+        [60, 50, 30, 10, 5],
+        [60, 50, 40, 30, 20, 10, 5],
+        [70, 60, 50, 40, 30, 20, 15, 10, 5],
+    ]
 
-    ej_1_a(configuration, trained)
-    ej_1_b(configuration, trained)
+    trained_architectures = []
+    for architecture in architecture_layers:
+        trained = train_predictor(configuration, architecture)
+        trained_architectures.append(trained)
+
+        ej_1_a(configuration, trained)
+        ej_1_b(configuration, trained)
+
+
+    if configuration.plot:
+        errors = []
+        labels = []
+        for arch in trained_architectures:
+            errors.append(arch.errors)
+            labels.append(f"Error {str(arch.architecture)}")
+        plot_training_error(configuration, errors, suffix_filename="ej_1b", labels=labels)
