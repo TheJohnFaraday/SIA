@@ -629,6 +629,7 @@ def train_vae(configuration: Configuration, subset, mc_m):
         trained_input=reshaped_input,
         trained_output=reconstructed_output,
         binary_letters_matrix=mc_m,
+        architecture=layers,
     )
 
 
