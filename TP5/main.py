@@ -349,12 +349,10 @@ def ej2(configuration: Configuration):
 
     plt.savefig("./plots/kjawdkanwdkaw.png")
 
-
-
     print(len(mc_m[0]))
 
-    output_1 = vae.autoencoder.encode([mc_m[0]])
-    output_2 = vae.autoencoder.encode([mc_m[1]])
+    output_1 = vae.autoencoder.encode(mc_m[0])
+    output_2 = vae.autoencoder.encode(mc_m[1])
 
     print("OUTPUTS")
 
