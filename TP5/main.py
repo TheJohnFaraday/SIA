@@ -68,7 +68,7 @@ class TrainedAutoencoder:
     binary_letters_matrix: np.array
 
 
-def add_noise_to_letters(letters_matrix, intensity: float, spread: int):
+def add_noise_to_letters(letters_binary_matrix, intensity: float, spread: int):
     def add_noise_to_single_letter(letter):
         noise_matrix = np.array(letter).astype(float).reshape(7, 5)
 
@@ -93,7 +93,7 @@ def add_noise_to_letters(letters_matrix, intensity: float, spread: int):
         maximum_cell_value = max(cell for row in noise_matrix for cell in row)
         return [cell / maximum_cell_value for row in noise_matrix for cell in row]
 
-    return np.array([add_noise_to_single_letter(letter) for letter in letters_matrix])
+    return np.array([add_noise_to_single_letter(letter) for letter in letters_binary_matrix])
 
 
 def generate_letters_with_noise(noise_configuration):
@@ -588,12 +588,12 @@ def run_ej_1_b(
 
 
 if __name__ == "__main__":
-    configuration: Configuration = read_configuration("config.toml")
-    if configuration.seed:
-        random.seed(configuration.seed)
-        np.random.seed(configuration.seed)
+    config: Configuration = read_configuration("config.toml")
+    if config.seed:
+        random.seed(config.seed)
+        np.random.seed(config.seed)
 
-    architecture_layers = [
+    layers = [
         # [20, 15, 10, 5, 1],
         [30, 20, 15, 10, 5],
         [60, 50, 30, 10, 5],
@@ -601,15 +601,15 @@ if __name__ == "__main__":
         # [70, 60, 50, 40, 30, 20, 15, 10, 5],
     ]
 
-    letters_binary_matrix = get_letters()
+    letters_matrix = get_letters()
 
     process_ej_1_a = Process(
         target=run_ej_1_a,
-        args=(configuration, architecture_layers, letters_binary_matrix),
+        args=(config, layers, letters_matrix),
     )
     process_ej_1_b = Process(
         target=run_ej_1_b,
-        args=(configuration, architecture_layers, letters_binary_matrix),
+        args=(config, layers, letters_matrix),
     )
 
     process_ej_1_a.start()
