@@ -7,6 +7,10 @@ class AdamConfiguration:
     beta1: float
     beta2: float
 
+@dataclass(frozen=True)
+class NoiseConfiguration:
+    intensity: float
+    spread: int
 
 @dataclass(frozen=True)
 class Configuration:
@@ -18,3 +22,4 @@ class Configuration:
     batch_size: int
     epochs: int
     adam: Optional[AdamConfiguration]
+    noise: Optional[NoiseConfiguration]

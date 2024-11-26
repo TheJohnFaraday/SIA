@@ -1,6 +1,6 @@
 import tomllib
 
-from src.Configuration import Configuration, AdamConfiguration
+from src.Configuration import Configuration, AdamConfiguration, NoiseConfiguration
 
 
 def read_configuration(file_path: str):
@@ -15,6 +15,14 @@ def read_configuration(file_path: str):
                 beta2=raw_adam["beta2"]
             )
 
+        raw_noise: dict | None = data.get("noise", None)
+        noise: NoiseConfiguration | None = None
+        if raw_noise:
+            noise = NoiseConfiguration(
+                intensity=raw_noise["intensity"],
+                spread=raw_noise["spread"]
+            )
+
 
         return Configuration(
             plot=data["plot"],
@@ -24,5 +32,6 @@ def read_configuration(file_path: str):
             epsilon=data["epsilon"],
             batch_size=data["batch_size"],
             epochs=data["epochs"],
-            adam=adam
+            adam=adam,
+            noise=noise
         )
