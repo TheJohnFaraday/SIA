@@ -22,7 +22,7 @@ class TrainedAutoencoder:
     errors: Union[Layer, np.array, list[float]]
     trained_input: np.array
     trained_output: np.array
-    used_letters_matrix: np.array
+    binary_letters_matrix: np.array
 
 
 def add_noise_to_letters(letters_matrix, intensity: float, spread: int):
@@ -189,7 +189,7 @@ def train_predictor(configuration: Configuration):
     reshaped_input = np.array([x.reshape(7, 5) for x in letters_matrix])
 
     return TrainedAutoencoder(autoencoder=autoencoder, network=new_network, errors=errors, trained_input=reshaped_input,
-                              trained_output=reconstructed_output, used_letters_matrix=letters_matrix)
+                              trained_output=reconstructed_output, binary_letters_matrix=letters_matrix)
 
 
 
@@ -215,8 +215,8 @@ def ej_1_a(configuration: Configuration, trained: TrainedAutoencoder):
     # print("OUTPUT")
     # print(reconstructed_output)
 
-    a_encoded_value = trained.autoencoder.encode(trained.used_letters_matrix[1])
-    b_encoded_value = trained.autoencoder.encode(trained.used_letters_matrix[2])
+    a_encoded_value = trained.autoencoder.encode(trained.binary_letters_matrix[1])
+    b_encoded_value = trained.autoencoder.encode(trained.binary_letters_matrix[2])
     print(a_encoded_value)
     print(b_encoded_value)
     delta_x = abs(b_encoded_value[0] - a_encoded_value[0]) / 5
@@ -236,7 +236,7 @@ def ej_1_a(configuration: Configuration, trained: TrainedAutoencoder):
         for i in range(6):
             display_single_character_heatmap(new_letters, i, suffix_filename="ej_1a")
         plot_training_error(trained.errors, suffix_filename="ej_1a")
-        plot_latent_space(trained.autoencoder, trained.used_letters_matrix, get_letters_labels(), suffix_filename="ej_1a")
+        plot_latent_space(trained.autoencoder, trained.binary_letters_matrix, get_letters_labels(), suffix_filename="ej_1a")
 
 
 def ej_1_b(configuration: Configuration, trained: TrainedAutoencoder):
