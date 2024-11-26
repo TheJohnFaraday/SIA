@@ -279,10 +279,10 @@ def ej_1_b(configuration: Configuration, trained: TrainedAutoencoder):
 
 
 def train_vae(configuration: Configuration):
-    subset = 4
+    subset = 8
     mc_m = mc_matrix(subset)
     # layers = [1200, 1000, 800, 600, 400, 200, 100, 50, 25, 10]
-    layers = [200, 100, 50, 25, 10]
+    layers = [300, 200, 100, 50]
     latent_space_dim = 2
     autoencoder = Autoencoder(
         mc_m.shape[1],  # 289 (flattened)
@@ -306,13 +306,13 @@ def train_vae(configuration: Configuration):
         [
             autoencoder.predict(x).reshape(
                 20, 20
-            )  # Reshape each output to 7x5 for visualization
-            for x in mc_m[:subset]
+            )  # Reshape each output to 20x20 for visualization
+            for x in mc_m
         ]
     )
 
     # Reshape input for the display function (to match reconstructed_output)
-    reshaped_input = np.array([x.reshape(20, 20) for x in mc_m[:subset]])
+    reshaped_input = np.array([x.reshape(20, 20) for x in mc_m])
 
     return TrainedAutoencoder(
         autoencoder=autoencoder,
@@ -320,7 +320,7 @@ def train_vae(configuration: Configuration):
         errors=errors,
         trained_input=reshaped_input,
         trained_output=reconstructed_output,
-        binary_letters_matrix=mc_m[:subset],
+        binary_letters_matrix=mc_m,
     )
 
 
@@ -328,15 +328,16 @@ def ej2(configuration: Configuration):
     vae = train_vae(configuration)
     grid_size = 2
 
-    fig, axes = plt.subplots(grid_size, grid_size, figsize=(12, 12))
+    fig, axes = plt.subplots(grid_size, grid_size*2, figsize=(12, 24))
 
     fig.subplots_adjust(wspace=0.2, hspace=0.2)
     output = vae.trained_output
+    output = np.reshape(output, (grid_size, grid_size*2, 20, 20))
     print(output)
     for i in range(grid_size):
-        for j in range(grid_size):
+        for j in range(grid_size*2):
             ax = axes[i, j]
-            matrix = output[j*i]
+            matrix = output[i][j]
             ax.imshow(matrix, cmap="Blues", vmin=-1, vmax=1)
 
             ax.set_xticks([])
