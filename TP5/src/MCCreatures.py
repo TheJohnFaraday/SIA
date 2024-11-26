@@ -6,7 +6,7 @@ import matplotlib.colors as mcolors
 from PIL import Image
 
 
-def mc_matrix():
+def mc_matrix(subset: int = 8):
     images_folder = "./dataset/minecraft-faces"
     images_shape = (20, 20)
     x = []
@@ -14,7 +14,7 @@ def mc_matrix():
     images = [f for f in os.listdir(images_folder) if f.endswith(".png")]
     processed = 0
 
-    for image in images:
+    for image in images[:subset]:
         full_path = os.path.join(images_folder, image)
         img = Image.open(full_path)
         img = img.convert("L")

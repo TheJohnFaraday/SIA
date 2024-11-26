@@ -280,8 +280,8 @@ def ej_1_b(configuration: Configuration, trained: TrainedAutoencoder):
 
 def train_vae(configuration: Configuration):
     subset = 4
-    mc_m = mc_matrix()
-    layers = [800, 500, 300, 100, 50, 25, 10]
+    mc_m = mc_matrix(subset)
+    layers = [1200, 1000, 800, 600, 400, 200, 100, 50, 25, 10]
     latent_space_dim = 2
     autoencoder = Autoencoder(
         mc_m.shape[1],  # 289 (flattened)
