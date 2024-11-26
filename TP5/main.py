@@ -73,23 +73,25 @@ def plot_latent_space(autoencoder, input_data, labels, suffix_filename: str):
     plt.savefig(f"./plots/latent_space-{suffix_filename}.png")
 
 
-def display_comparison_heatmaps(input_matrix, autoencoder_output, suffix_filename: str):
+def display_comparison_heatmaps(input_matrix, autoencoder_output, suffix_filename: str,  middle_row=None):
     num_chars = input_matrix.shape[0]
     half = num_chars // 2
     fig, axes = plt.subplots(
-        4, half, figsize=(16, 8)
+        4 if middle_row is None else 6,
+        half, figsize=(16, 8)
     )  # 2 filas por mitad: Input y Output
 
     fig.suptitle("Input vs Autoencoder Output Heatmaps", fontsize=20)
 
     input_cmap = "gray_r"  # Monochrome
+    middle_cmap = "Reds"
     output_cmap = "Blues"  # Continuous colormap para Output
 
     for i in range(num_chars):
         row, col = divmod(i, half)
 
         # Primera fila
-        ax_input = axes[row * 2, col]
+        ax_input = axes[row * 2 if middle_row is None else row * 3, col]
         sns.heatmap(
             input_matrix[i],
             linewidths=0.2,
@@ -101,8 +103,23 @@ def display_comparison_heatmaps(input_matrix, autoencoder_output, suffix_filenam
         )
         ax_input.axis("off")
 
+        if middle_row is not None:
+            # Middle row
+            ax_output = axes[row * 3 + 1, col]
+            reshaped_output = middle_row[i].reshape(7, 5)  # Ajuste a (7,5)
+            sns.heatmap(
+                reshaped_output,
+                linewidths=0.2,
+                cbar=False,
+                square=True,
+                cmap=middle_cmap,
+                linecolor="k",
+                ax=ax_output,
+            )
+            ax_output.axis("off")
+
         # Segunda fila
-        ax_output = axes[row * 2 + 1, col]
+        ax_output = axes[row * 2 + 1 if middle_row is None else row * 3 + 2, col]
         reshaped_output = autoencoder_output[i].reshape(7, 5)  # Ajuste a (7,5)
         sns.heatmap(
             reshaped_output,
@@ -245,17 +262,19 @@ def ej_1_b(configuration: Configuration, trained: TrainedAutoencoder):
 
     letters_with_noise = add_noise_to_letters(convert_fonts_to_binary_matrix(Font3), configuration.noise.intensity,
                                               configuration.noise.spread)
-    letters_with_noise = np.reshape(
+
+    letters_with_noise_for_autoencoder = np.reshape(
         letters_with_noise, (32, 35, 1)
     )
 
     predicted = []
-    for letter in letters_with_noise:
-        predicted_letter = trained.autoencoder.predict(letter).reshape(7,5)
+    for letter in letters_with_noise_for_autoencoder:
+        predicted_letter = trained.autoencoder.predict(letter).reshape(7, 5)
         predicted.append(predicted_letter)
 
     if configuration.plot:
-        display_comparison_heatmaps(trained.trained_output, predicted, suffix_filename="ej_1b")
+        display_comparison_heatmaps(trained.trained_output, predicted, suffix_filename="ej_1b",
+                                    middle_row=letters_with_noise)
         plot_training_error(trained.errors, suffix_filename="ej_1b")
 
 
